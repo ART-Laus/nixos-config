@@ -4,12 +4,8 @@
   programs.alacritty = {
     enable = true;
 
-    # Конфигурация Alacritty, переведенная из alacritty.toml
+    # Конфигурация Alacritty
     settings = {
-      shell = {
-        program = "wsl.exe";
-      };
-
       window = {
         decorations = "none";
         padding = { x = 0; y = 0; };

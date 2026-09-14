@@ -89,7 +89,7 @@ in
       }
 
       $mainMod = SUPER
-      bind = $mainMod, Q, exec, wezterm
+      bind = $mainMod, Q, exec, alacritty
       bind = $mainMod, E, exec, thunar
       bind = $mainMod, Space, exec, rofi -show drun
       bind = $mainMod, C, killactive,

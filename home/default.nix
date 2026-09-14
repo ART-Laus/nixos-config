@@ -28,7 +28,7 @@
       sessionVariables = {
         EDITOR = "nvim";
         BROWSER = "firefox";
-        TERMINAL = "wezterm";
+        TERMINAL = "alacritty";
       };
     };
   };

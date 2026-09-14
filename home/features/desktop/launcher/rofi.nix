@@ -4,7 +4,7 @@
   programs.rofi = {
     enable = true;
     package = pkgs.rofi-wayland;
-    terminal = "${pkgs.wezterm}/bin/wezterm";
+    terminal = "${pkgs.alacritty}/bin/alacritty";
     theme = let
       inherit (theme) colors;
     in {

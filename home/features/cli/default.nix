@@ -3,8 +3,8 @@
   imports = [
     ./shell/zsh.nix
     ./shell/starship.nix
-    ./terminal/wezterm.nix
     ./terminal/alacritty.nix
+    ./terminal/kitty.nix
     ./git.nix
     ./yazi.nix
     ./tmux.nix
