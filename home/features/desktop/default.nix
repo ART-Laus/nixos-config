@@ -9,5 +9,6 @@
     ./lockscreen/swaylock.nix
     ./lockscreen/swayidle.nix
     ./browsers.nix
+    ./apps.nix
   ];
 }

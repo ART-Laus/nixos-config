@@ -41,6 +41,8 @@ SORT date DESC
 | 2026-09-15 | [[2026-09-15-architecture\|Архитектурное предложение]] | `architecture` | ✅ утверждено |
 | 2026-09-15 | [[2026-09-15-neovim\|Исследование Neovim — выбор Lazy.nvim]] | `research` | ✅ решено |
 | 2026-09-15 | [[2026-09-15-decisions\|Решения: flat + greetd + Lazy + Obsidian]] | `decision` | ✅ утверждено |
+| 2026-09-15 | [[2026-09-15-phase1\|Phase 1 — полная иерархия features сразу]] | `phase` | ✅ evaluation OK |
+| 2026-09-15 | [[2026-09-15-packages\|Миграция packages.legacy → features]] | `packages-migration` | ✅ завершено |
 
 ---
 
@@ -65,6 +67,8 @@ graph LR
   B --> C[2026-09-15-neovim]
   B --> D[2026-09-15-decisions]
   C -.-> D
+  D --> P1[2026-09-15-phase1]
+  P1 --> PK[2026-09-15-packages]
 ```
 
 ---
@@ -117,9 +121,9 @@ related:
 
 ## Статистика
 
-- Всего записей: `4`
-- Последняя: [[2026-09-15-decisions]] (2026-09-15)
-- Следующая фаза: `Phase 1 — hosts + system/nix.nix + theme/colors.nix` (см. [[architecture#10. Следующие шаги (обновлено)|architecture]])
+- Всего записей: `6`
+- Последняя: [[2026-09-15-packages]] (2026-09-15)
+- Следующая фаза: `Phase 2 — удаление artlaus/, nix flake check, сборка на железе` (см. [[architecture#10. Следующие шаги (обновлено)|architecture]])
 
 ---
 

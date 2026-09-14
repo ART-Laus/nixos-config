@@ -24,24 +24,53 @@
     unifont_upper
   ];
 
-  # Минимальный набор системных пакетов — всё остальное в home/features/*
   environment.systemPackages = with pkgs; [
-    # Core CLI (должны быть доступны до home)
+    # ── Core CLI ──
     git
     curl
     wget
     htop
 
-    # File managers (системная часть — thunar уже в services.nix)
-    # Остальное переедет в home
-
-    # Hardware utils
+    # ── Hardware utils ──
     pciutils
     usbutils
     lm_sensors
+    libva-utils
+    clinfo
+    alsa-utils
+    pamixer
 
-    # Fonts / icons (системные)
+    # ── Icons (системные, дополняют home/gtk-qt.nix) ──
     adwaita-icon-theme
     papirus-icon-theme
+    libsForQt5.breeze-icons
+    kdePackages.breeze-icons
+    material-icons
+    gruvbox-plus-icons
+
+    # ── File support libs (нужны системе для тумбнейлов) ──
+    kdePackages.kimageformats
+    libsForQt5.kimageformats
+    kdePackages.qtimageformats
+    libsForQt5.qt5.qtimageformats
+    kdePackages.qtsvg
+    kdePackages.karchive
+    webp-pixbuf-loader
+    gdk-pixbuf.dev
+    libwebp
+    libavif
+    libheif
+    libgsf
+    libjxl
+    libraw
+    librsvg
+    jxrlib
+    poppler
+    freetype
+    imath
+    openexr
+    fontconfig
+    libsecret
+
   ];
 }

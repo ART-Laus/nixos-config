@@ -1,9 +1,8 @@
-# home/features/development/default.nix — языки, LSP, devShells
+# home/features/development/default.nix — языки, LSP, gamedev, API/DB
 { config, pkgs, lib, ... }:
 {
-  # Пока stub — языки вынесены из artlaus/features/cli/default.nix
-  # После миграции: python, rust, go, node, lua, nixd, etc. через devShells + direnv
   home.packages = with pkgs; [
+    # ── Языки и LSP (из artlaus/features/cli/default.nix) ──
     # Python
     python3Full
     pyright
@@ -28,7 +27,21 @@
     bash-language-server
     shellcheck
     shfmt
-    # SQL
-    # sqls — если нужен
+
+    # ── Gamedev (из system/packages.legacy) ──
+    godot
+    gdtoolkit_4
+    ldtk
+
+    # ── API / DB ──
+    dbeaver-bin
+    pgadmin4
+    postman
+    insomnia
+
+    # ── Diagram / docs (dev-related) ──
+    drawio
+    xournalpp
+    hugo
   ];
 }

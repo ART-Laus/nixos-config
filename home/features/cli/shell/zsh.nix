@@ -59,12 +59,6 @@ in
         size = 50000;
       };
 
-      # Zsh опции — через initContent (setopt удалён в 25.05)
-      initContent = lib.mkAfter ''
-        setopt correct
-        unsetopt beep
-      '';
-
       # Oh My Zsh - включаем, но плагины через Antidote
       oh-my-zsh = {
         enable = true;
@@ -117,8 +111,12 @@ in
         t = "timer";
       };
 
-      # Дополнительный код Zsh
-      initExtra = ''
+      # Дополнительный код Zsh (initContent — новые setopt + интеграции)
+      initContent = ''
+        # Zsh опции
+        setopt correct
+        unsetopt beep
+
         # Интеграция zoxide для cd
         eval "$(zoxide init zsh)"
 

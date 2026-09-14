@@ -16,16 +16,31 @@ in
     programs.gamemode.enable = true;
     programs.gamescope.enable = true;
 
-    # Wine — системная часть (home-часть в home/gaming.nix)
+    # Wine / Proton / Vulkan — системная часть (home-часть в home/features/gaming)
     environment.systemPackages = with pkgs; [
       wineWowPackages.stableFull
       winetricks
       protonup-qt
       steam-run
       mangohud
-      # Vulkan — базовый набор (остальное в home при необходимости)
+      # Vulkan — полный набор из legacy
       vulkan-loader
       vulkan-tools
+      vulkan-tools-lunarg
+      vulkan-headers
+      vulkan-validation-layers
+      vulkan-utility-libraries
+      vulkan-extension-layer
+      gfxreconstruct
+      glslang
+      spirv-cross
+      spirv-headers
+      spirv-tools
+      vkdisplayinfo
+      vk-bootstrap
+      dxvk
+      vkd3d
+      vkd3d-proton
     ];
   };
 }
