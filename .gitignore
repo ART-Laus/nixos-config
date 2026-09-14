@@ -1,0 +1,35 @@
+# Nix
+result
+result-*
+.direnv/
+.lorri/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Zsh / vendored (большие, генерируемые — берём из pkgs)
+artlaus/features/cli/oh-my-zsh/
+artlaus/features/cli/zsh/.antidote/
+artlaus/features/cli/zsh/.zcompdump
+artlaus/features/cli/zsh/.zsh_history
+artlaus/features/cli/zsh/.zsh_plugins.zsh
+artlaus/features/cli/zsh/.zshenv
+
+# Secrets (когда появится sops)
+*.age.key
+
+# Obsidian
+.obsidian/
+.trash/
+
+# Temp
+/tmp/
+*.recovered
