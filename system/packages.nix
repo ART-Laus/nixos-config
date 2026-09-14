@@ -68,9 +68,9 @@
     poppler
     freetype
     imath
-    openexr
+openexr
     fontconfig
     libsecret
-
+    zlib
   ];
 }
