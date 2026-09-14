@@ -44,7 +44,7 @@ SORT date DESC
 | 2026-09-15 | [[2026-09-15-phase1\|Phase 1 — полная иерархия features сразу]] | `phase` | ✅ evaluation OK |
 | 2026-09-15 | [[2026-09-15-packages\|Миграция packages.legacy → features]] | `packages-migration` | ✅ завершено |
 | 2026-09-15 | [[2026-09-15-phase2\|Phase 2 — удаление artlaus/, nix flake check, фикс devShell]] | `phase` | ✅ evaluation OK |
-| 2026-09-15 | [[2026-09-15-phase2-cleanup\|Phase 2 cleanup — gaming, gamedev, thunderbird→ayugram, VLC, ranger→yazi, icon themes]] | `phase` | 🚧 в работе |
+| 2026-09-15 | [[2026-09-15-phase2-cleanup\|Phase 2 cleanup — gaming, gamedev, thunderbird→ayugram, VLC, ranger→yazi, icon themes, terminal→alacritty+kitty]] | `phase` | ✅ завершено |
 
 ---
 

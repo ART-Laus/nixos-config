@@ -14,7 +14,8 @@ related:
   - "[[2026-09-15-phase2]]"
   - "[[2026-09-15-architecture]]"
 phase: 2
-status: "🚧 в работе"
+status: "✅ завершено"
+commit: "e992101"
 ---
 
 # 2026-09-15 — Phase 2 cleanup: gaming, gamedev, thunderbird→ayugram, VLC, ranger→yazi, icon themes
@@ -49,12 +50,23 @@ status: "🚧 в работе"
 ### Icon themes — cleanup
 - **`system/packages.nix`** — удалены `material-icons`, `gruvbox-plus-icons`, `libsForQt5.breeze-icons` (дубли `kdePackages.breeze-icons`). Оставлены: `adwaita-icon-theme` (fallback), `papirus-icon-theme` (основной, Papirus-Dark в GTK), `kdePackages.breeze-icons` (Qt/KDE-приложения).
 
+### Terminal — WezTerm → Alacritty + Kitty
+- **`home/features/cli/terminal/wezterm.nix`** — удалён полностью (148 строк).
+- **`home/features/cli/terminal/alacritty.nix`** — убран `shell.program = "wsl.exe"` (NixOS использует zsh). Сохранена неоновая тема.
+- **`home/features/cli/terminal/kitty.nix`** — создан. Та же цветовая схема (Artlaus Neon) через `extraConfig`. Запасной терминал.
+- **`home/features/cli/default.nix`** — `./terminal/wezterm.nix` → `./terminal/kitty.nix`.
+- **`home/default.nix`** — `TERMINAL = "wezterm"` → `TERMINAL = "alacritty"`.
+- **`home/features/desktop/compositor/hyprland.nix`** — `bind = $mainMod, Q, exec, wezterm` → `alacritty`.
+- **`home/features/desktop/launcher/rofi.nix`** — `terminal = "${pkgs.wezterm}/bin/wezterm"` → `${pkgs.alacritty}/bin/alacritty`.
+- **`home/features/cli/shell/zsh.nix`** — `TERMINAL = "alacritty"` уже был корректен.
+
 ## Открытые вопросы
 
 - [ ] GUI файловый менеджер: `xfce.thunar` уже установлен и настроен в `system/services.nix`. Нужен ли он или хочет заменить?
 - [ ] Icon themes: `adwaita-icon-theme` оставлен как fallback. Нужен ли?
 - [ ] `nixos-rebuild build --flake .#msi-laptop` — проверить сборку на реальном железе
-- [ ] `git push origin main` — загрузить на remote
+- [ ] GUI файловый менеджер: `xfce.thunar` уже установлен и настроен в `system/services.nix`. Нужен ли он или хочет заменить?
+- [ ] Icon themes: `adwaita-icon-theme` оставлен как fallback. Нужен ли?
 
 ## Решения
 
