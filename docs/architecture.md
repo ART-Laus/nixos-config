@@ -274,7 +274,7 @@ home/desktop.nix  →  home/features/desktop/
 | **Desktop** | `features.desktop` | Theme, HW | Оба | `home/desktop.nix` | Hyprland + waybar + rofi + dunst + swaylock/idle |
 | **Desktop: GTK/Qt** | `features.desktop` | Theme | Home | `home/gtk-qt.nix` | qt6ct+kvantum, единый стиль |
 | **Dev** | `features.development` | CLI | Home | `home/development.nix` | direnv + devShells |
-| **Gaming** | `features.gaming` | HW, Audio | Оба | `system/gaming.nix` + `home/gaming.nix` | steam/wine + mangohud |
+| **Gaming** | `features.gaming` | HW, Audio | Оба | `system/gaming.nix` + `home/features/gaming/` | Steam only (mangohud/protonup удалены) |
 | **Media** | `features.multimedia` | Audio | Home | `home/media.nix` | mpv, obs |
 | **Browsers** | всегда | — | Home | `home/browsers.nix` | firefox, chromium |
 

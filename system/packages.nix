@@ -41,12 +41,10 @@
     pamixer
 
     # ── Icons (системные, дополняют home/gtk-qt.nix) ──
+    # Papirus-Dark — основной (используется в gtk.iconTheme)
     adwaita-icon-theme
     papirus-icon-theme
-    libsForQt5.breeze-icons
     kdePackages.breeze-icons
-    material-icons
-    gruvbox-plus-icons
 
     # ── File support libs (нужны системе для тумбнейлов) ──
     kdePackages.kimageformats
@@ -68,7 +66,7 @@
     poppler
     freetype
     imath
-openexr
+    openexr
     fontconfig
     libsecret
     zlib

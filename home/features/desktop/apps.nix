@@ -3,7 +3,7 @@
 {
   home.packages = with pkgs; [
     # ── Файловые менеджеры и тумбнейлы (из legacy) ──
-    ranger
+    # ranger удалён — заменён на yazi (home/features/cli/yazi.nix)
     xfce.thunar
     xfce.catfish
     xfce.exo

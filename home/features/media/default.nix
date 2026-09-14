@@ -3,7 +3,7 @@
 {
   home.packages = with pkgs; [
     # ── Видео / аудио / просмотр (было в system/packages.legacy) ──
-    mpv
+    vlc
     imv
     qview
     feh

@@ -1,14 +1,13 @@
-# home/features/desktop/browsers.nix — браузеры + соцсети + почта
+# home/features/desktop/browsers.nix — браузеры + соцсети
 { config, pkgs, ... }:
 {
   home.packages = with pkgs; [
     firefox
     chromium
     librewolf
-    thunderbird
 
-    # Соцсети (было pkgs2.discord / telegram-desktop)
+    # Соцсети
     discord
-    telegram-desktop
+    ayugram-desktop
   ];
 }

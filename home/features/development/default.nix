@@ -1,8 +1,8 @@
-# home/features/development/default.nix — языки, LSP, gamedev, API/DB
+# home/features/development/default.nix — языки, LSP, API/DB
 { config, pkgs, lib, ... }:
 {
   home.packages = with pkgs; [
-    # ── Языки и LSP (из artlaus/features/cli/default.nix) ──
+    # ── Языки и LSP ──
     # Python
     python3Full
     pyright
@@ -28,18 +28,13 @@
     shellcheck
     shfmt
 
-    # ── Gamedev (из system/packages.legacy) ──
-    godot
-    gdtoolkit_4
-    ldtk
-
     # ── API / DB ──
     dbeaver-bin
     pgadmin4
     postman
     insomnia
 
-    # ── Diagram / docs (dev-related) ──
+    # ── Диаграммы / документы / заметки ──
     drawio
     xournalpp
     hugo

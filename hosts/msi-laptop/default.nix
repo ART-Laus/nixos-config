@@ -11,7 +11,6 @@
     ../../system/boot-hardware.nix
     ../../system/networking-security.nix
     ../../system/services.nix
-    ../../system/gaming.nix
     ../../system/virtualization.nix
     ../../system/packages.nix
   ];
