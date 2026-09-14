@@ -45,6 +45,7 @@ SORT date DESC
 | 2026-09-15 | [[2026-09-15-packages\|Миграция packages.legacy → features]] | `packages-migration` | ✅ завершено |
 | 2026-09-15 | [[2026-09-15-phase2\|Phase 2 — удаление artlaus/, nix flake check, фикс devShell]] | `phase` | ✅ evaluation OK |
 | 2026-09-15 | [[2026-09-15-phase2-cleanup\|Phase 2 cleanup — gaming, gamedev, thunderbird→ayugram, VLC, ranger→yazi, icon themes, terminal→alacritty+kitty]] | `phase` | ✅ завершено |
+| 2026-09-15 | [[2026-09-15-phase3\|Phase 3 — theme/ прошивка цветов через все компоненты]] | `phase` | ✅ evaluation OK |
 
 ---
 
@@ -124,9 +125,9 @@ related:
 
 ## Статистика
 
-- Всего записей: `8`
-- Последняя: [[2026-09-15-phase2-cleanup]] (2026-09-15)
-- Следующая фаза: `Phase 3 — theme/ прошивка цветов через все компоненты` (см. [[architecture#10. Следующие шаги (обновлено)|architecture]])
+- Всего записей: `9`
+- Последняя: [[2026-09-15-phase3]] (2026-09-15)
+- Следующая фаза: `Phase 4 — ...` (см. [[architecture#10. Следующие шаги (обновлено)|architecture]])
 
 ---
 
