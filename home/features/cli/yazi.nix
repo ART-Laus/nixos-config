@@ -1,4 +1,8 @@
-{ config, pkgs, ... }:
+{ config, pkgs, lib, theme, ... }:
+
+let
+  c = theme.colors;
+in
 
 {
   programs.yazi = {
@@ -281,90 +285,90 @@
     # Конфигурация Yazi из theme.toml
     theme = {
       ui = {
-        bg = "none"; # Transparent background
-        fg = "#66FF99"; # Main text
+        bg = "none";
+        fg = c.primary;
       };
 
       status = {
-        bg = "#111111";
-        fg = "#66FF99";
+        bg = c.bg;
+        fg = c.primary;
       };
 
       selected = {
-        fg = "#000000";
-        bg = "#009999"; # Turquoise
+        fg = c.bg;
+        bg = c.accentBlue;
       };
 
       hovered = {
-        fg = "#000000";
-        bg = "#FFD966"; # Yellow
+        fg = c.bg;
+        bg = c.warning;
       };
 
       current = {
-        bg = "#0D3322"; # Darkgray
+        bg = c.bgAlt;
       };
 
       highlight = {
-        fg = "#000000";
-        bg = "#FFD966"; # Yellow
+        fg = c.bg;
+        bg = c.warning;
       };
 
       error = {
-        fg = "#FF3355"; # Red
+        fg = c.error;
       };
 
       warn = {
-        fg = "#FFD966"; # Yellow
+        fg = c.warning;
       };
 
       info = {
-        fg = "#C4A0FF"; # Lavender
+        fg = c.secondary;
       };
 
       hint = {
-        fg = "#88ddff"; # Cyan
+        fg = c.accentBlue;
       };
 
       comment = {
-        fg = "#3D6655"; # Gray
+        fg = c.comment;
       };
 
       keyword = {
-        fg = "#C4A0FF"; # Lavender
+        fg = c.secondary;
       };
 
       function = {
-        fg = "#88ddff"; # Cyan
+        fg = c.accentBlue;
       };
 
       string = {
-        fg = "#FF66CC"; # Pink
+        fg = c.error;
       };
 
       number = {
-        fg = "#3399FF"; # Blue
+        fg = c.accentBlue;
       };
 
       boolean = {
-        fg = "#3399FF"; # Blue
+        fg = c.accentBlue;
       };
 
       variable = {
-        fg = "#66FF99"; # Main text
+        fg = c.primary;
       };
 
       type = {
-        fg = "#FFD966"; # Yellow
+        fg = c.warning;
       };
 
       operator = {
-        fg = "#88ddff"; # Cyan
+        fg = c.accentBlue;
       };
 
       diff = {
-        plus = "#00FF88";
-        minus = "#FF3355";
-        delta = "#88ddff";
+        plus = c.success;
+        minus = c.error;
+        delta = c.accentBlue;
       };
     };
   };

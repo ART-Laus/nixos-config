@@ -1,38 +1,43 @@
+{ theme, ... }:
+
+let
+  c = theme.colors;
+in
 {
   home.file.".config/nvim/lua/plugins/lualine.lua".text = ''
     return {
       "nvim-lualine/lualine.nvim",
       dependencies = { "nvim-tree/nvim-web-devicons" },
       config = function()
-        local black = "#000000"
+        local black = "${c.bg}"
 
         require("lualine").setup({
           options = {
             theme = {
               normal = {
-                a = { fg = "#66FF99", bg = black, gui = "bold" },
-                b = { fg = "#C0FFC0", bg = black },
-                c = { fg = "#C0FFC0", bg = black },
+                a = { fg = "${c.primary}", bg = black, gui = "bold" },
+                b = { fg = "${c.fg}", bg = black },
+                c = { fg = "${c.fg}", bg = black },
               },
               insert = {
-                a = { fg = "#FF66CC", bg = black, gui = "bold" },
-                b = { fg = "#FFBBDD", bg = black },
-                c = { fg = "#FFBBDD", bg = black },
+                a = { fg = "${c.error}", bg = black, gui = "bold" },
+                b = { fg = "${c.secondary}", bg = black },
+                c = { fg = "${c.secondary}", bg = black },
               },
               visual = {
-                a = { fg = "#88DDFF", bg = black, gui = "bold" },
-                b = { fg = "#B0E8FF", bg = black },
-                c = { fg = "#B0E8FF", bg = black },
+                a = { fg = "${c.accentBlue}", bg = black, gui = "bold" },
+                b = { fg = "${c.accentBlue}", bg = black },
+                c = { fg = "${c.accentBlue}", bg = black },
               },
               command = {
-                a = { fg = "#C4A0FF", bg = black, gui = "bold" },
-                b = { fg = "#D4B8FF", bg = black },
-                c = { fg = "#D4B8FF", bg = black },
+                a = { fg = "${c.secondary}", bg = black, gui = "bold" },
+                b = { fg = "${c.secondary}", bg = black },
+                c = { fg = "${c.secondary}", bg = black },
               },
               inactive = {
-                a = { fg = "#666666", bg = black },
-                b = { fg = "#666666", bg = black },
-                c = { fg = "#666666", bg = black },
+                a = { fg = "${c.muted}", bg = black },
+                b = { fg = "${c.muted}", bg = black },
+                c = { fg = "${c.muted}", bg = black },
               },
             },
             section_separators = { left = "", right = "" },
@@ -55,7 +60,6 @@
         vim.api.nvim_set_hl(0, "lualine_c_separator", { fg = black, bg = black })
         vim.api.nvim_set_hl(0, "lualine_x_separator", { fg = black, bg = black })
         vim.api.nvim_set_hl(0, "lualine_y_separator", { fg = black, bg = black })
-        vim.api.nvim_set_hl(0, "lualine_z_separator", { fg = black, bg = black })
       end
     }
   '';

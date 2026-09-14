@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, theme, ... }:
 
 {
   # Add the now.sh script package to home-manager's packages
@@ -8,7 +8,7 @@
 
   programs.waybar = {
     enable = true;
-    style = (import ./style.nix);
+    style = (import ./style.nix { inherit theme; });
     settings = {
       mainBar = {
         # Using the DP-1 config as a base. User may need to change output name.

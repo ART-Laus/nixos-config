@@ -1,4 +1,8 @@
-{ config, pkgs, ... }:
+{ config, pkgs, lib, theme, ... }:
+
+let
+  c = theme.colors;
+in
 
 {
   programs.kitty = {
@@ -15,33 +19,32 @@
     };
 
     extraConfig = ''
-      # Colors — Artlaus Neon (Green #66FF99 + Lavender #C4A0FF + AMOLED #001a0d)
-      background #001a0d
-      foreground #C0FFC0
+      background ${c.bg}
+      foreground ${c.fg}
 
-      cursor #66FF99
-      cursor_text #0A0A0F
+      cursor ${c.primary}
+      cursor_text ${c.bg}
 
-      selection_background #66FF99
-      selection_foreground #0A0A0F
+      selection_background ${c.primary}
+      selection_foreground ${c.bg}
 
-      black #1E1E2E
-      red #FF007C
-      green #00FF9F
-      yellow #FFD500
-      blue #00BFFF
-      magenta #B400FF
-      cyan #00FFFF
-      white #C0C0C0
+      black ${c.bgAlt}
+      red ${c.error}
+      green ${c.success}
+      yellow ${c.warning}
+      blue ${c.accentBlue}
+      magenta ${c.secondary}
+      cyan ${c.accentBlue}
+      white ${c.fg}
 
-      bright_black #2E2E3E
-      bright_red #FF3399
-      bright_green #33FFB2
-      bright_yellow #FFE066
-      bright_blue #33CFFF
-      bright_magenta #CC66FF
-      bright_cyan #66FFFF
-      bright_white #FFFFFF
+      bright_black ${c.bgAlt}
+      bright_red ${c.error}
+      bright_green ${c.success}
+      bright_yellow ${c.warning}
+      bright_blue ${c.accentBlue}
+      bright_magenta ${c.secondary}
+      bright_cyan ${c.accentBlue}
+      bright_white ${c.fg}
     '';
   };
 }

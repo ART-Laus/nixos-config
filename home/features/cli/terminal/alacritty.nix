@@ -1,10 +1,13 @@
-{ config, pkgs, ... }:
+{ config, pkgs, lib, theme, ... }:
+
+let
+  c = theme.colors;
+in
 
 {
   programs.alacritty = {
     enable = true;
 
-    # Конфигурация Alacritty
     settings = {
       window = {
         decorations = "none";
@@ -24,40 +27,40 @@
 
       colors = {
         primary = {
-          background = "#001a0d";
-          foreground = "#C0FFC0";
+          background = c.bg;
+          foreground = c.fg;
         };
 
         cursor = {
-          text = "#0A0A0F";
-          cursor = "#66FF99";
+          text = c.bg;
+          cursor = c.primary;
         };
 
         selection = {
-          text = "#0A0A0F";
-          background = "#66FF99";
+          text = c.bg;
+          background = c.primary;
         };
 
         normal = {
-          black =   "#1E1E2E";
-          red =     "#FF007C";
-          green =   "#00FF9F";
-          yellow =  "#FFD500";
-          blue =    "#00BFFF";
-          magenta = "#B400FF";
-          cyan =    "#00FFFF";
-          white =   "#C0C0C0";
+          black   = c.bgAlt;
+          red     = c.error;
+          green   = c.success;
+          yellow  = c.warning;
+          blue    = c.accentBlue;
+          magenta = c.secondary;
+          cyan    = c.accentBlue;
+          white   = c.fg;
         };
 
         bright = {
-          black =   "#2E2E3E";
-          red =     "#FF3399";
-          green =   "#33FFB2";
-          yellow =  "#FFE066";
-          blue =    "#33CFFF";
-          magenta = "#CC66FF";
-          cyan =    "#66FFFF";
-          white =   "#FFFFFF";
+          black   = c.bgAlt;
+          red     = c.error;
+          green   = c.success;
+          yellow  = c.warning;
+          blue    = c.accentBlue;
+          magenta = c.secondary;
+          cyan    = c.accentBlue;
+          white   = c.fg;
         };
       };
     };

@@ -1,3 +1,8 @@
+{ theme, ... }:
+
+let
+  c = theme.colors;
+in
 ''
 * {
   border: none;
@@ -9,9 +14,9 @@
 }
 
 window#waybar {
-  background: #001a0d;
-  color: #C0FFC0;
-  border-bottom: 0px solid rgba(180, 0, 255, 0.3);
+  background: ${c.bg};
+  color: ${c.fg};
+  border-bottom: 0px solid rgba(196, 160, 255, 0.3);
   border-radius: 0;
   padding: 0;
   margin: 0;
@@ -26,7 +31,7 @@ window#waybar {
 #workspaces button {
   padding: 0 16px;
   margin: 0;
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(192, 255, 192, 0.7);
   background: transparent;
   border-radius: 0;
   border: none;
@@ -35,30 +40,28 @@ window#waybar {
 }
 
 #workspaces button:hover {
-  background: rgba(180, 0, 255, 0.3);
-  color: rgba(255, 255, 255, 0.7);
+  background: rgba(196, 160, 255, 0.3);
+  color: rgba(192, 255, 192, 0.7);
 }
 
-/* USER REQUEST: active workspace underlined with lavender and slightly darkened */
 #workspaces button.active {
-  background: rgba(192, 255, 192, 0.2); /* Slightly darkened/transparent foreground */
-  color: #C0FFC0; /* Use main foreground color */
-  box-shadow: inset 0 -3px 0 #CC66FF; /* Lavender underline */
+  background: rgba(192, 255, 192, 0.2);
+  color: ${c.fg};
+  box-shadow: inset 0 -3px 0 ${c.secondary};
 }
 
-/* USER REQUEST: urgent workspace flashes with accent green */
 #workspaces button.urgent {
-  background: #33FFB2;
-  color: #001a0d;
+  background: ${c.success};
+  color: ${c.bg};
   animation: pulse 1.5s infinite;
 }
 
 #tray {
-  background: rgba(30, 30, 46, 0.5); /* color0 */
+  background: ${c.bgAltTransparent};
   margin: 4px 3px;
   padding: 0 12px;
   border-radius: 0;
-  border: 1px solid rgba(180, 0, 255, 0.1); /* color5 */
+  border: 1px solid rgba(196, 160, 255, 0.1);
 }
 
 #cpu,
@@ -71,78 +74,78 @@ window#waybar {
 #custom-notification {
   padding: 0 12px;
   margin: 4px 3px;
-  background: rgba(30, 30, 46, 0.7); /* color0 */
-  color: rgba(180, 0, 255, 0.3); /* color5 */
+  background: ${c.bgAltTransparent};
+  color: rgba(196, 160, 255, 0.3);
   border-radius: 5px;
-  border: 1px solid rgba(180, 0, 255, 0.1); /* color5 */
+  border: 1px solid rgba(196, 160, 255, 0.1);
 }
 
 #clock {
-  background: rgba(0, 26, 13, 0.5); /* background */
-  color: #FFFFFF;
+  background: ${c.bgTransparent};
+  color: ${c.fg};
   font-weight: 800;
   margin-right: 8px;
   padding: 0 16px;
 }
 
 #pulseaudio {
-  background: rgba(255, 213, 0, 0.6); /* color3 */
-  color: #001a0d;
+  background: rgba(255, 213, 0, 0.6);
+  color: ${c.bg};
 }
 
 #network {
-  background: rgba(0, 191, 255, 0.6); /* color4 */
-  color: #001a0d;
+  background: rgba(88, 214, 255, 0.6);
+  color: ${c.bg};
 }
 
 #battery {
-  background: rgba(0, 255, 255, 0.6); /* color6 */
-  color: #001a0d;
+  background: rgba(102, 255, 153, 0.6);
+  color: ${c.bg};
 }
 
 #cpu {
-  background: rgba(255, 0, 124, 0.6); /* color1 */
-  color: #001a0d;
+  background: rgba(255, 85, 102, 0.6);
+  color: ${c.bg};
   margin-left: 8px;
 }
 
 #memory {
-  background: rgba(0, 255, 159, 0.6); /* color2 */
-  color: #001a0d;
+  background: rgba(102, 255, 153, 0.6);
+  color: ${c.bg};
 }
 
 #temperature {
-  background: rgba(255, 213, 0, 0.6); /* color3 */
-  color: #001a0d;
+  background: rgba(255, 213, 0, 0.6);
+  color: ${c.bg};
   margin-right: 4px;
 }
 
 #battery.charging {
-  background: rgba(0, 255, 159, 0.7); /* Mapped to a green */
-  color: #001a0d;
+  background: rgba(102, 255, 153, 0.7);
+  color: ${c.bg};
 }
 
 #battery.warning:not(.charging) {
-  background: rgba(255, 213, 0, 0.7); /* Mapped to yellow */
-  color: #001a0d;
+  background: rgba(255, 213, 0, 0.7);
+  color: ${c.bg};
 }
 
 #battery.critical:not(.charging) {
-  background: rgba(255, 0, 124, 0.8); /* Mapped to red */
-  color: #001a0d;
+  background: rgba(255, 85, 102, 0.8);
+  color: ${c.bg};
   animation: blink 1s linear infinite;
 }
 
 tooltip {
-  background: rgba(0, 26, 13, 0.95);
-  color: #C0FFC0;
-  border: 1px solid rgba(180, 0, 255, 0.3);
+  background: ${c.bgTransparent};
+  color: ${c.fg};
+  border: 1px solid rgba(196, 160, 255, 0.3);
   border-radius: 5px;
   padding: 12px;
 }
 
 tooltip label {
-  color: #C0FFC0;
+  color: ${c.fg};
 }
 
 @keyframes pulse {
