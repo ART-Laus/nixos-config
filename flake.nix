@@ -75,9 +75,8 @@
       # Dev shell
       devShells.${system}.default = pkgs.mkShell {
         packages = with pkgs; [
-          nixpkgs-fmt
-          nil
-          home-manager
+          nix
+          git
         ];
       };
     };

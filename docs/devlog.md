@@ -43,6 +43,7 @@ SORT date DESC
 | 2026-09-15 | [[2026-09-15-decisions\|Решения: flat + greetd + Lazy + Obsidian]] | `decision` | ✅ утверждено |
 | 2026-09-15 | [[2026-09-15-phase1\|Phase 1 — полная иерархия features сразу]] | `phase` | ✅ evaluation OK |
 | 2026-09-15 | [[2026-09-15-packages\|Миграция packages.legacy → features]] | `packages-migration` | ✅ завершено |
+| 2026-09-15 | [[2026-09-15-phase2\|Phase 2 — удаление artlaus/, nix flake check, фикс devShell]] | `phase` | ✅ evaluation OK |
 
 ---
 
@@ -69,6 +70,7 @@ graph LR
   C -.-> D
   D --> P1[2026-09-15-phase1]
   P1 --> PK[2026-09-15-packages]
+  P1 --> P2[2026-09-15-phase2]
 ```
 
 ---
@@ -121,9 +123,9 @@ related:
 
 ## Статистика
 
-- Всего записей: `6`
-- Последняя: [[2026-09-15-packages]] (2026-09-15)
-- Следующая фаза: `Phase 2 — удаление artlaus/, nix flake check, сборка на железе` (см. [[architecture#10. Следующие шаги (обновлено)|architecture]])
+- Всего записей: `7`
+- Последняя: [[2026-09-15-phase2]] (2026-09-15)
+- Следующая фаза: `Phase 3 — theme/ прошивка цветов через все компоненты` (см. [[architecture#10. Следующие шаги (обновлено)|architecture]])
 
 ---
 
