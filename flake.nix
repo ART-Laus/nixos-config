@@ -1,78 +1,84 @@
 {
-  description = "Your NixOS configuration";
+  description = "Artlaus NixOS — модульный конструктор (hosts + features + theme)";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-23.11"; # Use a specific stable channel
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
+    nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
+
     home-manager = {
-      url = "github:nix-community/home-manager/release-23.11"; # Use a specific stable channel
+      url = "github:nix-community/home-manager/release-25.05";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
     hyprland = {
       url = "github:hyprwm/Hyprland";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    hypr-niri = {
-      url = "github:szomer/hypr-niri";
-      inputs.nixpkgs.follows = "nixpkgs";
-      inputs.hyprland.follows = "hyprland";
-    };
+  };
 
-      };
-  
-    outputs = { self, nixpkgs, home-manager, hyprland, hypr-niri, ... }:    let
-      # Define the system architecture
-      system = "x86_64-linux"; # Assuming x86_64-linux for your laptop
-
-      # Your username
+  outputs = { self, nixpkgs, nixpkgs-unstable, home-manager, hyprland, ... }@inputs:
+    let
+      system = "x86_64-linux";
       username = "artlaus";
 
-      # Common packages for all configurations
+      # Theme — единственный источник (утверждено: theme/ в корне)
+      theme = import ./theme;
+
+      # pkgs с allowUnfree + overlays (если нужны)
       pkgs = import nixpkgs {
         inherit system;
         config.allowUnfree = true;
       };
+      pkgs-unstable = import nixpkgs-unstable {
+        inherit system;
+        config.allowUnfree = true;
+      };
 
-    in {
-      # NixOS configurations for your hosts
+      # Совместимость: pkgs2/spkgs → pkgs (старые модули используют pkgs2)
+      # После миграции artlaus/ → home/features/ заменить pkgs2 → pkgs
+      specialArgs = {
+        inherit inputs theme username;
+        pkgs2 = pkgs;
+        spkgs = pkgs;
+        pkgs-unstable = pkgs-unstable;
+      };
+    in
+    {
       nixosConfigurations = {
-        # Define your laptop's configuration
-        # Replace "msi-laptop" with the actual hostname of your laptop
-        # You can find your hostname by running `hostname` in your terminal
         "msi-laptop" = nixpkgs.lib.nixosSystem {
           inherit system;
+          specialArgs = specialArgs;
           modules = [
-            # Import your common system modules
-            ./modules/common
-                          # Import your host-specific configuration
-                          ./system/configuration.nix
-                          # Enable home-manager for your user on this system
-                          home-manager.nixosModules.home-manager {
-                            home-manager.useGlobalPkgs = true;
-                            home-manager.useUserPackages = true;
-                            home-manager.users.${username} = import ./artlaus; # Import your user's home-manager config
-                          }
+            ./hosts/msi-laptop/default.nix
+
+            # Home Manager как NixOS модуль (новый путь: home/)
+            home-manager.nixosModules.home-manager
+            {
+              home-manager.useGlobalPkgs = true;
+              home-manager.useUserPackages = true;
+              home-manager.extraSpecialArgs = specialArgs;
+              home-manager.users.${username} = import ./home;
+            }
           ];
         };
+
+
       };
 
-      # Home Manager configurations for your users
-      homeConfigurations = {
-        "${username}" = home-manager.lib.homeManagerConfiguration {
-          inherit pkgs;
-          modules = [
-            ./artlaus # Import your user's home-manager config
-          ];
-        };
+      # Standalone Home Manager (для `home-manager switch`)
+      homeConfigurations.${username} = home-manager.lib.homeManagerConfiguration {
+        inherit pkgs;
+        extraSpecialArgs = specialArgs;
+        modules = [ ./home ];
       };
 
-      # Development environment for working on this flake
-      devShells = {
-        default = pkgs.mkShell {
-          packages = with pkgs; [
-            nixpkgs-fmt # Nix formatter
-            home-manager # home-manager CLI tool
-          ];
-        };
+      # Dev shell
+      devShells.${system}.default = pkgs.mkShell {
+        packages = with pkgs; [
+          nixpkgs-fmt
+          nil
+          home-manager
+        ];
       };
     };
 }

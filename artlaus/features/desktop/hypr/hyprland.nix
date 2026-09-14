@@ -1,6 +1,6 @@
 # artlaus/features/desktop/hypr/hyprland.nix
 # Configuration for the Hyprland window manager with niri-like layout.
-{ pkgs, ... }:
+{ pkgs, inputs, ... }:
 
 # Helper function to convert hex to rgba for Hyprland
 let
@@ -11,11 +11,8 @@ in
   home-manager.users.artlaus = { ... }: {
     wayland.windowManager.hyprland = {
       enable = true;
-      # Use the Hyprland package from the flake input for compatibility with the plugin
-      package = (pkgs.hyprland.override {
-        # This allows the plugin to be loaded
-        hyprland-plugins = [ inputs.hypr-niri ];
-      });
+      # Hyprland package from nixpkgs (flake input available as inputs.hyprland if needed)
+      # package = inputs.hyprland.packages.${pkgs.system}.hyprland;
 
       # Main configuration
       extraConfig = ''

@@ -31,7 +31,7 @@ pkgs.stdenv.mkDerivation {
     wrapProgram $out/bin/rofi-scripts --prefix PATH : ${pkgs.lib.makeBinPath [ pkgs.rofi ]}
     
     # The image script needs rofi, imagemagick, libnotify, and fd.
-    wrapProgram $out/bin/rofi-image --prefix PATH : ${pkgs.lib.makeBinPath [ pkgs.rofi pkgs.imagemagick-full pkgs.libnotify pkgs.fd ]}
+    wrapProgram $out/bin/rofi-image --prefix PATH : ${pkgs.lib.makeBinPath [ pkgs.rofi pkgs.imagemagick pkgs.libnotify pkgs.fd ]}
     
     # The video script needs rofi, ffmpeg, libnotify, and fd.
     wrapProgram $out/bin/rofi-video --prefix PATH : ${pkgs.lib.makeBinPath [ pkgs.rofi pkgs.ffmpeg pkgs.libnotify pkgs.fd ]}
