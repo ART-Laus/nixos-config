@@ -42,7 +42,6 @@
 
     # ── Icons (системные, дополняют home/gtk-qt.nix) ──
     # Papirus-Dark — основной (используется в gtk.iconTheme)
-    adwaita-icon-theme
     papirus-icon-theme
     kdePackages.breeze-icons
 
