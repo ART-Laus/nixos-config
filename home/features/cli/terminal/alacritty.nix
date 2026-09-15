@@ -42,24 +42,24 @@ in
         };
 
         normal = {
-          black   = c.bgAlt;
+          black   = c.darkGray;
           red     = c.error;
           green   = c.success;
           yellow  = c.warning;
-          blue    = c.accentBlue;
-          magenta = c.secondary;
-          cyan    = c.accentBlue;
+          blue    = c.blue;
+          magenta = c.pink;
+          cyan    = c.cyan;
           white   = c.fg;
         };
 
         bright = {
-          black   = c.bgAlt;
+          black   = c.darkGrayBright;
           red     = c.error;
           green   = c.success;
           yellow  = c.warning;
-          blue    = c.accentBlue;
-          magenta = c.secondary;
-          cyan    = c.accentBlue;
+          blue    = c.blue;
+          magenta = c.pink;
+          cyan    = c.cyan;
           white   = c.fg;
         };
       };

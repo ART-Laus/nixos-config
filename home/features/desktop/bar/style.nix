@@ -99,7 +99,7 @@ window#waybar {
 }
 
 #battery {
-  background: rgba(102, 255, 153, 0.6);
+  background: ${c.cyan};
   color: ${c.bg};
 }
 

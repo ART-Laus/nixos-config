@@ -14,30 +14,30 @@ in
         require("lualine").setup({
           options = {
             theme = {
-              normal = {
+               normal = {
                 a = { fg = "${c.primary}", bg = black, gui = "bold" },
                 b = { fg = "${c.fg}", bg = black },
                 c = { fg = "${c.fg}", bg = black },
               },
               insert = {
-                a = { fg = "${c.error}", bg = black, gui = "bold" },
-                b = { fg = "${c.secondary}", bg = black },
-                c = { fg = "${c.secondary}", bg = black },
+                a = { fg = "${c.pink}", bg = black, gui = "bold" },
+                b = { fg = "${c.lightPink}", bg = black },
+                c = { fg = "${c.lightPink}", bg = black },
               },
               visual = {
-                a = { fg = "${c.accentBlue}", bg = black, gui = "bold" },
-                b = { fg = "${c.accentBlue}", bg = black },
-                c = { fg = "${c.accentBlue}", bg = black },
+                a = { fg = "${c.cyan}", bg = black, gui = "bold" },
+                b = { fg = "${c.lightBlue}", bg = black },
+                c = { fg = "${c.lightBlue}", bg = black },
               },
               command = {
                 a = { fg = "${c.secondary}", bg = black, gui = "bold" },
-                b = { fg = "${c.secondary}", bg = black },
-                c = { fg = "${c.secondary}", bg = black },
+                b = { fg = "${c.lightLavender}", bg = black },
+                c = { fg = "${c.lightLavender}", bg = black },
               },
               inactive = {
-                a = { fg = "${c.muted}", bg = black },
-                b = { fg = "${c.muted}", bg = black },
-                c = { fg = "${c.muted}", bg = black },
+                a = { fg = "${c.gray}", bg = black },
+                b = { fg = "${c.gray}", bg = black },
+                c = { fg = "${c.gray}", bg = black },
               },
             },
             section_separators = { left = "", right = "" },

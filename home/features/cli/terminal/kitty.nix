@@ -28,22 +28,22 @@ in
       selection_background ${c.primary}
       selection_foreground ${c.bg}
 
-      black ${c.bgAlt}
+      black ${c.darkGray}
       red ${c.error}
       green ${c.success}
       yellow ${c.warning}
-      blue ${c.accentBlue}
-      magenta ${c.secondary}
-      cyan ${c.accentBlue}
+      blue ${c.blue}
+      magenta ${c.pink}
+      cyan ${c.cyan}
       white ${c.fg}
 
-      bright_black ${c.bgAlt}
+      bright_black ${c.darkGrayBright}
       bright_red ${c.error}
       bright_green ${c.success}
       bright_yellow ${c.warning}
-      bright_blue ${c.accentBlue}
-      bright_magenta ${c.secondary}
-      bright_cyan ${c.accentBlue}
+      bright_blue ${c.blue}
+      bright_magenta ${c.pink}
+      bright_cyan ${c.cyan}
       bright_white ${c.fg}
     '';
   };

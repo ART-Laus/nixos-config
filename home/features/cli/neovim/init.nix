@@ -24,11 +24,11 @@ in
       bg        = "NONE",
       fg        = "${c.primary}",
       lavender  = "${c.secondary}",
-      cyan      = "${c.accentBlue}",
+      cyan      = "${c.cyan}",
       yellow    = "${c.warning}",
-      blue      = "${c.accentBlue}",
-      pink      = "${c.error}",
-      turquoise = "${c.accentBlue}",
+      blue      = "${c.blue}",
+      pink      = "${c.pink}",
+      turquoise = "${c.turquoise}",
       red       = "${c.error}",
       gray      = "${c.comment}",
       darkgray  = "${c.bgAlt}",
@@ -42,12 +42,12 @@ in
 
     hi("Normal",        { fg = colors.fg, bg = colors.bg })
     hi("Comment",       { fg = colors.gray, italic = true })
-    hi("LineNr",        { fg = "${c.primary}" })
+    hi("LineNr",        { fg = "${c.lineNr}" })
     hi("CursorLineNr",  { fg = colors.yellow, bold = true })
     hi("CursorLine",    { bg = colors.darkgray })
-    hi("Visual",        { bg = colors.turquoise, fg = "#000000", bold = true })
-    hi("Search",        { fg = "#000000", bg = colors.yellow, bold = true })
-    hi("IncSearch",     { fg = "#000000", bg = colors.pink, bold = true })
+    hi("Visual",        { bg = colors.turquoise, fg = "${c.nearBlack}", bold = true })
+    hi("Search",        { fg = "${c.nearBlack}", bg = colors.yellow, bold = true })
+    hi("IncSearch",     { fg = "${c.nearBlack}", bg = colors.pink, bold = true })
     hi("StatusLine",    { fg = colors.fg, bg = "${c.bg}" })
     hi("StatusLineNC",  { fg = colors.gray, bg = "${c.bg}" })
 
@@ -65,7 +65,7 @@ in
     hi("Structure",     { fg = colors.yellow })
     hi("Special",       { fg = colors.cyan })
     hi("PreProc",       { fg = colors.lavender })
-    hi("Todo",          { fg = "#000000", bg = colors.yellow, bold = true })
+    hi("Todo",          { fg = "${c.nearBlack}", bg = colors.yellow, bold = true })
 
     hi("@variable",     { fg = colors.fg })
     hi("@variable.builtin", { fg = colors.cyan, italic = true })
@@ -96,7 +96,7 @@ in
     hi("DiagnosticUnderlineInfo",  { undercurl = true, sp = colors.lavender })
     hi("DiagnosticUnderlineHint",  { undercurl = true, sp = colors.cyan })
 
-    hi("DiffAdd",       { fg = "${c.success}" })
+    hi("DiffAdd",       { fg = "${c.diffAdd}" })
     hi("DiffChange",    { fg = colors.cyan })
     hi("DiffDelete",    { fg = colors.red })
     hi("DiffText",      { fg = colors.yellow })
