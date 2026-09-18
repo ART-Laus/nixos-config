@@ -21,5 +21,5 @@
   # Feature flags — единое место правды (см. docs/architecture.md §3)
   # Раскомментируйте чтобы выключить кубик:
   # features.gaming.enable = false;
-  # features.virtualization.docker.enable = false;
+  features.virtualization.enable = true;
 }

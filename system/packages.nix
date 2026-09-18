@@ -31,6 +31,13 @@
     wget
     htop
 
+    # ── VPN & Privacy ──
+    tor
+    openvpn
+    tailscale
+    docker
+    docker-compose
+
     # ── Hardware utils ──
     pciutils
     usbutils

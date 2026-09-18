@@ -1,4 +1,4 @@
-# system/services.nix — display manager (greetd), portals, ollama
+# system/services.nix — display manager (greetd), portals, ollama, VPN, Tor
 { config, pkgs, lib, theme, ... }:
 {
   # Display Manager — greetd + tuigreet (утверждено: greetd, Wayland-native)
@@ -55,5 +55,22 @@
     package = pkgs.appimage-run.override {
       extraPkgs = pkgs: with pkgs; [ libpng libpng12 libepoxy pcre2 double-conversion ];
     };
+  };
+
+  # Tor — анонимный прокси
+  services.tor = {
+    enable = true;
+    client.enable = true;
+    openFirewall = false;
+  };
+
+  # OpenVPN — пакет для ручной конфигурации
+  # Конфиги: /etc/openvpn/client/<name>.conf
+
+  # Tailscale — Mesh VPN
+  services.tailscale = {
+    enable = true;
+    useRoutingFeatures = "both";
+    openFirewall = false;
   };
 }
