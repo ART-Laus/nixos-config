@@ -1,3 +1,8 @@
+{ theme, ... }:
+
+let
+  c = theme.colors;
+in
 {
   home.file.".config/nvim/lua/plugins/noice.lua".text = ''
     return {
@@ -65,10 +70,10 @@
           vim.cmd([[messages clear]])
         end
         
-        vim.api.nvim_set_hl(0, "NoiceCmdlinePopup", { bg = "NONE", fg = "#66FF99" })
-        vim.api.nvim_set_hl(0, "NoiceCmdlinePopupBorder", { fg = "#58FFD6", bg = "NONE" })
-        vim.api.nvim_set_hl(0, "NoiceCmdlineIcon", { fg = "#58FFD6", bg = "NONE" })
-        vim.api.nvim_set_hl(0, "NoiceCmdlinePopupTitle", { fg = "#66FF99", bg = "NONE", bold = true })
+        vim.api.nvim_set_hl(0, "NoiceCmdlinePopup", { bg = "NONE", fg = c.primary })
+        vim.api.nvim_set_hl(0, "NoiceCmdlinePopupBorder", { fg = c.accentBlue, bg = "NONE" })
+        vim.api.nvim_set_hl(0, "NoiceCmdlineIcon", { fg = c.accentBlue, bg = "NONE" })
+        vim.api.nvim_set_hl(0, "NoiceCmdlinePopupTitle", { fg = c.primary, bg = "NONE", bold = true })
       end
     }
   '';

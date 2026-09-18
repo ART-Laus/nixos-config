@@ -57,20 +57,25 @@
     };
   };
 
-  # Tor — анонимный прокси
+  # Tor — анонимный прокси + hidden services
   services.tor = {
     enable = true;
     client.enable = true;
     openFirewall = false;
+    settings = {
+      HiddenServiceDir = "/var/lib/tor/hidden_service/";
+      HiddenServicePort = "80 127.0.0.1:8080";
+    };
   };
 
-  # OpenVPN — пакет для ручной конфигурации
-  # Конфиги: /etc/openvpn/client/<name>.conf
+  # OpenVPN — клиентские конфиги
+  environment.etc."openvpn/client/example.conf".source = ./openvpn/client/example.conf;
 
   # Tailscale — Mesh VPN
   services.tailscale = {
     enable = true;
     useRoutingFeatures = "both";
     openFirewall = false;
+    authKeyFile = if builtins.getEnv "TAILSCALE_AUTHKEY_FILE" == "" then null else builtins.toPath (builtins.getEnv "TAILSCALE_AUTHKEY_FILE");
   };
 }

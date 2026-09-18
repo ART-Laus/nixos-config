@@ -1,3 +1,8 @@
+{ theme, ... }:
+
+let
+  c = theme.colors;
+in
 {
   home.file.".config/nvim/lua/plugins/bufferline.lua".text = ''
     return {
@@ -34,10 +39,10 @@
                 bold = true,
                 italic = false,
             },
-            indicator_selected = { fg = "#00ff99", bg = "none" },
-            modified = { fg = "#EF5350" },
-            modified_selected = { fg = "#EF5350" },
-            modified_visible = { fg = "#EF5350" },
+            indicator_selected = { fg = c.primary, bg = "none" },
+            modified = { fg = c.error },
+            modified_selected = { fg = c.error },
+            modified_visible = { fg = c.error },
             separator = { fg = "none", bg = "none" },
             separator_selected = { fg = "none", bg = "none" },
           },

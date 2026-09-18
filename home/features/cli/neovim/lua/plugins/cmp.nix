@@ -1,3 +1,8 @@
+{ theme, ... }:
+
+let
+  c = theme.colors;
+in
 {
   home.file.".config/nvim/lua/plugins/cmp.lua".text = ''
     return {
@@ -118,7 +123,7 @@
           disable_suggestion_status = true,
         })
 
-        vim.api.nvim_set_hl(0, "CmpGhostText", { fg = "#F77248", italic = true })
+        vim.api.nvim_set_hl(0, "CmpGhostText", { fg = c.error, italic = true })
       end
     }
   '';
