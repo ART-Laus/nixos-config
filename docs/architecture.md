@@ -369,5 +369,6 @@ in {
 - [x] Phase 1: `hosts/msi-laptop/` + `system/nix.nix` + `theme/colors.nix` + `flake.nix` (specialArgs, 25.05)
 - [x] Phase 2: удаление `artlaus/`, `system/home.nix`, `system/configuration.nix`; фикс devShell; `nix flake check` OK
 - [x] Phase 3: `theme/` прошивка цветов через все компоненты (waybar CSS, hyprland rgba, rofi, dunst, swaylock, nvim theme.lua, alacritty, kitty, yazi)
+- [x] Добавлены Tor, OpenVPN, Tailscale, Docker | `phase` | ✅ evaluation OK |
 
 *Вопросы — в `docs/devlog.md` или PR к этому файлу.*

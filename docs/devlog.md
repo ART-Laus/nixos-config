@@ -46,6 +46,7 @@ SORT date DESC
 | 2026-09-15 | [[2026-09-15-phase2\|Phase 2 — удаление artlaus/, nix flake check, фикс devShell]] | `phase` | ✅ evaluation OK |
 | 2026-09-15 | [[2026-09-15-phase2-cleanup\|Phase 2 cleanup — gaming, gamedev, thunderbird→ayugram, VLC, ranger→yazi, icon themes, terminal→alacritty+kitty]] | `phase` | ✅ завершено |
 | 2026-09-15 | [[2026-09-15-phase3\|Phase 3 — theme/ прошивка цветов через все компоненты]] | `phase` | ✅ evaluation OK |
+| 2026-09-18 | [[2026-09-18-add-vpn\|Добавлены Tor, OpenVPN, Tailscale, Docker]] | `feature` | ✅ evaluation OK |
 
 ---
 
@@ -125,8 +126,8 @@ related:
 
 ## Статистика
 
-- Всего записей: `9`
-- Последняя: [[2026-09-15-phase3]] (2026-09-15)
+- Всего записей: `10`
+- Последняя: [[2026-09-18-add-vpn]] (2026-09-18)
 - Следующая фаза: `Phase 4 — ...` (см. [[architecture#10. Следующие шаги (обновлено)|architecture]])
 
 ---
