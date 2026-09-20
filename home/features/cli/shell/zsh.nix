@@ -3,23 +3,12 @@
 let
   c = theme.colors;
   cfg = config.artlaus.cli;
-  
-  # Определение списка плагинов Zsh для antidote (упрощён для Phase 1)
-  zshPlugins = with pkgs; [
-    { name = "zsh-autosuggestions"; src = zsh-autosuggestions; }
-    { name = "zsh-completions"; src = zsh-completions; }
-    { name = "fast-syntax-highlighting"; src = zsh-fast-syntax-highlighting; }
-    { name = "zsh-autopair"; src = zsh-autopair; }
-    { name = "you-should-use"; src = zsh-you-should-use; }
-  ];
 in
 {
   config = lib.mkIf cfg.enable {
     programs.zsh = {
       enable = true;
       autocd = true;
-      autosuggestion.enable = true;
-      syntaxHighlighting.enable = true; # Включаем, но fast-syntax-highlighting будет иметь приоритет
 
       # Поиск по истории команд с учетом уже набранного текста
       historySubstringSearch = {
@@ -60,14 +49,17 @@ in
         size = 50000;
       };
 
-      # Oh My Zsh - включаем, но плагины через Antidote
+      # Oh My Zsh с плагинами
       oh-my-zsh = {
         enable = true;
+        plugins = [
+          "zsh-autosuggestions"
+          "zsh-completions"
+          "fast-syntax-highlighting"
+          "zsh-autopair"
+          "zsh-you-should-use"
+        ];
       };
-
-      # Antidote - менеджер плагинов
-      # Явно указываем пакет, чтобы гарантировать установку через Nix.
-      plugins = zshPlugins;
 
       # Алиасы
       shellAliases = let
