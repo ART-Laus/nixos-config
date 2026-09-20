@@ -16,7 +16,7 @@ in
       };
 
       font = {
-        normal = { family = "JetBrains Mono"; };
+        normal = { family = theme.fonts.mono.name; };
         size = 14.0;
       };
 

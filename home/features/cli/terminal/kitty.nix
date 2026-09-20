@@ -9,7 +9,7 @@ in
     enable = true;
 
     settings = {
-      font_family = "JetBrains Mono";
+      font_family = theme.fonts.mono.name;
       font_size = 14;
       background_opacity = "0.85";
       confirm_os_window_close = 0;

@@ -16,7 +16,7 @@
       package = pkgs.bibata-cursors;
     };
     font = {
-      name = "JetBrainsMono Nerd Font 11";
+      name = "${theme.fonts.ui.name} ${toString theme.fonts.ui.size}";
       package = pkgs.nerd-fonts.jetbrains-mono;
     };
     gtk3.extraConfig.gtk-application-prefer-dark-theme = true;

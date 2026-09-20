@@ -44,6 +44,7 @@ related:
 - **Git** (`home/features/cli/git.nix`): `color.branch/diff/status` через `theme.colors`
 - **Waybar style** (`home/features/desktop/bar/style.nix`): все `rgba(...)` заменены на `theme.colors`. Добавлены прозрачные варианты в `theme/colors.nix`: `secondaryTransparent`, `fgTransparent`, `warningTransparent`, `accentBlueTransparent`, `errorTransparent`, `successTransparent` и т.д.
 - **Hyprland** (`home/features/desktop/compositor/hyprland.nix`): `col.shadow` через `theme.colors`. Добавлен `c = theme.colors` в `let`
+- **Шрифты**: `alacritty.nix`, `kitty.nix`, `gtk-qt.nix`, `style.nix` приведены к `theme/fonts.nix`
 
 ### Architecture cleanup
 

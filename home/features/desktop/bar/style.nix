@@ -7,7 +7,7 @@ in
 * {
   border: none;
   border-radius: 0;
-  font-family: JetBrainsMono Nerd Font, sans-serif;
+  font-family: ${theme.fonts.mono.name}, sans-serif;
   font-weight: bold;
   font-size: 14px;
   min-height: 0;
