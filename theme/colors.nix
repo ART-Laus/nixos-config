@@ -50,4 +50,15 @@ lightPink = "#FFBBDD"; # светлый pink
   # Прозрачность (для Hyprland / Waybar)
   bgTransparent = "rgba(0, 26, 13, 0.85)";
   bgAltTransparent = "rgba(13, 51, 34, 0.7)";
+  secondaryTransparent = "rgba(196, 160, 255, 0.3)";
+  secondaryTransparentLow = "rgba(196, 160, 255, 0.1)";
+  fgTransparent = "rgba(192, 255, 192, 0.7)";
+  fgTransparentLow = "rgba(192, 255, 192, 0.2)";
+  warningTransparent = "rgba(255, 213, 0, 0.6)";
+  warningTransparentHigh = "rgba(255, 213, 0, 0.7)";
+  accentBlueTransparent = "rgba(88, 214, 255, 0.6)";
+  errorTransparent = "rgba(255, 85, 102, 0.6)";
+  errorTransparentHigh = "rgba(255, 85, 102, 0.8)";
+  successTransparent = "rgba(102, 255, 153, 0.6)";
+  successTransparentHigh = "rgba(102, 255, 153, 0.7)";
 }

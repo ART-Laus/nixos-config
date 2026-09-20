@@ -16,7 +16,7 @@ in
 window#waybar {
   background: ${c.bg};
   color: ${c.fg};
-  border-bottom: 0px solid rgba(196, 160, 255, 0.3);
+  border-bottom: 0px solid ${c.secondaryTransparent};
   border-radius: 0;
   padding: 0;
   margin: 0;
@@ -31,7 +31,7 @@ window#waybar {
 #workspaces button {
   padding: 0 16px;
   margin: 0;
-  color: rgba(192, 255, 192, 0.7);
+  color: ${c.fgTransparent};
   background: transparent;
   border-radius: 0;
   border: none;
@@ -40,12 +40,12 @@ window#waybar {
 }
 
 #workspaces button:hover {
-  background: rgba(196, 160, 255, 0.3);
-  color: rgba(192, 255, 192, 0.7);
+  background: ${c.secondaryTransparent};
+  color: ${c.fgTransparent};
 }
 
 #workspaces button.active {
-  background: rgba(192, 255, 192, 0.2);
+  background: ${c.fgTransparentLow};
   color: ${c.fg};
   box-shadow: inset 0 -3px 0 ${c.secondary};
 }
@@ -61,7 +61,7 @@ window#waybar {
   margin: 4px 3px;
   padding: 0 12px;
   border-radius: 0;
-  border: 1px solid rgba(196, 160, 255, 0.1);
+  border: 1px solid ${c.secondaryTransparentLow};
 }
 
 #cpu,
@@ -75,9 +75,9 @@ window#waybar {
   padding: 0 12px;
   margin: 4px 3px;
   background: ${c.bgAltTransparent};
-  color: rgba(196, 160, 255, 0.3);
+  color: ${c.secondaryTransparent};
   border-radius: 5px;
-  border: 1px solid rgba(196, 160, 255, 0.1);
+  border: 1px solid ${c.secondaryTransparentLow};
 }
 
 #clock {
@@ -89,12 +89,12 @@ window#waybar {
 }
 
 #pulseaudio {
-  background: rgba(255, 213, 0, 0.6);
+  background: ${c.warningTransparent};
   color: ${c.bg};
 }
 
 #network {
-  background: rgba(88, 214, 255, 0.6);
+  background: ${c.accentBlueTransparent};
   color: ${c.bg};
 }
 
@@ -104,34 +104,34 @@ window#waybar {
 }
 
 #cpu {
-  background: rgba(255, 85, 102, 0.6);
+  background: ${c.errorTransparent};
   color: ${c.bg};
   margin-left: 8px;
 }
 
 #memory {
-  background: rgba(102, 255, 153, 0.6);
+  background: ${c.successTransparent};
   color: ${c.bg};
 }
 
 #temperature {
-  background: rgba(255, 213, 0, 0.6);
+  background: ${c.warningTransparent};
   color: ${c.bg};
   margin-right: 4px;
 }
 
 #battery.charging {
-  background: rgba(102, 255, 153, 0.7);
+  background: ${c.successTransparentHigh};
   color: ${c.bg};
 }
 
 #battery.warning:not(.charging) {
-  background: rgba(255, 213, 0, 0.7);
+  background: ${c.warningTransparentHigh};
   color: ${c.bg};
 }
 
 #battery.critical:not(.charging) {
-  background: rgba(255, 85, 102, 0.8);
+  background: ${c.errorTransparentHigh};
   color: ${c.bg};
   animation: blink 1s linear infinite;
 }
@@ -139,7 +139,7 @@ window#waybar {
 tooltip {
   background: ${c.bgTransparent};
   color: ${c.fg};
-  border: 1px solid rgba(196, 160, 255, 0.3);
+  border: 1px solid ${c.secondaryTransparent};
   border-radius: 5px;
   padding: 12px;
 }
