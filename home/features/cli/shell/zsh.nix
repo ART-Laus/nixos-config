@@ -29,7 +29,6 @@ in
         EDITOR = "nvim";
         VISUAL = "nvim";
         YAZI_CONFIG_HOME = "${config.home.homeDirectory}/.config/yazi";
-        GOOGLE_CLOUD_PROJECT = "data-avatar-475416-s2";
         NVM_DIR = "${config.home.homeDirectory}/.nvm";
         FZF_DEFAULT_OPTS = ''
           --color=bg+:#000000,bg:#000000,spinner:${c.primary},hl:${c.seaGreen}
@@ -91,16 +90,12 @@ in
         cle = "clear";
         ".." = "cd ..";
         "..." = "cd ../..";
-        aln = "cd ~/Documents/ALN && nvim";
-        nn = "/home/artlaus/scripts/new_note.sh";
-
-        # --- Алиасы из референсного конфига ---
         rbs = "sudo nixos-rebuild switch --impure --flake ${flakeDir}";
         rbb = "sudo nixos-rebuild boot --impure --flake ${flakeDir}";
         upg = "sudo nixos-rebuild switch --impure --upgrade --flake ${flakeDir}";
         upd = "sudo nix flake update --flake ${flakeDir}";
         grb = "sudo nix-collect-garbage -d";
-        pkgs = "nvim ${flakeDir}/nixos/packages.nix"; # Путь может потребовать корректировки
+        pkgs = "nvim ${flakeDir}/nixos/packages.nix";
         t = "timer";
       };
 
