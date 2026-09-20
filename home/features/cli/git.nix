@@ -1,4 +1,8 @@
-{ config, pkgs, ... }:
+{ config, pkgs, lib, theme, ... }:
+
+let
+  c = theme.colors;
+in
 
 {
   programs.git = {
@@ -54,20 +58,20 @@
         ui = "auto";
       };
       color.branch = {
-        current = "#FF007C"; # Ярко-розовый
-        local = "#FFD500";   # Желтый
-        remote = "#00FF9F";  # Ярко-зеленый
+        current = c.error;
+        local = c.warning;
+        remote = c.success;
       };
       color.diff = {
-        meta = "#00BFFF";    # Голубой
-        frag = "#B400FF";    # Пурпурный
-        old = "#FF007C";     # Ярко-розовый для удаленного
-        new = "#00FF9F";     # Ярко-зеленый для добавленного
+        meta = c.accentBlue;
+        frag = c.secondary;
+        old = c.error;
+        new = c.success;
       };
       color.status = {
-        added = "#00FF9F";     # Добавлено в индекс -> зеленый
-        changed = "#FFD500";    # Изменено, но не в индексе -> желтый
-        untracked = "#00BFFF";  # Неотслеживаемые файлы -> голубой
+        added = c.success;
+        changed = c.warning;
+        untracked = c.accentBlue;
       };
       filter.lfs = {
         clean = "git-lfs clean %f";
