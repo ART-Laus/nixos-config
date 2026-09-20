@@ -2,6 +2,7 @@
 { config, pkgs, lib, theme, inputs, ... }:
 let
   toRgba = hex: "rgba(${builtins.substring 1 2 hex}${builtins.substring 3 2 hex}${builtins.substring 5 2 hex}ff)";
+  c = theme.colors;
 in
 {
   wayland.windowManager.hyprland = {
@@ -57,7 +58,7 @@ in
           drop_shadow = yes
           shadow_range = 10
           shadow_render_power = 3
-          col.shadow = rgba(00000066)
+          col.shadow = ${c.shadow};
       }
 
       animations {

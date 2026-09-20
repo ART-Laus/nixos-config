@@ -48,6 +48,7 @@ lightPink = "#FFBBDD"; # светлый pink
     seaGreen = "#55BBAA"; # Starship cmd_duration/time
 
   # Прозрачность (для Hyprland / Waybar)
+  shadow = "rgba(0, 0, 0, 0.4)";
   bgTransparent = "rgba(0, 26, 13, 0.85)";
   bgAltTransparent = "rgba(13, 51, 34, 0.7)";
   secondaryTransparent = "rgba(196, 160, 255, 0.3)";
