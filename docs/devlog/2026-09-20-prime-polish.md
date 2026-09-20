@@ -61,6 +61,8 @@ related:
 - **Neofetch** (`home/features/cli/neofetch.nix` + `tools.nix`): убран `fastfetch`, оставлен только `neofetch`
 - **Browsers** (`home/features/desktop/browsers.nix`): убраны `chromium`, `librewolf`. `discord`, `ayugram-desktop` перенесены в `apps.nix`. Остался только `firefox`
 - **Apps** (`home/features/desktop/apps.nix`): добавлены `discord`, `ayugram-desktop`
+- **Zsh** (`home/features/cli/shell/zsh.nix`): убраны хардкод путей (`GOOGLE_CLOUD_PROJECT`, `aln`, `nn`). Алиасы `aln`, `nn` возвращены
+- **Tools** (`home/features/cli/tools.nix`): добавлены AI CLI tools (opencode, claude-code, lilo-code) через npm
 
 ## Результат
 

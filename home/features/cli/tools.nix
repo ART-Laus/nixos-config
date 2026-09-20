@@ -46,6 +46,11 @@
     git-lfs
     delta
 
+    # AI CLI tools (устанавливаются через npm: npm install -g opencode @anthropic-ai/claude-code lilo-code)
+    # opencode — AI code editor
+    # claude-code — Anthropic Claude CLI
+    # lilo-code — AI coding assistant
+
     # Security / misc
     pass
     pwgen
