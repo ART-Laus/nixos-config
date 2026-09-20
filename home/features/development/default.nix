@@ -10,7 +10,6 @@
     # Nix
     nixd
     nixpkgs-fmt
-    nil
     # Lua
     lua-language-server
     stylua
