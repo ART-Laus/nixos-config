@@ -1,59 +1,59 @@
-{ config, pkgs, ... }:
+{ config, pkgs, theme, ... }:
+
+let
+  c = theme.colors;
+in
 
 {
-  # Включаем Starship
   programs.starship.enable = true;
 
-  # Используем TOML-конфиг напрямую.
-  # Это самый простой и надежный способ переноса существующей конфигурации.
   programs.starship.settings = {
-    # Основной цвет — #66FF99 (неон-зелёный)
     format = ''
-[╭─](#66FF99)$status$username$directory$git_branch$git_status$cmd_duration
-[╰─>](#66FF99) '';
+[╭─](${c.primary})$status$username$directory$git_branch$git_status$cmd_duration
+[╰─>](${c.primary}) '';
     right_format = "$time";
     add_newline = true;
 
     status = {
-      style = "bold #66FF99";
-      symbol = "[✖](bold #FF5566) ";
+      style = "bold ${c.primary}";
+      symbol = "[✖](bold ${c.error}) ";
       format = "[$symbol]($style)";
       success_symbol = "✔ ";
     };
 
     username = {
       show_always = true;
-      style_user = "bold #99FFBB";
+      style_user = "bold ${c.lightGreen}";
       format = "[$user]($style_user) ";
     };
 
     directory = {
       truncation_length = 3;
-      style = "bold #66DDCC";
+      style = "bold ${c.mint}";
       format = "[$path]($style) ";
     };
 
     git_branch = {
       symbol = " ";
-      style = "bold #55EE88";
+      style = "bold ${c.brightGreen}";
       format = "[$symbol$branch]($style) ";
     };
 
     git_status = {
-      style = "bold #55EE88";
+      style = "bold ${c.brightGreen}";
       format = "([$all_status]($style)) ";
     };
 
     cmd_duration = {
       min_time = 2000;
-      style = "bold #55BBAA";
+      style = "bold ${c.seaGreen}";
       format = "[⏱ $duration]($style) ";
     };
 
     time = {
       disabled = false;
       time_format = "%d.%m.%Y %H:%M";
-      style = "bold #55BBAA";
+      style = "bold ${c.seaGreen}";
       format = "[$time]($style)";
     };
   };

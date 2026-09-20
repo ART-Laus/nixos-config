@@ -39,9 +39,13 @@
   darkGray = "#1E1E2E";  # тёмный серый (терминал black)
   darkGrayBright = "#2E2E3E"; # светлый тёмный серый (терминал bright black)
   gray = "#666666";      # серый (inactive)
-  lightPink = "#FFBBDD"; # светлый pink
-  lightBlue = "#B0E8FF"; # светлый blue
-  lightLavender = "#D4B8FF"; # светлый lavender
+lightPink = "#FFBBDD"; # светлый pink
+    lightBlue = "#B0E8FF"; # светлый blue
+    lightLavender = "#D4B8FF"; # светлый lavender
+    lightGreen = "#99FFBB"; # Starship username
+    mint = "#66DDCC"; # Starship directory
+    brightGreen = "#55EE88"; # Starship git
+    seaGreen = "#55BBAA"; # Starship cmd_duration/time
 
   # Прозрачность (для Hyprland / Waybar)
   bgTransparent = "rgba(0, 26, 13, 0.85)";
