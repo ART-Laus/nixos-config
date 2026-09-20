@@ -1,4 +1,8 @@
-{ config, pkgs, ... }:
+{ config, pkgs, lib, theme, ... }:
+
+let
+  c = theme.colors;
+in
 
 {
   programs.tmux = {
@@ -51,11 +55,11 @@ set -as terminal-features ",alacritty:RGB" # Включаем RGB для Alacrit
 # Расположение статус-бара внизу
 set -g status-position bottom
 
-# Цвета из вашего конфига
-set -g status-style "bg=#000000,fg=#448866"
-set -g window-status-current-style "bg=#66FF99,fg=#001a0d,bold"
-set -g window-status-style "bg=#000000,fg=#448866"
-set -g window-status-activity-style "bg=#000000,fg=#FFD500"
+# Цвета из theme/colors.nix
+set -g status-style "bg=${c.bg},fg=${c.muted}"
+set -g window-status-current-style "bg=${c.primary},fg=${c.bg},bold"
+set -g window-status-style "bg=${c.bg},fg=${c.muted}"
+set -g window-status-activity-style "bg=${c.bg},fg=${c.warning}"
 
 # Формат статус-бара
 set -g status-left ""
