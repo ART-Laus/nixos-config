@@ -1,6 +1,7 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, theme, ... }:
 
 let
+  c = theme.colors;
   cfg = config.artlaus.cli;
   
   # Определение списка плагинов Zsh для antidote (упрощён для Phase 1)
@@ -42,9 +43,9 @@ in
         GOOGLE_CLOUD_PROJECT = "data-avatar-475416-s2";
         NVM_DIR = "${config.home.homeDirectory}/.nvm";
         FZF_DEFAULT_OPTS = ''
-          --color=bg+:#000000,bg:#000000,spinner:#66FF99,hl:#55BBAA
-          --color=fg:#66FF99,header:#55BBAA,info:#66FF99,pointer:#55BBAA
-          --color=marker:#66FF99,fg+:#99FFBB,prompt:#55BBAA,hl+:#66FF99
+          --color=bg+:#000000,bg:#000000,spinner:${c.primary},hl:${c.seaGreen}
+          --color=fg:${c.primary},header:${c.seaGreen},info:${c.primary},pointer:${c.seaGreen}
+          --color=marker:${c.primary},fg+:${c.lightGreen},prompt:${c.seaGreen},hl+:${c.primary}
           --layout=reverse --border --height=40%
         '';
       };
