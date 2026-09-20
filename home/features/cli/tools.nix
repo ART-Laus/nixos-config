@@ -55,7 +55,6 @@
     tree
     killall
     timer
-    fastfetch
   ];
 
   programs = {
