@@ -11,14 +11,12 @@
     style = (import ./style.nix { inherit theme; });
     settings = {
       mainBar = {
-        # Using the DP-1 config as a base. User may need to change output name.
-        output = "DP-1";
         layer = "top";
         position = "top";
         spacing = 0;
         height = 40;
         "margin-top" = 0;
-        "modules-left" = [ "hyprland/workspaces" "custom/nowplaying" ];
+        "modules-left" = [ "hyprland/workspaces" "memory" "cpu" "custom/nowplaying" ];
         "modules-right" = [ "tray" "clock" "battery" ];
 
         "hyprland/workspaces" = {
