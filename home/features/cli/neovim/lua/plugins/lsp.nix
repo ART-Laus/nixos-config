@@ -2,7 +2,7 @@
   home.file.".config/nvim/lua/plugins/lsp.lua".text = ''
     return {
       "neovim/nvim-lspconfig",
-      dependencies = { "nvim-telescope/telescope.nvim" }, -- Assuming lspsaga-nvim is loaded elsewhere, and telescope for lsp_finder
+      dependencies = { "nvim-telescope/telescope.nvim" },
       config = function()
         local capabilities = vim.lsp.protocol.make_client_capabilities()
         local ok, cmp_lsp = pcall(require, "cmp_nvim_lsp")
