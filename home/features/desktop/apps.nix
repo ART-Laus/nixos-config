@@ -21,5 +21,9 @@
     brightnessctl
     qmk
     vial
+
+    # ── Соцсети ──
+    discord
+    ayugram-desktop
   ];
 }

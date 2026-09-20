@@ -56,6 +56,12 @@ related:
 
 - **Waybar** (`home/features/desktop/bar/waybar.nix`): убран хардкод `output = "DP-1"`. Добавлены `memory` и `cpu` в `modules-left`
 
+### Cleanup
+
+- **Neofetch** (`home/features/cli/neofetch.nix` + `tools.nix`): убран `fastfetch`, оставлен только `neofetch`
+- **Browsers** (`home/features/desktop/browsers.nix`): убраны `chromium`, `librewolf`. `discord`, `ayugram-desktop` перенесены в `apps.nix`. Остался только `firefox`
+- **Apps** (`home/features/desktop/apps.nix`): добавлены `discord`, `ayugram-desktop`
+
 ## Результат
 
 - `nix flake check` проходит без ошибок
