@@ -50,6 +50,7 @@ SORT date DESC
 | 2026-09-18 | [[2026-09-18-phase3b\|Phase 3b — theme/ прошивка цветов в Neovim-плагины + сервисы]] | `feature` | ✅ evaluation OK |
 | 2026-09-20 | [[2026-09-20-prime-polish\|Prime Polish — audit и первые правки]] | `feature` | ✅ evaluation OK |
 | 2026-09-21 | [[2026-09-21-discovery-expansion\|Discovery Expansion — каталог находок (46 инструментов)]] | `research` | ✅ исследование завершено |
+| 2026-09-21 | [[2026-09-21-integration\|Интеграция 24 инструментов Discovery Expansion]] | `feature` | ✅ завершено |
 
 ---
 
@@ -129,9 +130,9 @@ related:
 
 ## Статистика
 
-- Всего записей: `13`
-- Последняя: [[2026-09-21-discovery-expansion]] (2026-09-21)
-- Следующая фаза: `Phase 4 — ...` (см. [[architecture#10. Следующие шаги (обновлено)|architecture]])
+- Всего записей: `14`
+- Последняя: [[2026-09-21-integration]] (2026-09-21)
+- Следующая фаза: `Phase 4 — тестирование сборки flake` (см. [[2026-09-21-integration]])
 
 ---
 
