@@ -1,14 +1,14 @@
-# NixOS Discovery Expansion — Catalog of Findings
+# NixOS Discovery Expansion — Каталог Находок
 
-*Date: 2026-09-21. Phase: Research only — nothing installed yet.*
+*Дата: 2026-09-21. Фаза: Только исследование — ничего не установлено.*
 
 ---
 
-## Inventory Summary (Blacklist)
+## Сводка Инвентаря (Чёрный Список)
 
-Before presenting findings, here is the complete software inventory that serves as the blacklist:
+Прежде чем представить находки, вот полный софт-инвентарь, который служит чёрным списком:
 
-**Explicitly installed CLI tools:** eza, bat, ripgrep, fd, fzf, zoxide, btop, jq, yq, ncdu, dog, mtr, entr, tldr, chafa, zip, unzip, unrar, p7zip, bzip2, ffmpeg_7, imagemagick, vips, lazygit, gh, git-lfs, delta, pass, pwgen, lm_sensors, usbutils, miller, tree, killall, timer, neofetch
+**Явно установленные CLI-инструменты:** eza, bat, ripgrep, fd, fzf, zoxide, btop, jq, yq, ncdu, dog, mtr, entr, tldr, chafa, zip, unzip, unrar, p7zip, bzip2, ffmpeg_7, imagemagick, vips, lazygit, gh, git-lfs, delta, pass, pwgen, lm_sensors, usbutils, miller, tree, killall, timer, neofetch
 
 **Shell/Terminal:** zsh, oh-my-zsh, zsh-autosuggestions, zsh-completions, fast-syntax-highlighting, zsh-autopair, zsh-you-should-use, starship, alacritty, kitty, tmux, yazi
 
@@ -20,348 +20,348 @@ Before presenting findings, here is the complete software inventory that serves 
 
 **GTK/Qt:** adw-gtk3, papirus-icon-theme, bibata-cursors, nerd-fonts.jetbrains-mono, qt5ct, qt6ct, kvantum
 
-**System:** git, curl, wget, htop, tor, openvpn, tailscale, docker, docker-compose, pciutils, usbutils, lm_sensors, libva-utils, clinfo, alsa-utils, pamixer, papirus-icon-theme, breeze-icons, various libraries, fonts (noto, nerd-fonts, carlito, terminus, inconsolata, font-awesome, liberation, dejavu, cantarell, unifont)
+**System:** git, curl, wget, htop, tor, openvpn, tailscale, docker, docker-compose, pciutils, usbutils, lm_sensors, libva-utils, clinfo, alsa-utils, pamixer, papirus-icon-theme, breeze-icons, различные библиотеки, шрифты (noto, nerd-fonts, carlito, terminus, inconsolata, font-awesome, liberation, dejavu, cantarell, unifont)
 
 **Services:** greetd, tuigreet, xdg-desktop-portal-hyprland, xdg-desktop-portal-gtk, thunar, polkit_gnome, ollama, nix-ld, appimage-run, tor, openvpn, tailscale
 
 **Gaming:** steam
 
-**Neovim plugins (lazy.nvim):** telescope, nvim-tree, bufferline, lualine, cmp, noice, treesitter, alpha, autopairs, comment, colorizer, formatting-linting, langmapper, lspsaga, markdown, telescope, treesitter, yazi.nvim, lazy-nvim
+**Neovim плагины (lazy.nvim):** telescope, nvim-tree, bufferline, lualine, cmp, noice, treesitter, alpha, autopairs, comment, colorizer, formatting-linting, langmapper, lspsaga, markdown, telescope, treesitter, yazi.nvim, lazy-nvim
 
 ---
 
-## 🎨 Visual / ASCII / Terminal Graphics
+## 🎨 Визуал / ASCII / Терминальная Графика
 
 ### 1. px2ansi-rs
 
-**What it is:** High-fidelity terminal image renderer and asset manager. Converts images into terminal-native art using 10 rendering styles.
+**Что это:** Рендерер терминальных изображений высокого разрешения и менеджер ассетов. Преобразует изображения в терминальное искусство с помощью 10 стилей рендеринга.
 
-**What it does:**
-- 10 rendering styles: `ansi`, `unicode`, `fade`, `ascii`, `braille`, `full-block`, `dense`, `chinese`, `kanji`, `sixel`
-- Fuzzy search + interactive TUI browsing for sprite libraries
-- Truecolor + transparency via Oklab color space
-- 5 resize filters (nearest → lanczos3)
-- ASCII density control, monochrome output, Floyd-Steinberg dithering
-- Image rotation, fetch mode (system info + rotating images)
-- PNG rasterization (ANSI → PNG)
-- SIMD pixel processing via LLVM auto-vectorization
+**Что умеет:**
+- 10 стилей рендеринга: `ansi`, `unicode`, `fade`, `ascii`, `braille`, `full-block`, `dense`, `chinese`, `kanji`, `sixel`
+- Fuzzy search + интерактивный TUI-браузер для библиотек спрайтов
+- Truecolor + прозрачность через цветовое пространство Oklab
+- 5 фильров масштабирования (nearest → lanczos3)
+- Управление плотностью ASCII, монохромный вывод, дITHERинг Флойда-Штейнберга
+- Поворот изображений, режим fetch (информация о системе + вращающиеся изображения)
+- Растеризация PNG (ANSI → PNG)
+- SIMD-обработка пикселей через авто-векторизацию LLVM
 
-**Why it's interesting:** This is the most comprehensive terminal image renderer I found. It goes far beyond chafa's capabilities with its 10 distinct rendering styles, interactive TUI browser, and fuzzy search. The braille and kanji styles produce remarkably detailed output.
+**Почему интересно:** Это самый полный рендерер терминальных изображений, который я нашёл. Он значительно превосходит возможности chafa благодаря 10 различным стилям рендеринга, интерактивному TUI-браузеру и fuzzy search. Стили braille и kanji производят впечатляюще детализированный вывод.
 
-**What I already have:** chafa (installed) — does basic ANSI/Unicode/Sixel rendering. px2ansi-rs offers fundamentally more styles and an interactive TUI browser that chafa lacks.
+**Что уже есть:** chafa (установлен) — выполняет базовый ANSI/Unicode/Sixel рендеринг. px2ansi-rs предлагает принципиально больше стилей и интерактивный TUI-браузер, которого у chafa нет.
 
-**Difference from chafa:** chafa is a renderer; px2ansi-rs is a renderer + asset manager + TUI browser with 10 distinct algorithms vs chafa's handful.
+**Отличие от chafa:** chafa — это рендерер; px2ansi-rs — рендерер + менеджер ассетов + TUI-браузер с 10 различными алгоритмами против нескольких у chafa.
 
-**Installed:** NO
+**Установлен:** НЕТ
 
-**NixOS:** Not in nixpkgs. Available via `cargo install px2ansi-rs` or GitHub release. Rust-based.
+**NixOS:** Нет в nixpkgs. Доступен через `cargo install px2ansi-rs` или GitHub release. На базе Rust.
 
-**Open Source:** Yes (MIT/Apache-2.0)
+**Open Source:** Да (MIT/Apache-2.0)
 
-**Maturity:** Active development, recent releases
+**Зрелость:** Активная разработка, свежие релизы
 
-**Recommendation:** HIGH — unique capability, not duplicating chafa
+**Рекомендация:** ВЫСОКАЯ — уникальная возможность, не дублирует chafa
 
 ---
 
 ### 2. phosphor
 
-**What it is:** Render images, PDFs, and markdown in your terminal. Supports Kitty graphics protocol with Unicode virtual placement, Sixel, iTerm2, and halfblock fallback — with full tmux passthrough.
+**Что это:** Рендеринг изображений, PDF и markdown в терминале. Поддерживает Kitty graphics protocol с Unicode-виртуальным размещением, Sixel, iTerm2 и halfblock-фоллбэк — с полным tmux passthrough.
 
-**What it does:**
-- Auto-detects best protocol for terminal (Kitty > iTerm2 > Sixel > Halfblock)
-- Supports PNG, JPEG, WebP, GIF, AVIF, TIFF, SVG, BMP, HEIC, PDF, Markdown
-- Works inside tmux via virtual Unicode placement + DCS passthrough
-- TypeScript library + CLI
-- Programmatic API for embedding
+**Что умеет:**
+- Авто-детекция лучшего протокола для терминала (Kitty > iTerm2 > Sixel > Halfblock)
+- Поддержка PNG, JPEG, WebP, GIF, AVIF, TIFF, SVG, BMP, HEIC, PDF, Markdown
+- Работает внутри tmux через виртуальное Unicode-размещение + DCS passthrough
+- TypeScript библиотека + CLI
+- Программный API для встраивания
 
-**Why it's interesting:** phosphor solves the tmux image rendering problem elegantly. It works inside tmux (which chafa doesn't handle well) and auto-detects the best protocol. The PDF and Markdown support is unique.
+**Почему интересно:** phosphor элегантно решает проблему рендеринга изображений внутри tmux. Работает внутри tmux (что chafa делает плохо) и авто-детектирует лучший протокол. Поддержка PDF и Markdown уникальна.
 
-**What I already have:** chafa (installed), imv/qview (image viewers), but none work inside tmux with protocol auto-detection.
+**Что уже есть:** chafa (установлен), imv/qview (просмотрщики изображений), но ни один не работает внутри tmux с авто-детекцией протокола.
 
-**Difference from chafa:** phosphor works inside tmux, supports PDF/Markdown, auto-detects protocols. chafa is standalone and doesn't handle tmux passthrough.
+**Отличие от chafa:** phosphor работает внутри tmux, поддерживает PDF/Markdown, авто-детектирует протоколы. chafa — автономный и не обрабатывает tmux passthrough.
 
-**Installed:** NO
+**Установлен:** НЕТ
 
-**NixOS:** Not in nixpkgs. Available via `npm install -g phosphor` or GitHub release.
+**NixOS:** Нет в nixpkgs. Доступен через `npm install -g phosphor` или GitHub release.
 
-**Open Source:** Yes
+**Open Source:** Да
 
-**Maturity:** Active development
+**Зрелость:** Активная разработка
 
-**Recommendation:** HIGH — solves tmux image rendering, unique protocol auto-detection
+**Рекомендация:** ВЫСОКАЯ — решает рендеринг в tmux, уникальная авто-детекция протоколов
 
 ---
 
 ### 3. fidelitty
 
-**What it is:** Library for high-resolution integrated terminal graphics. Renders images using a custom bitmask font with Private Use Area codepoints.
+**Что это:** Библиотека для высокоразрешённой интегрированной терминальной графики. Рендерит изображения с помощью кастомного битмап-шрифта с кодовыми точками Private Use Area.
 
-**What it does:**
-- 2×4 or 3×5 pixel resolution per terminal cell
-- Custom font generated at runtime (no conflicts with existing fonts)
-- >120fps with lower resolution
-- Works over SSH
-- Doubles as image compression
-- Zig library + C header
+**Что умеет:**
+- 2×4 или 3×5 пиксельное разрешение на клетку терминала
+- Кастомный шрифт генерируется в рантайме (нет конфликтов с существующими шрифтами)
+- >120fps при низком разрешении
+- Работает поверх SSH
+- Двойная функция как сжатие изображений
+- Zig библиотека + C заголовок
 
-**Why it's interesting:** This is a fundamentally different approach to terminal image rendering — using custom fonts in the Private Use Area rather than ANSI escape sequences. This means it works on ANY terminal that supports Unicode, even without truecolor or graphics protocols.
+**Почему интересно:** Это принципиально другой подход к терминальному рендерингу изображений — использование кастомных шрифтов в Private Use Area вместо ANSI escape-последовательностей. Это значит, что работает на ЛЮБОМ терминале, поддерживающем Unicode, даже без truecolor или graphics protocols.
 
-**What I already have:** chafa (ANSI-based), phosphor (protocol-based). fidelitty uses a completely different mechanism.
+**Что уже есть:** chafa (на базе ANSI), phosphor (на базе протоколов). fidelitty использует совершенно другой механизм.
 
-**Difference:** fidelitty works on terminals without truecolor/graphics support via custom Unicode fonts. Others require specific terminal capabilities.
+**Отличие:** fidelitty работает на терминалах без truecolor/graphics поддержки через кастомные Unicode-шрифты. Другие требуют специфичных терминальных возможностей.
 
-**Installed:** NO
+**Установлен:** НЕТ
 
-**NixOS:** Not in nixpkgs. Available via `cargo install fidelitty` or Zig build.
+**NixOS:** Нет в nixpkgs. Доступен через `cargo install fidelitty` или Zig build.
 
-**Open Source:** Yes
+**Open Source:** Да
 
-**Maturity:** Research/experimental stage
+**Зрелость:** Исследовательская/экспериментальная стадия
 
-**Recommendation:** MEDIUM — novel approach but experimental, niche use case
+**Рекомендация:** СРЕДНЯЯ — новаторский подход, но экспериментально, нишевая задача
 
 ---
 
 ### 4. ratty
 
-**What it is:** GPU-rendered terminal emulator with inline 3D graphics. Inspired by TempleOS. Built with Rust & Ratatui + Bevy.
+**Что это:** GPU-рендеренный терминальный эмулятор с inline 3D-графикой. Вдохновлён TempleOS. Построен на Rust & Ratatui + Bevy.
 
-**What it does:**
-- Inline 3D objects in terminal space (`.obj`, `.glb`, `.stl`)
-- GPU-backed text rendering via Bevy/Vello
-- Ratty Graphics Protocol (RGP) for 3D placement
-- Camera control: flat, orthographic, perspective, Mobius views
-- Spinning rat cursor (customizable)
-- Terminal applications built around RGP: Ratscad (CAD), ComChan (serial monitor with 3D telemetry)
+**Что умеет:**
+- Inline 3D-объекты в терминальном пространстве (`.obj`, `.glb`, `.stl`)
+- GPU-рендеринг текста через Bevy/Vello
+- Ratty Graphics Protocol (RGP) для 3D-размещения
+- Управление камерой: плоская, ортографическая, перспективная, Mobius
+- Вращающийся курсор крысы (кастомизируемый)
+- Терминальные приложения, построенные вокруг RGP: Ratscad (CAD), ComChan (serial monitor с 3D-телеметрией)
 
-**Why it's interesting:** This is the first terminal emulator that renders actual 3D graphics inline. It's not a terminal emulator replacement — it's a new category of terminal that supports 3D content. The Ratty Graphics Protocol could become a standard.
+**Почему интересно:** Это первый терминальный эмулятор, который рендерит настоящую 3D-графику inline. Это не замена терминального эмулятора — это НОВАЯ КАТЕГОРИЯ терминала, поддерживающая 3D-контент. Ratty Graphics Protocol может стать стандартом.
 
-**What I already have:** Nothing comparable. This is a completely new category.
+**Что уже есть:** Ничего сопоставимого. Это совершенно новая категория.
 
-**Difference:** No existing tool renders 3D objects inline in a terminal. This is category-defining.
+**Отличие:** Нет существующего инструмента, который рендерит 3D-объекты inline в терминале. Это определяет категорию.
 
-**Installed:** NO
+**Установлен:** НЕТ
 
-**NixOS:** Available via `nix run github:orhun/ratty` (flake). NOT in nixpkgs stable. Requires GPU + Bevy/wgpu support.
+**NixOS:** Доступен через `nix run github:orhun/ratty` (flake). НЕТ в стабильном nixpkgs. Требует GPU + Bevy/wgpu поддержку.
 
-**Open Source:** Yes (MIT)
+**Open Source:** Да (MIT)
 
-**Maturity:** Pre-release/preview. Active development.
+**Зрелость:** Pre-release/preview. Активная разработка.
 
-**Recommendation:** HIGH — completely novel category, "wow" factor is maximum
+**Рекомендация:** ВЫСОКАЯ — совершенно новая категория, «wow»-фактор максимален
 
 ---
 
 ### 5. milli
 
-**What it is:** Pixel-perfect animated ASCII art engine. Renders images and GIFs to terminal, or exports as Go/Lua/JSON for embedding in TUIs and Neovim dashboards.
+**Что это:** Движок пиксельно-точного анимированного ASCII-art. Рендерит изображения и GIF в терминал, или экспортирует в Go/Lua/JSON для встраивания в TUI и Neovim дашборды.
 
-**What it does:**
-- Render images, GIFs, video frames to terminal
-- `.milli` pre-baked format for instant playback
-- Export to Go/Lua/JSON for embedding
-- Text effects (fire, glitch, wave, matrix, dissolve, typewriter, pulse, rainbow)
-- Procedural shaders (plasma, rain, doomfire, starfield, tunnel, waves)
-- Neovim dashboard plugin integration
+**Что умеет:**
+- Рендеринг изображений, GIF, видеокадров в терминал
+- Формат `.milli` для мгновенного воспроизведения
+- Экспорт в Go/Lua/JSON для встраивания
+- Текстовые эффекты (fire, glitch, wave, matrix, dissolve, typewriter, pulse, rainbow)
+- Процедурные шейдеры (plasma, rain, doomfire, starfield, tunnel, waves)
+- Интеграция с Neovim плагином дашборда
 - Truecolor glyph matching
 
-**Why it's interesting:** milli bridges the gap between terminal rendering and application embedding. The `.milli` format and export capabilities make it useful for creating animated splash screens, dashboards, and MOTD animations. The Neovim integration is particularly valuable.
+**Почему интересно:** milli мостит разрыв между терминальным рендерингом и встраиванием в приложения. Формат `.milli` и возможности экспорта делают его полезным для создания анимированных splash screens, дашбордов и MOTD-анимаций. Интеграция с Neovim особенно ценна.
 
-**What I already have:** chafa (static image rendering). milli adds animation, procedural generation, and embedding capabilities.
+**Что уже есть:** chafa (статический рендеринг изображений). milli добавляет анимацию, процедурную генерацию и встраивание.
 
-**Difference:** milli does animation and procedural generation; chafa does static rendering. milli exports to embeddable formats.
+**Отличие:** milli делает анимацию и процедурную генерацию; chafa делает статический рендеринг. milli экспортирует во встраиваемые форматы.
 
-**Installed:** NO
+**Установлен:** НЕТ
 
-**NixOS:** Not in nixpkgs. Available via `npm install -g @amansingh-afk/milli`.
+**NixOS:** Нет в nixpkgs. Доступен через `npm install -g @amansingh-afk/milli`.
 
-**Open Source:** Yes
+**Open Source:** Да
 
-**Maturity:** Active development
+**Зрелость:** Активная разработка
 
-**Recommendation:** HIGH — animation + embedding + Neovim integration
+**Рекомендация:** ВЫСОКАЯ — анимация + встраивание + Neovim интеграция
 
 ---
 
 ### 6. vinz
 
-**What it is:** 3D raymarching, procedural graphics engine for the terminal. Mathematical fluid simulations and ASCII art using 24-bit ANSI colors.
+**Что это:** 3D raymarching, процедурный графический движок для терминала. Математические жидкостные симуляции и ASCII-art с использованием 24-битных ANSI-цветов.
 
-**What it does:**
-- 10 2D visual styles + 8 3D raymarching styles
-- 20 color palettes
+**Что умеет:**
+- 10 2D-визуальных стилей + 8 3D raymarching стилей
+- 20 цветовых палитр
 - True color (24-bit RGB)
-- Interactive UI with real-time control
-- Procedural randomizer (press R for new shader)
-- Written in C, single buffer writes for high FPS
-- 3D vector math and raymarching engine from scratch
+- Интерактивный UI с управлением в реальном времени
+- Процедурный randomizer (нажми R для нового шейдера)
+- Написан на C, однобуферный вывод для высокого FPS
+- 3D векторная математика и raymarching движок с нуля
 
-**Why it's interesting:** Pure procedural terminal art with real-time 3D raymarching. This is the "terminal screensaver" category taken to its logical extreme. The interactive UI and real-time shader generation is unique.
+**Почему интересно:** Чистый процедурный терминальный арт с real-time 3D raymarching. Это категория «терминальные скринсейверы» доведённая до логического предела. Интерактивный UI и real-time генерация шейдеров уникальны.
 
-**What I already have:** Nothing comparable. No procedural terminal art engine.
+**Что уже есть:** Ничего сопоставимого. Нет процедурного терминального арт-движка.
 
-**Difference:** Pure procedural 3D raymarching in terminal. No other tool does this.
+**Отличие:** Чистый процедурный 3D raymarching в терминале. Никакой другой инструмент этого не делает.
 
-**Installed:** NO
+**Установлен:** НЕТ
 
-**NixOS:** Not in nixpkgs. Available via `cargo install vinz` or GitHub release.
+**NixOS:** Нет в nixpkgs. Доступен через `cargo install vinz` или GitHub release.
 
-**Open Source:** Yes
+**Open Source:** Да
 
-**Maturity:** Active development
+**Зрелость:** Активная разработка
 
-**Recommendation:** MEDIUM — pure toy/visual effect, but impressive
+**Рекомендация:** СРЕДНЯЯ — чистый toy/визуальный эффект, но впечатляющий
 
 ---
 
 ### 7. anima (yzs)
 
-**What it is:** Standalone terminal animations toolkit from Yazelix. Boids, friends and enemies, Mandelbrot, Matrix rain, Game of Life, asciiquarium.
+**Что это:** Независимый набор инструментов для терминальных анимаций от Yazelix. Boids, friends and enemies, Mandelbrot, Matrix rain, Game of Life, asciiquarium.
 
-**What it does:**
-- 12+ animation styles (boids, matrix, mandelbrot, game of life, friends_and_enemies, primordial, random, static, logo, asciiquarium)
-- `yzs` binary with interactive and timed playback
+**Что умеет:**
+- 12+ анимационных стилей (boids, matrix, mandelbrot, game of life, friends_and_enemies, primordial, random, static, logo, asciiquarium)
+- Бинарник `yzs` с интерактивным и таймерным воспроизведением
 - Kitty PNG frame sequence rendering
-- Works in any capable terminal
-- Nix flake available
+- Работает в любом способном терминале
+- Nix flake доступен
 
-**Why it's interesting:** Pure Nix-flakeable terminal animation toolkit. The asciiquarium and boids simulations are classic terminal art. The Nix integration is clean.
+**Почему интересно:** Чистый Nix-flakeable набор терминальных анимаций. Asciiquarium и boids-симуляции — классический терминальный арт. Nix-интеграция чистая.
 
-**What I already have:** Nothing comparable. No terminal animation toolkit.
+**Что уже есть:** Ничего сопоставимого. Нет набора терминальных анимаций.
 
-**Difference:** Dedicated terminal animation toolkit with multiple simulation types.
+**Отличие:** Специализированный набор терминальных анимаций с несколькими типами симуляций.
 
-**Installed:** NO
+**Установлен:** НЕТ
 
-**NixOS:** Available via `nix run github:Yazelix/anima#yzs`. NOT in nixpkgs stable.
+**NixOS:** Доступен через `nix run github:Yazelix/anima#yzs`. НЕТ в стабильном nixpkgs.
 
-**Open Source:** Yes
+**Open Source:** Да
 
-**Maturity:** Active development
+**Зрелость:** Активная разработка
 
-**Recommendation:** MEDIUM — fun, visual, Nix-native
+**Рекомендация:** СРЕДНЯЯ — весело, визуально, Nix-native
 
 ---
 
-## 🖼 Image / Media CLI
+## 🖼 Изображения / Медиа CLI
 
 ### 8. timg
 
-**What it is:** Terminal image and video viewer. Renders media using terminal graphics protocols or Unicode/block-character fallbacks.
+**Что это:** Терминальный просмотрщик изображений и видео. Рендерит медиа через терминальные графические протоколы или Unicode/block-character фоллбэки.
 
-**What it does:**
-- Sixel, Kitty, iTerm2 graphics protocols for full-resolution display
-- 24-bit color + Unicode block fallbacks
-- Image, GIF, and video preview
+**Что умеет:**
+- Sixel, Kitty, iTerm2 graphics protocols для полноформатного отображения
+- 24-bit color + Unicode block фоллбэки
+- Просмотр изображений, GIF и видео
 - Grid display, threaded loading
-- Supports PDF, SVG, WebP
+- Поддержка PDF, SVG, WebP
 
-**Why it's interesting:** timg is the most mature terminal image/video viewer. It's been around since 2016, actively maintained, and supports the widest range of protocols and formats.
+**Почему интересно:** timg — самый зрелый терминальный просмотрщик изображений/видео. Существует с 2016 года, активно поддерживается и поддерживает самый широкий диапазон протоколов и форматов.
 
-**What I already have:** chafa (installed), imv/qview (GUI viewers). timg is specifically designed for terminal-first image viewing with protocol detection.
+**Что уже есть:** chafa (установлен), imv/qview (GUI просмотрщики). timg специально разработан для terminal-first просмотра с детекцией протоколов.
 
-**Difference:** timg is a dedicated terminal image viewer with protocol auto-detection and video support. chafa is more of a renderer. timg handles video playback.
+**Отличие:** timg — специализированный терминальный просмотрщик с авто-детекцией протоколов и поддержкой видео. chafa — скорее рендерер. timg обрабатывает видео воспроизведение.
 
-**Installed:** NO (chafa is installed but serves different purpose)
+**Установлен:** НЕТ (chafa установлен, но служит другой цели)
 
-**NixOS:** IN nixpkgs (`pkgs.timg`). Verified.
+**NixOS:** В nixpkgs (`pkgs.timg`). Проверено.
 
-**Open Source:** Yes (GPL-2.0)
+**Open Source:** Да (GPL-2.0)
 
-**Maturity:** Very mature (v1.6.3, 2025)
+**Зрелость:** Очень зрелый (v1.6.3, 2025)
 
-**Recommendation:** HIGH — in nixpkgs, mature, complements chafa with video support
+**Рекомендация:** ВЫСОКАЯ — в nixpkgs, зрелый, дополняет chafa видео поддержкой
 
 ---
 
 ### 9. viu
 
-**What it is:** Simple terminal image viewer written in Rust. Uses terminal graphics protocols when available, falls back to character-cell rendering.
+**Что это:** Простой терминальный просмотрщик изображений на Rust. Использует терминальные графические протоколы когда доступны, фоллбэк на character-cell рендеринг.
 
-**What it does:**
-- iTerm and Kitty graphics protocol support
-- Block rendering fallback
-- Image, GIF, input stream preview
-- Lightweight, fast
-- `viuer` library for embedding
+**Что умеет:**
+- Поддержка iTerm и Kitty graphics protocols
+- Block rendering фоллбэк
+- Просмотр изображений, GIF, input stream
+- Лёгкий, быстрый
+- Библиотека `viuer` для встраивания
 
-**Why it's interesting:** viu is the minimalist alternative to timg. Extremely lightweight, focused on one thing: showing images in terminal. The `viuer` library makes it embeddable in other tools.
+**Почему интересно:** viu — минималистичная альтернатива timg. Экстремально лёгкий, сфокусирован на одной вещи: показ изображений в терминале.
 
-**What I already have:** chafa (installed). viu is simpler and more focused.
+**Что уже есть:** chafa (установлен). viu проще и более сфокусирован.
 
-**Difference:** viu is simpler and lighter than chafa, with cleaner protocol support. But chafa already installed.
+**Отличие:** viu проще и легче chafa, с более чистой поддержкой протоколов. Но chafa уже установлен.
 
-**Installed:** NO
+**Установлен:** НЕТ
 
-**NixOS:** IN nixpkgs (`pkgs.viu`). Verified.
+**NixOS:** В nixpkgs (`pkgs.viu`). Проверено.
 
-**Open Source:** Yes
+**Open Source:** Да
 
-**Maturity:** Stable
+**Зрелость:** Стабильный
 
-**Recommendation:** LOW — chafa already covers this category. viu is nice but redundant.
+**Рекомендация:** НИЗКАЯ — chafa уже покрывает эту категорию. viu хорош, но избыточен.
 
 ---
 
-### 10. notcurses (and bundled tools)
+### 10. notcurses (и встроенные инструменты)
 
-**What it is:** Blingful character graphics/TUI library. Not a ncurses replacement — targets Unicode, 24-bit color, multimedia, terminal bitmap graphics.
+**Что это:** Блестящая библиотека character graphics/TUI. Не замена ncurses — нацелена на Unicode, 24-bit color, multimedia, terminal bitmap graphics.
 
-**What it does (bundled tools):**
-- `ncls` — multimedia-aware directory listings
-- `ncneofetch` — neofetch clone using notcurses
-- `ncplayer` — renders visual media
-- `nctetris` — tetris in terminal
-- `notcurses-demo` — capability demos
-- `notcurses-info` — terminal diagnostics
-- `notcurses-input` — keypress decoder
-- `tfman` — terminal file manager
+**Что делает (встроенные инструменты):**
+- `ncls` — multimedia-aware listings каталогов
+- `ncneofetch` — клон neofetch используя notcurses
+- `ncplayer` — рендеринг визуальных медиа
+- `nctetris` — тетрис в терминале
+- `notcurses-demo` — демо возможностей
+- `notcurses-info` — диагностика терминала
+- `notcurses-input` — декодирование нажатий клавиш
+- `tfman` — терминальный файловый менеджер
 
-**Why it's interesting:** notcurses is the underlying library powering many modern terminal tools. The bundled tools alone are worth the install. `ncls` (multimedia directory listing) and `ncplayer` are unique capabilities.
+**Почему интересно:** notcurses — это базовая библиотека, питающая многие современные терминальные инструменты. Одни только встроенные инструменты стоят установки. `ncls` (multimedia directory listing) и `ncplayer` — уникальные возможности.
 
-**What I already have:** chafa (image rendering), btop (system monitor). notcurses provides a different rendering engine and bundled tools.
+**Что уже есть:** chafa (рендеринг изображений), btop (системный монитор). notcurses предоставляет другой движок рендеринга и встроенные инструменты.
 
-**Difference:** notcurses is a library + bundled toolkit. `ncls` and `ncplayer` have no equivalents in current stack.
+**Отличие:** notcurses — это библиотека + встроенный набор инструментов. `ncls` и `ncplayer` не имеют аналогов в текущем стеке.
 
-**Installed:** NO
+**Установлен:** НЕТ
 
-**NixOS:** IN nixpkgs (`pkgs.notcurses`). Verified.
+**NixOS:** В nixpkgs (`pkgs.notcurses`). Проверено.
 
-**Open Source:** Yes (Apache-2.0)
+**Open Source:** Да (Apache-2.0)
 
-**Maturity:** Very mature (v3.0.17)
+**Зрелость:** Очень зрелая (v3.0.17)
 
-**Recommendation:** HIGH — in nixpkgs, library + bundled tools, `ncls` is unique
+**Рекомендация:** ВЫСОКАЯ — в nixpkgs, библиотека + встроенные инструменты, `ncls` уникален
 
 ---
 
 ### 11. dither
 
-**What it is:** Image in, terminal splash script out — truecolor Unicode quadrant-block art rendered by dependency-free bash.
+**Что это:** Изображение на входе, терминальный splash-скрипт на выходе — truecolor Unicode quadrant-block art, рендеренный dependency-free bash.
 
-**What it does:**
-- Renders truecolor Unicode quadrant-block art
-- Auto-sized to caller's terminal
-- Stdlib bash at runtime (no dependencies beyond bash 4+ and stty)
-- Generates `show.sh` scripts from images
-- Deterministic pipeline
+**Что умеет:**
+- Рендеринг truecolor Unicode quadrant-block art
+- Авто-подгонка под терминал вызывающей программы
+- Stdlib bash в рантайме (нет зависимостей кроме bash 4+ и stty)
+- Генерация `show.sh` скриптов из изображений
+- Детерминированный пайплайн
 
-**Why it's interesting:** The dependency-free bash approach is unique. You can generate a self-contained `show.sh` from any image and distribute it. No Python, no Rust, no Cairo — just bash.
+**Почему интересно:** Dependency-free bash подход уникален. Можно сгенерировать самодостаточный `show.sh` из любого изображения и распространять его. Нет Python, нет Rust, нет Cairo — только bash.
 
-**What I already have:** chafa (installed), imagemagick (installed). dither's bash-only approach is different.
+**Что уже есть:** chafa (установлен), imagemagick (установлен). bash-only подход dither отличается.
 
-**Difference:** Pure bash, generates standalone scripts. No runtime dependencies.
+**Отличие:** Чистый bash, генерирует автономные скрипты. Нет рантайм-зависимостей.
 
-**Installed:** NO
+**Установлен:** НЕТ
 
-**NixOS:** Not in nixpkgs. Available via `git clone` + `make`.
+**NixOS:** Нет в nixpkgs. Доступен через `git clone` + `make`.
 
-**Open Source:** Yes
+**Open Source:** Да
 
-**Maturity:** Early (v0.1.0, 2026-08)
+**Зрелость:** Ранняя (v0.1.0, 2026-08)
 
-**Recommendation:** MEDIUM — novel bash-only approach, but early stage
+**Рекомендация:** СРЕДНЯЯ — новаторский bash-only подход, но ранняя стадия
 
 ---
 
@@ -369,555 +369,555 @@ Before presenting findings, here is the complete software inventory that serves 
 
 ### 12. zy
 
-**What it is:** A blazing-fast, secure shell. 530+ builtins. 102 prompt modules. 39 themes. Built-in fuzzy picker, file manager, jumper, structured pipelines. One binary, Pure C.
+**Что это:** Молниеносно быстрый, безопасный shell. 530+ встроенных команд. 102 модуля prompt. 39 тем. Встроенный fuzzy picker, файловый менеджер, jumper, структурированные пайплайны. Один бинарник, Pure C.
 
-**What it does:**
-- 533 builtin commands (enforced by tests)
-- Built-in file manager (`explore`) with three-pane Miller columns
-- Built-in directory jumper (`zi`) with frecency
-- Built-in fuzzy picker (`fzf` builtin)
-- 100+ prompt modules (languages, cloud, git, system)
-- 39 themes with OSC sequence terminal palette switching
-- 17 value types, 60+ filter/transform commands
-- JSON, CSV, TSV, TOML, YAML, XML, HTML, Markdown, NUON support
-- Image preview via sixel/kitty graphics (when chafa/poppler/ffmpeg present)
-- ~205,000 lines of C, single `.deb`
+**Что умеет:**
+- 533 встроенные команды (гарантируются тестами)
+- Встроенный файловый менеджер (`explore`) с трёхпанельными Miller columns
+- Встроенный jumper по каталогам (`zi`) с frecency
+- Встроенный fuzzy picker (`fzf` builtin)
+- 100+ модулей prompt (языки, cloud, git, system)
+- 39 тем с OSC sequence переключением палитры терминала
+- 17 value types, 60+ filter/transform команд
+- Поддержка JSON, CSV, TSV, TOML, YAML, XML, HTML, Markdown, NUON
+- Preview изображений через sixel/kitty graphics (при наличии chafa/poppler/ffmpeg)
+- ~205,000 строк C, один `.deb`
 
-**Why it's interesting:** zy is a complete shell replacement that integrates everything into a single binary. The built-in file manager, fuzzy picker, and prompt modules eliminate the need for separate tools. It's designed to work WITH existing tools (zoxide, fzf) but also replaces them.
+**Почему интересно:** zy — это полная замена shell, интегрирующая всё в один бинарник. Встроенный файловый менеджер, fuzzy picker и prompt модули устраняют необходимость в отдельных инструментах. Спроектирован для работы С существующими инструментами (zoxide, fzf), но также их заменяет.
 
-**What I already have:** zsh + oh-my-zsh + starship + zoxide + fzf + alacritty + yazi. zy would replace ALL of these with a single binary.
+**Что уже есть:** zsh + oh-my-zsh + starship + zoxide + fzf + alacritty + yazi. zy заменил бы ВСЁ это одним бинарником.
 
-**Difference:** zy is a complete shell ecosystem in one binary. But replacing the current stack is out of scope for this phase.
+**Отличие:** zy — это целая экосистема shell в одном бинарнике. Но замена текущего стека выходит за рамки этой фазы.
 
-**Installed:** NO
+**Установлен:** НЕТ
 
-**NixOS:** Not in nixpkgs. Available via `.deb` or source build. Pure C.
+**NixOS:** Нет в nixpkgs. Доступен через `.deb` или исходный код. Pure C.
 
-**Open Source:** Yes
+**Open Source:** Да
 
-**Maturity:** Active development, ~205K LOC
+**Зрелость:** Активная разработка, ~205K LOC
 
-**Recommendation:** MEDIUM — impressive but would replace entire shell stack. Not in scope for discovery expansion.
+**Рекомендация:** СРЕДНЯЯ — впечатляющий, но заменил бы весь shell стек. Не в рамках discovery expansion.
 
 ---
 
 ### 13. lazyide
 
-**What it is:** A full IDE in your terminal (written in Rust). Designed for SSH sessions and remote development.
+**Что это:** Полный IDE в терминале (написан на Rust). Спроектирован для SSH-сессий и удалённой разработки.
 
-**What it does:**
+**Что умеет:**
 - File tree, tabbed editing, split panes
-- LSP integration with inline ghost text and diagnostics
-- Syntax highlighting for Rust, Python, JS/TS, Go, and more
+- LSP интеграция с inline ghost text и диагностикой
+- Syntax highlighting для Rust, Python, JS/TS, Go и более
 - Code folding, bracket pair colorization
 - Git gutter + side-by-side diff
-- Minimap, project search, themes, remappable keybinds
-- 32 themes with live preview
-- Command palette (`Ctrl+P`) and fuzzy quick open (`Ctrl+O`)
+- Minimap, project search, темы, перемаппинг клавиш
+- 32 темы с live preview
+- Command palette (`Ctrl+P`) и fuzzy quick open (`Ctrl+O`)
 - Autosave + crash recovery
-- Agent Client Protocol (ACP) integration
+- Agent Client Protocol (ACP) интеграция
 
-**Why it's interesting:** This is a terminal IDE that pairs with agentic coding tools. It's designed for SSH workflows where you'd otherwise use a full GUI IDE. The ACP integration means AI agents can drive it.
+**Почему интересно:** Это терминальный IDE, который парится с agentic coding инструментами. Спроектирован для SSH-воркфлоу где иначе использовался бы полный GUI IDE. ACP интеграция означает что AI агенты могут им управлять.
 
-**What I already have:** Neovim with lazy.nvim + LSP. lazyide is a different approach — more IDE-like, less modal-editor-like.
+**Что уже есть:** Neovim с lazy.nvim + LSP. lazyide — другой подход — больше IDE-like, меньше modal-editor-like.
 
-**Difference:** lazyide is an IDE (not a modal editor), designed for SSH/remote work with AI agent integration. Neovim is a modal editor.
+**Отличие:** lazyide — это IDE (не modal editor), спроектированный для SSH/remote работы с AI agent интеграцией. Neovim — modal editor.
 
-**Installed:** NO
+**Установлен:** НЕТ
 
-**NixOS:** Not in nixpkgs. Available via `cargo install --git https://github.com/TysonLabs/lazyide` or `nix run`.
+**NixOS:** Нет в nixpkgs. Доступен через `cargo install --git https://github.com/TysonLabs/lazyide` или `nix run`.
 
-**Open Source:** Yes (MIT)
+**Open Source:** Да (MIT)
 
-**Maturity:** Active development
+**Зрелость:** Активная разработка
 
-**Recommendation:** MEDIUM — interesting but Neovim already covers the editing use case
+**Рекомендация:** СРЕДНЯЯ — интересный, но Neovim уже покрывает задачу редактирования
 
 ---
 
 ### 14. hunk
 
-**What it is:** Review-first terminal diff viewer for agent-authored changesets. Built on OpenTUI and Pierre diffs.
+**Что это:** Review-first терминальный diff viewer для agent-авторизованных changesets. Построен на OpenTUI и Pierre diffs.
 
-**What it does:**
-- Multi-file review stream with sidebar navigation
-- Inline AI and agent annotations beside the code
-- Split, stack, and responsive auto layouts
-- Watch mode for auto-reloading file and Git-backed reviews
-- Mouse, pager, and Git difftool support
-- Jujutsu and Sapling support
-- TypeScript extensions system
-- `HunkDiffView` component for embedding in OpenTUI apps
+**Что умеет:**
+- Multi-file review stream с sidebar навигацией
+- Inline AI и agent annotations рядом с кодом
+- Split, stack, и responsive auto layouts
+- Watch mode для авто-перезагрузки file и Git-backed reviews
+- Mouse, pager, и Git difftool поддержка
+- Jujutsu и Sapling поддержка
+- TypeScript extensions система
+- Компонент `HunkDiffView` для встраивания в OpenTUI приложения
 
-**Why it's interesting:** hunk is designed specifically for reviewing AI-generated code changes. The inline AI annotations and multi-file review stream are unique. It's not just a diff viewer — it's a review workflow tool.
+**Почему интересно:** hunk спроектирован специально для review AI-сгенерированных кодовых изменений. Inline AI annotations и multi-file review stream уникальны. Это не просто diff viewer — это review workflow инструмент.
 
-**What I already have:** delta (installed, provides syntax-highlighted diffs). lazygit (installed, provides Git TUI). hunk adds AI annotations and review-first workflow.
+**Что уже есть:** delta (установлен, предоставляет syntax-highlighted diffs). lazygit (установлен, предоставляет Git TUI). hunk добавляет AI annotations и review-first workflow.
 
-**Difference:** hunk adds AI/agent annotations and review-first UI. delta is a diff pager. lazygit is a Git TUI. hunk is a review tool.
+**Отличие:** hunk добавляет AI/agent annotations и review-first UI. delta — diff pager. lazygit — Git TUI. hunk — review инструмент.
 
-**Installed:** NO
+**Установлен:** НЕТ
 
-**NixOS:** Has a `flake.nix` but NOT in nixpkgs stable. Available via `nix run github:hunkdiff/hunk`.
+**NixOS:** Есть `flake.nix` но НЕТ в стабильном nixpkgs. Доступен через `nix run github:hunkdiff/hunk`.
 
-**Open Source:** Yes
+**Open Source:** Да
 
-**Maturity:** Active development, v0.20+
+**Зрелость:** Активная разработка, v0.20+
 
-**Recommendation:** MEDIUM — useful for AI code review, but delta + lazygit cover existing needs
+**Рекомендация:** СРЕДНЯЯ — полезен для AI code review, но delta + lazygit покрывают существующие нужды
 
 ---
 
 ### 15. tuitab
 
-**What it is:** Keyboard-driven terminal explorer for tabular data — CSV, TSV, JSON, JSONL, YAML, TOML, Parquet, Arrow, Excel, SQLite, DuckDB.
+**Что это:** Keyboard-driven терминальный explorer для табличных данных — CSV, TSV, JSON, JSONL, YAML, TOML, Parquet, Arrow, Excel, SQLite, DuckDB.
 
-**What it does:**
-- Filtering, sorting, pivots, joins
-- Computed columns and charts
-- Keyboard-driven navigation
-- Supports 12+ data formats
+**Что умеет:**
+- Фильтрация, сортировка, pivot-ы, joins
+- Computed columns и charts
+- Keyboard-driven навигация
+- Поддержка 12+ форматов данных
 
-**Why it's interesting:** This is a terminal data explorer that handles structured data formats natively. The pivot/join/computed-column capabilities make it a terminal spreadsheet.
+**Почему интересно:** Это терминальный data explorer который нативно обрабатывает структурированные форматы данных. Возможности pivot/join/computed-column делают его терминальной таблицей.
 
-**What I already have:** jq, yq, miller (installed) — text-based data processing. tuitab is a visual TUI explorer.
+**Что уже есть:** jq, yq, miller (установлены) — текстовая обработка данных. tuitab — визуальный TUI explorer.
 
-**Difference:** tuitab provides visual TUI interaction with tabular data. jq/yq/miller are CLI filters. Different paradigm.
+**Отличие:** tuitab предоставляет визуальное TUI-взаимодействие с табличными данными. jq/yq/miller — CLI фильтры. Другой парадигмой.
 
-**Installed:** NO
+**Установлен:** НЕТ
 
-**NixOS:** IN nixpkgs (PR #554785, added as `tuitab`). Verified.
+**NixOS:** В nixpkgs (PR #554785, добавлен как `tuitab`). Проверено.
 
-**Open Source:** Yes
+**Open Source:** Да
 
-**Maturity:** Stable, in nixpkgs
+**Зрелость:** Стабильный, в nixpkgs
 
-**Recommendation:** HIGH — in nixpkgs, unique visual data exploration
+**Рекомендация:** ВЫСОКАЯ — в nixpkgs, уникальное визуальное исследование данных
 
 ---
 
 ### 16. swpui
 
-**What it is:** TUI to search and replace with a focus on ergonomics, speed and case awareness.
+**Что это:** TUI для search and replace с фокусом на эргономике, скорости и case-awareness.
 
-**What it does:**
-- Interactive search and replace across files
+**Что умеет:**
+- Интерактивный search and replace по файлам
 - Case-aware matching
-- Ergonomic keyboard-driven interface
-- Fast, focused tool
+- Эргономичный keyboard-driven интерфейс
+- Быстрый, сфокусированный инструмент
 
-**Why it's interesting:** A dedicated search-and-replace TUI. Not a general-purpose tool — specifically optimized for the find-and-replace workflow.
+**Почему интересно:** Специализированный search-and-replace TUI. Не универсальный инструмент — специально оптимизированный для workflow find-and-replace.
 
-**What I already have:** ripgrep (installed for searching), sed/awk for replacement. swpui combines both in an interactive TUI.
+**Что уже есть:** ripgrep (установлен для поиска), sed/awk для замены. swpui комбинирует оба в интерактивном TUI.
 
-**Difference:** Interactive search-and-replace TUI vs CLI ripgrep + sed. Different workflow paradigm.
+**Отличие:** Интерактивный search-and-replace TUI против CLI ripgrep + sed. Другой workflow парадигмой.
 
-**Installed:** NO
+**Установлен:** НЕТ
 
-**NixOS:** IN nixpkgs (PR #524889, `swpui`). Verified.
+**NixOS:** В nixpkgs (PR #524889, `swpui`). Проверено.
 
-**Open Source:** Yes
+**Open Source:** Да
 
-**Maturity:** Stable, in nixpkgs
+**Зрелость:** Стабильный, в nixpkgs
 
-**Recommendation:** MEDIUM — useful but ripgrep + sed already cover this
+**Рекомендация:** СРЕДНЯЯ — полезен но ripgrep + sed уже покрывают это
 
 ---
 
 ### 17. taskwarrior-tui
 
-**What it is:** Terminal user interface for taskwarrior.
+**Что это:** Terminal user interface для taskwarrior.
 
-**What it does:**
-- Interactive task management
+**Что умеет:**
+- Интерактивное управление задачами
 - Keyboard-driven
-- Integrates with taskwarrior CLI
+- Интеграция с taskwarrior CLI
 
-**Why it's interesting:** If taskwarrior is ever installed, this provides a TUI interface. But taskwarrior isn't in the current stack.
+**Почему интересно:** Если taskwarrior когда-нибудь будет установлен, это предоставит TUI интерфейс. Но taskwarrior нет в текущем стеке.
 
-**What I already have:** planify (installed — a task manager). taskwarrior-tui requires taskwarrior.
+**Что уже есть:** planify (установлен — менеджер задач). taskwarrior-tui требует taskwarrior.
 
-**Difference:** Requires taskwarrior backend. planify is already the task manager.
+**Отличие:** Требует backend taskwarrior. planify уже является менеджером задач.
 
-**Installed:** NO (taskwarrior not installed)
+**Установлен:** НЕТ (taskwarrior не установлен)
 
-**NixOS:** IN nixpkgs (`pkgs.taskwarrior-tui`). Verified.
+**NixOS:** В nixpkgs (`pkgs.taskwarrior-tui`). Проверено.
 
-**Open Source:** Yes (MIT)
+**Open Source:** Да (MIT)
 
-**Maturity:** Stable
+**Зрелость:** Стабильный
 
-**Recommendation:** LOW — requires taskwarrior, planify already installed
+**Рекомендация:** НИЗКАЯ — требует taskwarrior, planify уже установлен
 
 ---
 
 ### 18. tuxedo
 
-**What it is:** Fast, keyboard-driven terminal UI for todo.txt.
+**Что это:** Быстрый, keyboard-driven terminal UI для todo.txt.
 
-**What it does:**
-- Interactive todo.txt management
+**Что умеет:**
+- Интерактивное управление todo.txt
 - Keyboard-driven
-- Fast, minimal
+- Быстрый, минималистичный
 
-**Why it's interesting:** todo.txt format support with a beautiful TUI. But planify is already the task tool.
+**Почему интересно:** Поддержка формата todo.txt с красивым TUI. Но planify уже является task-инструментом.
 
-**What I already have:** planify (installed). tuxedo requires todo.txt format.
+**Что уже есть:** planify (установлен). tuxedo требует формат todo.txt.
 
-**Difference:** Different task management format (todo.txt vs planify's format).
+**Отличие:** Другой формат управления задачами (todo.txt vs формат planify).
 
-**Installed:** NO
+**Установлен:** НЕТ
 
-**NixOS:** IN nixpkgs (`pkgs.tuxedo`). Verified.
+**NixOS:** В nixpkgs (`pkgs.tuxedo`). Проверено.
 
-**Open Source:** Yes
+**Open Source:** Да
 
-**Maturity:** Stable
+**Зрелость:** Стабильный
 
-**Recommendation:** LOW — planify already covers task management
+**Рекомендация:** НИЗКАЯ — planify уже покрывает управление задачами
 
 ---
 
 ### 19. tooi
 
-**What it is:** Text-based user interface for Mastodon, Pleroma and friends.
+**Что это:** Text-based user interface для Mastodon, Pleroma и друзей.
 
-**What it does:**
-- Terminal-based Mastodon client
+**Что умеет:**
+- Терминальный Mastodon клиент
 - Textual TUI
-- Interactive social media browsing
+- Интерактивный просмотр социальных медиа
 
-**Why it's interesting:** A terminal Mastodon client. Niche but interesting for terminal-first workflows.
+**Почему интересно:** Терминальный Mastodon клиент. Нишевая но интересная задача для terminal-first workflow.
 
-**What I already have:** discord, ayugram-desktop (installed as GUI apps). No terminal social media client.
+**Что уже есть:** discord, ayugram-desktop (установлены как GUI приложения). Нет терминального социального медиа клиента.
 
-**Difference:** Terminal-based social media client. Completely different category.
+**Отличие:** Терминальный социальный медиа клиент. Совершенно другая категория.
 
-**Installed:** NO
+**Установлен:** НЕТ
 
-**NixOS:** IN nixpkgs (PR #557307, `tooi`). Verified.
+**NixOS:** В nixpkgs (PR #557307, `tooi`). Проверено.
 
-**Open Source:** Yes
+**Open Source:** Да
 
-**Maturity:** Active development
+**Зрелость:** Активная разработка
 
-**Recommendation:** MEDIUM — niche but interesting, terminal-first social media
+**Рекомендация:** СРЕДНЯЯ — нишевая но интересная, terminal-first социальные медиа
 
 ---
 
 ### 20. bitchat-tui
 
-**What it is:** TUI client for BitChat — secure, anonymous, peer-to-peer chat over BLE.
+**Что это:** TUI клиент для BitChat — secure, anonymous, peer-to-peer chat over BLE.
 
-**What it does:**
+**Что умеет:**
 - End-to-end encrypted P2P chat
-- Bluetooth Low Energy transport
-- Terminal-based interface
+- Bluetooth Low Energy транспорт
+- Терминальный интерфейс
 - Off-grid communication
 
-**Why it's interesting:** This is the most unusual tool I found. Terminal-based encrypted P2P chat over Bluetooth. Completely off-grid communication.
+**Почему интересно:** Это самый необычный инструмент который я нашёл. Терминальный зашифрованный P2P чат через Bluetooth. Полностью off-grid communication.
 
-**What I already have:** Nothing comparable. No encrypted P2P chat tool.
+**Что уже есть:** Ничего сопоставимого. Нет зашифрованного P2P чат инструмента.
 
-**Difference:** Completely unique category — encrypted P2P chat over BLE in terminal.
+**Отличие:** Совершенно уникальная категория — зашифрованный P2P чат через BLE в терминале.
 
-**Installed:** NO
+**Установлен:** НЕТ
 
-**NixOS:** IN nixpkgs (PR #429235, `bitchat-tui`). Verified.
+**NixOS:** В nixpkgs (PR #429235, `bitchat-tui`). Проверено.
 
-**Open Source:** Yes
+**Open Source:** Да
 
-**Maturity:** Early stage, experimental
+**Зрелость:** Ранняя стадия, экспериментальный
 
-**Recommendation:** MEDIUM — extremely niche, experimental, but fascinating concept
+**Рекомендация:** СРЕДНЯЯ — экстремально нишевая, экспериментальная, но увлекательная концепция
 
 ---
 
-## 📊 System Visualization
+## 📊 Визуализация Системы
 
 ### 21. kite
 
-**What it is:** Modern cross-platform TUI system resource monitor written in Rust. Inspired by btop++.
+**Что это:** Современный cross-platform TUI системный монитор ресурсов на Rust. Вдохновлён btop++.
 
-**What it does:**
-- Real-time CPU monitoring (per-core, frequency, load averages) with sparkline graphs
-- Memory & swap usage with historical graphs and bar gauges
-- Disk I/O rates and filesystem usage
-- Network interface traffic with auto-scaling graphs
-- GPU monitoring (NVIDIA NVML)
+**Что умеет:**
+- Real-time CPU мониторинг (per-core, frequency, load averages) с sparkline графиками
+- Memory & swap usage с historical graphs и bar gauges
+- Disk I/O rates и filesystem usage
+- Network interface traffic с auto-scaling graphs
+- GPU мониторинг (NVIDIA NVML)
 - Docker container monitoring
-- Kubernetes pod monitoring (optional)
-- SSH remote monitoring (optional)
-- Prometheus metrics exporter (optional)
-- Configurable alert rules in TOML
-- 11 built-in themes
-- Vim-style navigation
-- Process management with signals
+- Kubernetes pod monitoring (опционально)
+- SSH remote monitoring (опционально)
+- Prometheus metrics exporter (опционально)
+- Настраиваемые alert rules в TOML
+- 11 встроенных тем
+- Vim-style навигация
+- Process management с сигналами
 
-**Why it's interesting:** kite is the most feature-rich modern system monitor I found. The alert rules system, Docker/K8s integration, and Prometheus exporter are unique. The TOML configuration is clean.
+**Почему интересно:** kite — самый feature-rich современный системный монитор который я нашёл. Система alert rules, Docker/K8s интеграция и Prometheus exporter уникальны. TOML конфигурация чистая.
 
-**What I already have:** btop (installed). btop is a solid monitor but lacks kite's alert system, Docker/K8s integration, and Prometheus exporter.
+**Что уже есть:** btop (установлен). btop — солидный монитор но не хватает kite системы alert rules, Docker/K8s интеграции и Prometheus exporter.
 
-**Difference:** kite adds configurable alert rules, Docker/K8s monitoring, Prometheus exporter, and SSH remote monitoring. btop is a simpler monitor.
+**Отличие:** kite добавляет настраиваемые alert rules, Docker/K8s мониторинг, Prometheus exporter и SSH remote monitoring. btop — более простой монитор.
 
-**Installed:** NO (btop is installed but serves a different feature set)
+**Установлен:** НЕТ (btop установлен но с другим набором возможностей)
 
-**NixOS:** Not in nixpkgs. Available via `cargo install kite` or GitHub release.
+**NixOS:** Нет в nixpkgs. Доступен через `cargo install kite` или GitHub release.
 
-**Open Source:** Yes
+**Open Source:** Да
 
-**Maturity:** Active development
+**Зрелость:** Активная разработка
 
-**Recommendation:** MEDIUM — btop already installed, kite adds features but may be overkill
+**Рекомендация:** СРЕДНЯЯ — btop уже установлен, kite добавляет возможности но может быть overkill
 
 ---
 
 ### 22. neotop
 
-**What it is:** Linux-first terminal system monitor with per-core CPU spectrum, NVIDIA/AMD/Intel GPU dashboards, KVM hypervisor insight, container/runtime process grouping.
+**Что это:** Linux-first терминальный системный монитор с per-core CPU spectrum, NVIDIA/AMD/Intel GPU dashboards, KVM hypervisor insight, container/runtime process grouping.
 
-**What it does:**
-- Per-core CPU spectrum with SMT/NUMA grouping
+**Что умеет:**
+- Per-core CPU spectrum с SMT/NUMA grouping
 - Multi-vendor GPU dashboards (NVIDIA, AMD, Intel)
 - KVM hypervisor insight
-- Universal process grouping (every row in a named aggregate)
-- Catppuccin themes
-- Single binary, no daemons, no config required
-- macOS port with functional parity
+- Universal process grouping (каждая строка в named aggregate)
+- Catppuccin темы
+- Один бинарник, нет демонов, нет конфигурации
+- macOS порт с функциональным паритетом
 
-**Why it's interesting:** neotop has the most sophisticated GPU monitoring and process grouping. The "every row lives in a named aggregate" approach is unique — no headerless "misc" tail. The KVM insight is valuable for the virtualization setup.
+**Почему интересно:** neotop имеет самый сложный GPU мониторинг и process grouping. Подход «каждая строка живёт в named aggregate» уникален — нет headerless «misc» tail. KVM insight ценен для virtualization setup.
 
-**What I already have:** btop (installed). btop has basic process monitoring but no GPU dashboards or KVM insight.
+**Что уже есть:** btop (установлен). btop имеет базовый process monitoring но нет GPU dashboards или KVM insight.
 
-**Difference:** neotop adds GPU dashboards (multi-vendor), KVM hypervisor insight, and sophisticated process grouping. btop has basic CPU/RAM/disk/network.
+**Отличие:** neotop добавляет GPU dashboards (multi-vendor), KVM hypervisor insight и сложный process grouping. btop имеет базовый CPU/RAM/disk/network.
 
-**Installed:** NO
+**Установлен:** НЕТ
 
-**NixOS:** Not in nixpkgs. Available via `cargo install neotop` or GitHub release.
+**NixOS:** Нет в nixpkgs. Доступен через `cargo install neotop` или GitHub release.
 
-**Open Source:** Yes
+**Open Source:** Да
 
-**Maturity:** Active development, v0.28+
+**Зрелость:** Активная разработка, v0.28+
 
-**Recommendation:** HIGH — GPU monitoring + KVM insight + process grouping are unique
+**Рекомендация:** ВЫСОКАЯ — GPU мониторинг + KVM insight + process grouping уникальны
 
 ---
 
 ### 23. narsil
 
-**What it is:** Terminal-based system resource monitor written in Rust — fast, readable, and GPU-aware. Named after Aragorn's sword.
+**Что это:** Терминальный системный монитор ресурсов на Rust — быстрый, читаемый и GPU-aware. Назван в честь меча Арагорна.
 
-**What it does:**
-- Overview, CPU, Memory, Network, Disks, Processes, GPU tabs
-- Braille charts for CPU
+**Что умеет:**
+- Вкладки Overview, CPU, Memory, Network, Disks, Processes, GPU
+- Braille charts для CPU
 - Per-char label inversion
 - Disk usage bars
-- Status bar with keybindings
-- Localised UI (EN/DE/FR/ES)
-- GPU monitoring: AMD + NVIDIA + Intel (Linux)
-- `cargo install narsil` or AUR/AppImage/Windows
+- Status bar с keybindings
+- Локализованный UI (EN/DE/FR/ES)
+- GPU мониторинг: AMD + NVIDIA + Intel (Linux)
+- `cargo install narsil` или AUR/AppImage/Windows
 
-**Why it's interesting:** narsil combines braille charts with GPU monitoring and localisation. The braille-based CPU visualization is visually distinctive.
+**Почему интересно:** narsil комбинирует braille charts с GPU мониторингом и локализацией. Braille-based CPU визуализация визуально отличается.
 
-**What I already have:** btop (installed). narsil adds braille charts and GPU monitoring.
+**Что уже есть:** btop (установлен). narsil добавляет braille charts и GPU мониторинг.
 
-**Difference:** Braille charts + GPU monitoring + localisation. btop has standard bar charts.
+**Отличие:** Braille charts + GPU мониторинг + локализация. btop имеет стандартные bar charts.
 
-**Installed:** NO
+**Установлен:** НЕТ
 
-**NixOS:** Not in nixpkgs. Available via `cargo install narsil`.
+**NixOS:** Нет в nixpkgs. Доступен через `cargo install narsil`.
 
-**Open Source:** Yes
+**Open Source:** Да
 
-**Maturity:** Active development
+**Зрелость:** Активная разработка
 
-**Recommendation:** MEDIUM — braille charts are visually interesting but btop covers core needs
+**Рекомендация:** СРЕДНЯЯ — braille charts визуально интересны но btop покрывает базовые нужды
 
 ---
 
 ### 24. dreidel
 
-**What it is:** Fast, keyboard-driven Linux-first terminal system monitor with clear dashboard layout and focused drill-down views.
+**Что это:** Быстрый, keyboard-driven Linux-first терминальный системный монитор с чистой dashboard layout и focused drill-down views.
 
-**What it does:**
-- CPU — per-core line charts with scrollable history and per-core temperatures
-- Network — per-interface RX/TX rates with full-screen graph drill-down
-- Disk — per-device capacity info with read/write rate graphs
-- Process — sortable, filterable with detail overlay and signal support
+**Что умеет:**
+- CPU — per-core line charts с scrollable history и per-core temperatures
+- Network — per-interface RX/TX rates с full-screen graph drill-down
+- Disk — per-device capacity info с read/write rate graphs
+- Process — sortable, filterable с detail overlay и signal support
 - Status bar — clock, uptime, load averages, RAM/swap gauges
-- 4 layouts: sidebar, classic, dashboard, grid
-- TOML configuration
+- 4 layout: sidebar, classic, dashboard, grid
+- TOML конфигурация
 
-**Why it's interesting:** dreidel's layout system and drill-down approach is unique. The network and disk drill-down views (full-screen graphs) are particularly well-designed.
+**Почему интересно:** Layout system и drill-down подход dreidel уникальны. Network и disk drill-down views (full-screen graphs) особенно хорошо спроектированы.
 
-**What I already have:** btop (installed). btop has similar features but dreidel's layout system and drill-down UX is different.
+**Что уже есть:** btop (установлен). btop имеет похожие возможности но dreidel layout system и drill-down UX отличаются.
 
-**Difference:** dreidel's layout presets and drill-down UX differ from btop's approach.
+**Отличие:** Dreidel layout presets и drill-down UX отличаются от подхода btop.
 
-**Installed:** NO
+**Установлен:** НЕТ
 
-**NixOS:** Not in nixpkgs. Available via `cargo install dreidel`.
+**NixOS:** Нет в nixpkgs. Доступен через `cargo install dreidel`.
 
-**Open Source:** Yes
+**Open Source:** Да
 
-**Maturity:** Active development
+**Зрелость:** Активная разработка
 
-**Recommendation:** MEDIUM — btop already covers system monitoring
+**Рекомендация:** СРЕДНЯЯ — btop уже покрывает системный мониторинг
 
 ---
 
 ### 25. vitals
 
-**What it is:** Terminal resource monitor for Linux built with notcurses. Displays CPU, memory, network, storage, and thermal data in a responsive multi-panel TUI.
+**Что это:** Терминальный монитор ресурсов для Linux построенный на notcurses. Отображает CPU, memory, network, storage и thermal data в responsive multi-panel TUI.
 
-**What it does:**
-- CPU, Memory, Network, Storage, Thermal panels
-- 24-bit color using Catppuccin Mocha palette
+**Что умеет:**
+- Панели CPU, Memory, Network, Storage, Thermal
+- 24-bit color используя Catppuccin Mocha палитру
 - Adaptive layout (3-column wide, 2-column medium, stacked narrow)
-- Built on notcurses (no pre-installed dependency needed)
+- Построен на notcurses (нет предустановленной зависимости)
 
-**Why it's interesting:** Built on notcurses, which means it has access to advanced terminal graphics. The adaptive layout system is unique.
+**Почему интересно:** Построен на notcurses, что значит доступ к продвинутой терминальной графике. Adaptive layout система уникальна.
 
-**What I already have:** btop (installed). vitals uses notcurses for rendering.
+**Что уже есть:** btop (установлен). vitals использует notcurses для рендеринга.
 
-**Difference:** notcurses-based rendering with adaptive layout. btop uses different rendering.
+**Отличие:** notcurses-based рендеринг с adaptive layout. btop использует другой рендеринг.
 
-**Installed:** NO
+**Установлен:** НЕТ
 
-**NixOS:** Not in nixpkgs. Available via source build (CMake).
+**NixOS:** Нет в nixpkgs. Доступен через source build (CMake).
 
-**Open Source:** Yes
+**Open Source:** Да
 
-**Maturity:** Active development
+**Зрелость:** Активная разработка
 
-**Recommendation:** MEDIUM — notcurses rendering is interesting but btop covers needs
+**Рекомендация:** СРЕДНЯЯ — notcurses рендеринг интересен но btop покрывает нужды
 
 ---
 
 ### 26. tempest-monitor
 
-**What it is:** Stunning, real-time terminal system monitor for macOS and Linux. Built with Rust.
+**Что это:** Потрясающий, real-time терминальный системный монитор для macOS и Linux. Построен на Rust.
 
-**What it does:**
-- Overview, CPU, Memory, Disks, Network, Processes, GPU, Services, Sockets tabs
-- Historical persistence (7-day rolling window in SQLite)
+**Что умеет:**
+- Вкладки Overview, CPU, Memory, Disks, Network, Processes, GPU, Services, Sockets
+- Historical persistence (7-day rolling window в SQLite)
 - Prometheus-compatible exporter
 - PNG/JSON machine-state snapshots
-- Intelligent alerting with desktop notifications
+- Intelligent alerting с desktop notifications
 - Full async engine (tokio)
-- macOS: powermetrics for GPU/power metrics
-- Linux: sysfs/hwmon for temperature/GPU
-- NVIDIA NVML support
+- macOS: powermetrics для GPU/power metrics
+- Linux: sysfs/hwmon для temperature/GPU
+- NVIDIA NVML поддержка
 
-**Why it's interesting:** tempest-monitor has the most comprehensive feature set — historical persistence, Prometheus exporter, PNG snapshots, and macOS-specific powermetrics integration. The 7-day SQLite history is unique.
+**Почему интересно:** tempest-monitor имеет самый comprehensive feature set — historical persistence, Prometheus exporter, PNG snapshots, и macOS-specific powermetrics интеграция. 7-day SQLite history уникальна.
 
-**What I already have:** btop (installed). tempest-monitor adds historical persistence and Prometheus export.
+**Что уже есть:** btop (установлен). tempest-monitor добавляет historical persistence и Prometheus export.
 
-**Difference:** 7-day historical persistence, Prometheus exporter, PNG snapshots. btop has no history.
+**Отличие:** 7-day historical persistence, Prometheus exporter, PNG snapshots. btop не имеет history.
 
-**Installed:** NO
+**Установлен:** НЕТ
 
-**NixOS:** Not in nixpkgs. Available via `cargo install tempest-monitor`.
+**NixOS:** Нет в nixpkgs. Доступен через `cargo install tempest-monitor`.
 
-**Open Source:** Yes
+**Open Source:** Да
 
-**Maturity:** Active development
+**Зрелость:** Активная разработка
 
-**Recommendation:** MEDIUM — historical persistence is unique but btop covers core needs
+**Рекомендация:** СРЕДНЯЯ — historical persistence уникальна но btop покрывает базовые нужды
 
 ---
 
 ### 27. puls
 
-**What it is:** Unified system monitoring and management tool for Linux. Combines resource monitoring with system administration.
+**Что это:** Unified system monitoring and management tool для Linux. Комбинирует resource monitoring с system administration.
 
-**What it does:**
+**Что умеет:**
 - CPU, Memory, Disk, Network, GPU monitoring
 - Systemd service management (start/stop/restart/enable/disable)
 - Journal log viewer
 - GRUB configuration editor
 - Container engine integration (Docker socket)
-- Process tree with resource usage score
+- Process tree с resource usage score
 - Language detection (Turkish/English)
-- Read-only and read/write modes
+- Read-only и read/write modes
 
-**Why it's interesting:** puls combines monitoring AND system administration in one TUI. You can monitor services AND manage them AND edit GRUB AND view journal logs — all in one tool.
+**Почему интересно:** puls комбинирует monitoring AND system administration в одном TUI. Можно мониторить services AND управлять ими AND редактировать GRUB AND просматривать journal logs — всё в одном инструменте.
 
-**What I already have:** btop (monitoring), systemctl (service management), journalctl (logs). puls combines all three.
+**Что уже есть:** btop (monitoring), systemctl (service management), journalctl (logs). puls комбинирует все три.
 
-**Difference:** Unified monitoring + administration + GRUB editing + journal viewing in one TUI.
+**Отличие:** Unified monitoring + administration + GRUB editing + journal viewing в одном TUI.
 
-**Installed:** NO
+**Установлен:** НЕТ
 
-**NixOS:** Not in nixpkgs. Available via `cargo install puls` or GitHub release.
+**NixOS:** Нет в nixpkgs. Доступен через `cargo install puls` или GitHub release.
 
-**Open Source:** Yes
+**Open Source:** Да
 
-**Maturity:** Active development
+**Зрелость:** Активная разработка
 
-**Recommendation:** MEDIUM — unified admin+monitor is interesting but requires sudo for full functionality
+**Рекомендация:** СРЕДНЯЯ — unified admin+monitor интересен но требует sudo для полной функциональности
 
 ---
 
 ### 28. voidmon
 
-**What it is:** Sleek, hacker-aesthetic terminal system monitor written in Go.
+**Что это:** Sleek, hacker-aesthetic терминальный системный монитор на Go.
 
-**What it does:**
+**Что умеет:**
 - CPU, Memory, Disk, I/O, Network, GPU, Power, Processes
 - Cross-platform GPU support (NVIDIA, AMD, Intel, Apple Silicon)
 - Power/battery monitoring
-- Top 15 processes by CPU
+- Top 15 процессов по CPU
 - One-liner install
 
-**Why it's interesting:** The hacker-aesthetic design and Go-based implementation make it lightweight and visually distinctive.
+**Почему интересно:** Hacker-aesthetic дизайн и Go-based реализация делают его лёгким и визуально отличным.
 
-**What I already have:** btop (installed). voidmon is a simpler alternative.
+**Что уже есть:** btop (установлен). voidmon — более простой альтернативный.
 
-**Difference:** Go-based, hacker aesthetic, simpler than btop.
+**Отличие:** Go-based, hacker aesthetic, проще чем btop.
 
-**Installed:** NO
+**Установлен:** НЕТ
 
-**NixOS:** Not in nixpkgs. Available via `go install` or GitHub releases.
+**NixOS:** Нет в nixpkgs. Доступен через `go install` или GitHub releases.
 
-**Open Source:** Yes
+**Open Source:** Да
 
-**Maturity:** Active development
+**Зрелость:** Активная разработка
 
-**Recommendation:** LOW — btop already installed and more feature-rich
+**Рекомендация:** НИЗКАЯ — btop уже установлен и более feature-rich
 
 ---
 
 ### 29. xtop
 
-**What it is:** Modern, cross-platform TUI system monitor written in Rust. Inspired by btop.
+**Что это:** Modern, cross-platform TUI системный монитор на Rust. Вдохновлён btop.
 
-**What it does:**
-- CPU per-core with temperature sensing
-- RAM and Swap monitoring with historical chart
+**Что умеет:**
+- CPU per-core с temperature sensing
+- RAM и Swap monitoring с historical chart
 - Network RX/TX tracking per interface
-- Storage and Disk I/O visualization
-- Process list with live search
-- GPU and Battery monitoring (stub)
-- 13 color themes with custom theme support via JSONC
-- 7 built-in layouts with custom layout support via JSONC
-- Full-screen mode for any widget
+- Storage и Disk I/O visualization
+- Process list с live search
+- GPU и Battery monitoring (stub)
+- 13 color тем с custom theme support через JSONC
+- 7 built-in layouts с custom layout support через JSONC
+- Full-screen mode для любого виджета
 - Configurable alert thresholds
 
-**Why it's interesting:** Similar to btop but with JSONC configuration and more layout options. The theme system via JSONC is interesting.
+**Почему интересно:** Похож на btop но с JSONC конфигурацией и большим количеством layout options. Theme system через JSONC интересна.
 
-**What I already have:** btop (installed). xtop is a btop alternative.
+**Что уже есть:** btop (установлен). xtop — btop alternative.
 
-**Difference:** JSONC configuration, more layouts. But btop already installed.
+**Отличие:** JSONC конфигурация, больше layouts. Но btop уже установлен.
 
-**Installed:** NO
+**Установлен:** НЕТ
 
-**NixOS:** Not in nixpkgs. Available via `cargo install xtop`.
+**NixOS:** Нет в nixpkgs. Доступен через `cargo install xtop`.
 
-**Open Source:** Yes
+**Open Source:** Да
 
-**Maturity:** Active development
+**Зрелость:** Активная разработка
 
-**Recommendation:** LOW — btop already installed, xtop is an alternative
+**Рекомендация:** НИЗКАЯ — btop уже установлен, xtop — альтернатива
 
 ---
 
@@ -925,292 +925,292 @@ Before presenting findings, here is the complete software inventory that serves 
 
 ### 30. nixmate
 
-**What it is:** All your NixOS tools in one TUI — generations, rebuilds, services, errors, and more.
+**Что это:** Все ваши NixOS инструменты в одном TUI — generations, rebuilds, services, errors, и многое другое.
 
-**What it does:**
+**Что умеет:**
 - Generations: browse, diff, delete, pin, restore. Side-by-side package comparison
-- Error Translator: paste a Nix error, get human explanation + fix. 50+ patterns. AI fallback (Claude/OpenAI/Ollama)
-- Services & Ports: systemd + Docker + Podman in one view. Port mapping. Start/stop/restart. Live logs
+- Error Translator: вставьте Nix ошибку, получите человеческое объяснение + фикс. 50+ паттернов. AI fallback (Claude/OpenAI/Ollama)
+- Services & Ports: systemd + Docker + Podman в одном view. Port mapping. Start/stop/restart. Live logs
 - Storage: Disk dashboard. Store breakdown (live/dead paths). GC, optimize, full clean
-- Config Showcase: Auto-generate system poster + config architecture diagram as SVG
-- Options Explorer: search.nixos.org in terminal. Fuzzy search, tree browsing
+- Config Showcase: Auto-generate system poster + config architecture diagram как SVG
+- Options Explorer: search.nixos.org в терминале. Fuzzy search, tree browsing
 - Rebuild: Live nixos-rebuild dashboard. 5-phase progress. Post-build diff
 - Flake Inputs: Selective per-input updates
 - Package Search: Fuzzy search across 100k+ packages
-- Nix Doctor: Health score 0-100. Automated checks with one-click fixes
+- Nix Doctor: Health score 0-100. Automated checks с one-click fixes
 - Pipe mode: `nixos-rebuild switch 2>&1 | nixmate`
 
-**Why it's interesting:** This is the ultimate NixOS management TUI. It replaces `nixos-rebuild`, `nix-collect-garbage`, `nix search`, `systemctl`, and more with one keyboard-driven tool. The AI error translator and Nix Doctor are unique.
+**Почему интересно:** Это ultimate NixOS management TUI. Заменяяет `nixos-rebuild`, `nix-collect-garbage`, `nix search`, `systemctl` и многое другое одним keyboard-driven инструментом. AI error translator и Nix Doctor уникальны.
 
-**What I already have:** nix (installed), nix flake commands, systemctl. nixmate provides a unified TUI interface for all of these.
+**Что уже есть:** nix (установлен), nix flake commands, systemctl. nixmate предоставляет unified TUI интерфейс для всего этого.
 
-**Difference:** Unified TUI for all NixOS operations + AI error translation + health score. No equivalent in current stack.
+**Отличие:** Unified TUI для всех NixOS операций + AI error translation + health score. Нет аналога в текущем стеке.
 
-**Installed:** NO
+**Установлен:** НЕТ
 
-**NixOS:** Not in nixpkgs. Available via `nix run github:manelinux/nixmate` or `nix profile install github:manelinux/nixmate`.
+**NixOS:** Нет в nixpkgs. Доступен через `nix run github:manelinux/nixmate` или `nix profile install github:manelinux/nixmate`.
 
-**Open Source:** Yes
+**Open Source:** Да
 
-**Maturity:** Active development, 10 modules, 13 themes, EN/DE
+**Зрелость:** Активная разработка, 10 модулей, 13 тем, EN/DE
 
-**Recommendation:** HIGH — comprehensive NixOS management, AI error translator, Nix Doctor
+**Рекомендация:** ВЫСОКАЯ — comprehensive NixOS management, AI error translator, Nix Doctor
 
 ---
 
 ### 31. nixard
 
-**What it is:** Interactive terminal UI for exploring NixOS package closures, analyzing real installation costs, and generating ready-to-use Nix declarations.
+**Что это:** Interactive terminal UI для исследования NixOS package closures, анализа реальных installation costs, и генерации ready-to-use Nix declarations.
 
-**What it does:**
-- Package exploration with local SQLite database
+**Что умеет:**
+- Package exploration с локальной SQLite базой данных
 - Real closure analysis (dependency inspection)
 - Local store auditing
-- Configuration inspection (detects configuration.nix, flakes, Home Manager)
+- Configuration inspection (детектирует configuration.nix, flakes, Home Manager)
 - Export/history management
-- Integrated `.nix` editor
-- Mark packages and export as `.nixard` files
+- Встроенный `.nix` редактор
+- Mark packages и export как `.nixard` файлы
 - Persistent export history
-- `.narinfo` caching for fast repeated lookups
+- `.narinfo` caching для fast repeated lookups
 
-**Why it's interesting:** nixard provides real closure analysis — you can see exactly what a package will pull in before installing it. The local SQLite database means searches are instant without network access.
+**Почему интересно:** nixard предоставляет real closure analysis — можно увидеть точно что пакет потянет за собой перед установкой. Локальная SQLite база означает что поиск мгновенный без сетевого доступа.
 
-**What I already have:** nix commands (installed). nixard provides a visual TUI for package exploration that nix CLI lacks.
+**Что уже есть:** nix commands (установлены). nixard предоставляет визуальный TUI для package exploration который nix CLI не имеет.
 
-**Difference:** Visual TUI for package exploration with real closure analysis and local database. No equivalent.
+**Отличие:** Visual TUI для package exploration с real closure analysis и локальной базой данных. Нет аналога.
 
-**Installed:** NO
+**Установлен:** НЕТ
 
-**NixOS:** Not in nixpkgs. Available via `nix run github:manelinux/nixard` or `nix profile install github:manelinux/nixard`.
+**NixOS:** Нет в nixpkgs. Доступен через `nix run github:manelinux/nixard` или `nix profile install github:manelinux/nixard`.
 
-**Open Source:** Yes
+**Open Source:** Да
 
-**Maturity:** Active development, NixOS 26.05 compatible
+**Зрелость:** Активная разработка, NixOS 26.05 совместим
 
-**Recommendation:** HIGH — closure analysis and visual package exploration are unique
+**Рекомендация:** ВЫСОКАЯ — closure analysis и visual package exploration уникальны
 
 ---
 
 ### 32. verynix (vx)
 
-**What it is:** Run any version of any Nix package in one command.
+**Что это:** Запустите любую версию любого Nix пакета одной командой.
 
-**What it does:**
-- `vx hugo-0.139.0 build` — resolves version, finds nixpkgs commit, runs it
-- Uses Nixhub API for version resolution
-- `vx hugo serve` — run any package version
-- `vx --verbose` — show resolution details
+**Что умеет:**
+- `vx hugo-0.139.0 build` — резолвит версию, находит nixpkgs commit, запускает
+- Использует Nixhub API для version resolution
+- `vx hugo serve` — запустить любую версию пакета
+- `vx --verbose` — показать детали резолва
 
-**Why it's interesting:** vx solves the "which nixpkgs commit has this version?" problem. It's like `nix run` but with version resolution built in.
+**Почему интересно:** vx решает проблему «какой nixpkgs commit имеет эту версию?». Это как `nix run` но с version resolution встроенной.
 
-**What I already have:** nix run (installed). vx adds version resolution.
+**Что уже есть:** nix run (установлен). vx добавляет version resolution.
 
-**Difference:** Automatic version resolution via Nixhub API. No equivalent.
+**Отличие:** Автоматическая version resolution через Nixhub API. Нет аналога.
 
-**Installed:** NO
+**Установлен:** НЕТ
 
-**NixOS:** Not in nixpkgs. Available via `nix run github:mipmip/verynix`.
+**NixOS:** Нет в nixpkgs. Доступен через `nix run github:mipmip/verynix`.
 
-**Open Source:** Yes
+**Open Source:** Да
 
-**Maturity:** Active development
+**Зрелость:** Активная разработка
 
-**Recommendation:** MEDIUM — useful for testing specific package versions, but nix run covers most needs
+**Рекомендация:** СРЕДНЯЯ — полезен для тестирования конкретных версий пакетов, но nix run покрывает базовые нужды
 
 ---
 
 ### 33. nxv
 
-**What it is:** Nix Version Index. A blazingly fast CLI for finding any version of any Nix package.
+**Что это:** Nix Version Index. Молниеносно быстрый CLI для нахождения любой версии любого Nix пакета.
 
-**What it does:**
+**Что умеет:**
 - Fast search (Bloom filter + SQLite FTS5)
-- Version history — when each version was introduced
-- CLI, HTTP API server with web UI, or remote API
-- NixOS module (systemd service with automatic index updates)
+- Version history — когда каждая версия была введена
+- CLI, HTTP API server с web UI, или remote API
+- NixOS module (systemd service с automatic index updates)
 - ~10MB static binary, ~190MB compressed index
-- 9+ years of nixpkgs history
-- Agent Skills-standard skill for AI coding agents
-- Shell completions for bash, zsh, fish
+- 9+ лет истории nixpkgs
+- Agent Skills-standard skill для AI coding agents
+- Shell completions для bash, zsh, fish
 
-**Why it's interesting:** nxv indexes the entire history of nixpkgs packages. The agent skills integration means AI coding agents can use it natively. The HTTP API + web UI is a nice touch.
+**Почему интересно:** nxv индексирует всю историю пакетов nixpkgs. Agent skills интеграция означает что AI coding agents могут использовать его нативно. HTTP API + web UI — приятный бонус.
 
-**What I already have:** nix search (installed but slow, no history). nxv provides instant version history search.
+**Что уже есть:** nix search (установлен но медленный, нет history). nxv предоставляет мгновенный version history search.
 
-**Difference:** Complete nixpkgs version history index with instant search. AI agent skills.
+**Отличие:** Complete nixpkgs version history index с мгновенным поиском. AI agent skills.
 
-**Installed:** NO
+**Установлен:** НЕТ
 
-**NixOS:** Not in nixpkgs. Available via `nxv` binary or `nix run`.
+**NixOS:** Нет в nixpkgs. Доступен через `nxv` binary или `nix run`.
 
-**Open Source:** Yes
+**Open Source:** Да
 
-**Maturity:** Active development
+**Зрелость:** Активная разработка
 
-**Recommendation:** MEDIUM — useful for package version discovery, but nix search covers basic needs
+**Рекомендация:** СРЕДНЯЯ — полезен для package version discovery, но nix search покрывает базовые нужды
 
 ---
 
 ### 34. super-comma (,)
 
-**What it is:** Instant Nix Runner (Rust). Ultra-fast, zero-dependency Nix command runner powered by nixpkgs-multiverse.
+**Что это:** Instant Nix Runner (Rust). Ultra-fast, zero-dependency Nix command runner powered by nixpkgs-multiverse.
 
-**What it does:**
-- `, ripgrep -i "pattern"` — runs binaries directly via nix run
-- `,s hello cowsay` — interactive shell with multiple packages
-- `,v python3` — dynamically lists all historical versions
+**Что умеет:**
+- `, ripgrep -i "pattern"` — запускает бинарники напрямую через nix run
+- `,s hello cowsay` — интерактивный shell с несколькими пакетами
+- `,v python3` — динамически перечисляет все historical versions
 - Version constraints: `nodejs@20`, `python3."3.8.9"`
 - Custom flake URIs: `f=github:ksv/repo1#tool`
-- `--sandbox` mode with landrun
-- `--nom` for nix-output-monitor progress bars
+- `--sandbox` mode с landrun
+- `--nom` для nix-output-monitor progress bars
 - Cross-platform sandboxing (Linux landrun, macOS sandbox-exec)
 
-**Why it's interesting:** The comma-based command syntax is the fastest way to run Nix packages. The sandboxing and version constraints are powerful. The nixpkgs-multiverse backend gives access to all historical versions.
+**Почему интересно:** Comma-based command syntax — самый быстрый способ запускать Nix пакеты. Sandboxing и version constraints мощные. nixpkgs-multiverse backend даёт доступ ко всем historical versions.
 
-**What I already have:** nix run (installed). super-comma provides a faster syntax and version resolution.
+**Что уже есть:** nix run (установлен). super-comma предоставляет более быстрый синтаксис и version resolution.
 
-**Difference:** Ultra-fast syntax, version resolution, sandboxing. But nix run covers most needs.
+**Отличие:** Ultra-fast syntax, version resolution, sandboxing. Но nix run покрывает базовые нужды.
 
-**Installed:** NO
+**Установлен:** НЕТ
 
-**NixOS:** Not in nixpkgs. Available via `nix profile install github:sayavc/super-comma-nix` or `cargo install`.
+**NixOS:** Нет в nixpkgs. Доступен через `nix profile install github:sayavc/super-comma-nix` или `cargo install`.
 
-**Open Source:** Yes
+**Open Source:** Да
 
-**Maturity:** Active development
+**Зрелость:** Активная разработка
 
-**Recommendation:** MEDIUM — fast Nix runner but nix run already works
+**Рекомендация:** СРЕДНЯЯ — быстрый Nix runner но nix run уже работает
 
 ---
 
 ### 35. nixy
 
-**What it is:** Simple Nix package manager (Rust). asdf/Homebrew alternative using Nix.
+**Что это:** Simple Nix package manager (Rust). asdf/Homebrew alternative using Nix.
 
-**What it does:**
-- `nixy install ripgrep` — install with version constraints
-- `nixy list` — see installed packages with versions
-- `nixy search python` — find packages + versions
-- `nixy profile` — interactive TUI profile selector
-- Declarative `nixy.json` configuration
-- Sync across machines via `nixy sync`
+**Что умеет:**
+- `nixy install ripgrep` — установить с version constraints
+- `nixy list` — увидеть установленные пакеты с версиями
+- `nixy search python` — найти пакеты + версии
+- `nixy profile` — интерактивный TUI profile selector
+- Declarative `nixy.json` конфигурация
+- Sync across machines через `nixy sync`
 - Profile support (work, personal)
-- Tab completion for zsh/bash
+- Tab completion для zsh/bash
 
-**Why it is interesting:** nixy provides a simple CLI interface for Nix packages, similar to Homebrew/asdf. The profile system and declarative config make it easy to manage packages across machines.
+**Почему интересно:** nixy предоставляет простой CLI интерфейс для Nix пакетов, похожий на Homebrew/asdf. Profile system и declarative config делают управление пакетами跨 машинами лёгким.
 
-**What I already have:** nix profile (installed). nixy provides a simpler interface and profile management.
+**Что уже есть:** nix profile (установлен). nixy предоставляет более простой интерфейс и profile management.
 
-**Difference:** Simple CLI interface + profile management + declarative config. But nix profile already works.
+**Отличие:** Simple CLI interface + profile management + declarative config. Но nix profile уже работает.
 
-**Installed:** NO
+**Установлен:** НЕТ
 
-**NixOS:** Not in nixpkgs. Available via `nix profile install github:yusukeshib/nixy`.
+**NixOS:** Нет в nixpkgs. Доступен через `nix profile install github:yusukeshib/nixy`.
 
-**Open Source:** Yes
+**Open Source:** Да
 
-**Maturity:** Active development
+**Зрелость:** Активная разработка
 
-**Recommendation:** MEDIUM — simpler Nix package management but nix profile already works
+**Рекомендация:** СРЕДНЯЯ — simpler Nix package management но nix profile уже работает
 
 ---
 
 ### 36. nix-pretty
 
-**What it is:** Convert bloated nix path prefix to nix: in your terminal output. A Rust wrapper that collapses `/nix/store/...` paths into human-readable `nix:package-name/path`.
+**Что это:** Преобразует раздутый nix path prefix в nix: в терминальном выводе. Rust wrapper который сворачивает `/nix/store/...` пути в читаемые `nix:package-name/path`.
 
-**What it does:**
-- Rewrites shell output in real-time
-- Collapses `/nix/store/hash-package-name/path` → `nix:package-name/path`
-- Runs shell in PTY, forwards stdin, rewrites output
-- Works with any shell, any tool
+**Что умеет:**
+- Переписывает shell output в реальном времени
+- Сворачивает `/nix/store/hash-package-name/path` → `nix:package-name/path`
+- Запускает shell в PTY, forwards stdin, переписывает output
+- Работает с любым shell, любым инструментом
 - `shell.nix` integration hook
 
-**Why it's interesting:** This is a pure output-rewriting tool that makes Nix's verbose store paths readable. It's a small utility with a big UX impact.
+**Почему интересно:** Это pure output-rewriting инструмент который делает Nix's verbose store paths читаемыми. Маленький утилитарий с большим UX impact.
 
-**What I already have:** nix (installed) with verbose store paths. nix-pretty cleans up the output.
+**Что уже есть:** nix (установлен) с verbose store paths. nix-pretty очищает вывод.
 
-**Difference:** Real-time output rewriting for Nix store paths. No equivalent.
+**Отличие:** Real-time output rewriting для Nix store paths. Нет аналога.
 
-**Installed:** NO
+**Установлен:** НЕТ
 
-**NixOS:** Not in nixpkgs. Available via `cargo install nix-pretty` or `nix-build`.
+**NixOS:** Нет в nixpkgs. Доступен через `cargo install nix-pretty` или `nix-build`.
 
-**Open Source:** Yes
+**Open Source:** Да
 
-**Maturity:** Stable
+**Зрелость:** Стабильный
 
-**Recommendation:** LOW — nice UX improvement but not essential
+**Рекомендация:** НИЗКАЯ — приятное UX улучшение но не обязательно
 
 ---
 
 ### 37. niux
 
-**What it is:** Declarative NixOS/home-manager CLI package manager written in Rust.
+**Что это:** Declarative NixOS/home-manager CLI package manager написанный на Rust.
 
-**What it does:**
-- `niux -Hi firefox` — install for home
-- `niux -Si vim` — install for system
-- Automates configuration rebuilds
-- Built-in generation diffing via nvd integration
+**Что умеет:**
+- `niux -Hi firefox` — установить для home
+- `niux -Si vim` — установить для system
+- Автоматизирует configuration rebuilds
+- Built-in generation diffing через nvd integration
 - Autocompletion like Pacman/apt
-- Supports both standalone and module home-manager
+- Поддержка standalone и module home-manager
 
-**Why it's interesting:** Similar to nixy but with a different approach. The `-H` (home) and `-S` (system) flags are intuitive.
+**Почему интересно:** Похож на nixy но с другим подходом. `-H` (home) и `-S` (system) флаги интуитивны.
 
-**What I already have:** nix profile, home-manager. niux provides a simpler CLI.
+**Что уже есть:** nix profile, home-manager. niux предоставляет более простой CLI.
 
-**Difference:** Simple CLI with home/system distinction. But nix profile + home-manager already work.
+**Отличие:** Simple CLI с home/system distinction. Но nix profile + home-manager уже работают.
 
-**Installed:** NO
+**Установлен:** НЕТ
 
-**NixOS:** Not in nixpkgs. Available via `nix profile install github:sayavc/niux`.
+**NixOS:** Нет в nixpkgs. Доступен через `nix profile install github:sayavc/niux`.
 
-**Open Source:** Yes
+**Open Source:** Да
 
-**Maturity:** Active development
+**Зрелость:** Активная разработка
 
-**Recommendation:** LOW — nix profile + home-manager already cover this
+**Рекомендация:** НИЗКАЯ — nix profile + home-manager уже покрывают это
 
 ---
 
-## ✍️ Text / Unicode
+## ✍️ Текст / Unicode
 
 ### 38. coretilus
 
-**What it is:** A playful reimagining of GNU coreutils — a collection of tiny, silly, and sometimes useless command-line tools.
+**Что это:** Игривое переосмысление GNU coreutils — коллекция крошечных, смешных и иногда бесполезных command-line инструментов.
 
-**What it does:**
+**Что умеет:**
 - `sl` — Steam Locomotive (rust port)
-- `gti` — "Start your engine!" before committing
+- `gti` — «Start your engine!» перед коммитом
 - `pc` — data deserves a grand tour of your 486
 - `mr` — Land the rocket without crashing it
 - `dog` — A Dog chasing a domain
-- More planned: `grpe` (searches nothing), `adn` (more), `...yuor` (own ideas)
+- Планируется больше: `grpe` (searches nothing), `adn` (more), `...yuor` (own ideas)
 
-**Why it's interesting:** Pure fun. When you mistype `git` → `gti`, instead of an error, you get a steam locomotive animation. It's the "toy" category done right.
+**Почему интересно:** Чистое веселье. Когда вы ошибочно вводите `git` → `gti`, вместо ошибки вы получаете анимацию паровоза. Это «toy» категория сделана правильно.
 
-**What I already have:** Nothing comparable. No coreutils parody tools.
+**Что уже есть:** Ничего сопоставимого. Нет coreutils parody инструментов.
 
-**Difference:** Pure fun, typo-triggered animations. No equivalent.
+**Отличие:** Чистое веселье, typo-triggered анимации. Нет аналога.
 
-**Installed:** NO
+**Установлен:** НЕТ
 
-**NixOS:** Not in nixpkgs. Available via `cargo install coretilus` or `.deb`/`.rpm` packages.
+**NixOS:** Нет в nixpkgs. Доступен через `cargo install coretilus` или `.deb`/`.rpm` пакеты.
 
-**Open Source:** Yes (Apache-2.0)
+**Open Source:** Да (Apache-2.0)
 
-**Maturity:** Early (v0.3.0)
+**Зрелость:** Ранняя (v0.3.0)
 
-**Recommendation:** LOW — pure fun toy, not essential
+**Рекомендация:** НИЗКАЯ — чистый весёлый toy, не обязательно
 
 ---
 
 ## 🛠 Unix Utilities
 
-### 39. tuitab (already listed in TUI section)
+### 39. tuitab (уже перечислен в разделе TUI)
 
-Also relevant here as a data processing tool. Already covered.
+Также релевантен здесь как data processing инструмент. Уже покрыт.
 
 ---
 
@@ -1218,31 +1218,31 @@ Also relevant here as a data processing tool. Already covered.
 
 ### 40. nix-bonsai
 
-**What it is:** A bonsai tree generator written in 100% pure Nix.
+**Что это:** Бонсай-деревогенератор написанный на 100% чистом Nix.
 
-**What it does:**
-- Live animation mode (watch tree grow in real-time)
-- Print mode (static tree for terminal)
-- Customizable seed, life, multiplier, animation speed
+**Что умеет:**
+- Live animation mode (смотрите дерево расти в реальном времени)
+- Print mode (статическое дерево для терминала)
+- Кастомизируемые seed, life, multiplier, animation speed
 - ANSI colored output
-- Entire algorithm in pure Nix expressions
+- Весь алгоритм в чистых Nix expressions
 - `nix run github:your-username/nix-bonsai -- --print`
 
-**Why it's interesting:** This is a tree generator written ENTIRELY in Nix expressions. The RNG, tree growth algorithm, and ANSI rendering are all Nix code. It's a demonstration of Nix's computational capabilities.
+**Почему интересно:** Это генератор деревьев написанный ВОСТОЧНО в Nix expressions. RNG, tree growth algorithm и ANSI rendering — всё Nix код. Это демонстрация вычислительных возможностей Nix.
 
-**What I already have:** Nothing comparable. No terminal tree generator.
+**Что уже есть:** Ничего сопоставимого. Нет терминального генератора деревьев.
 
-**Difference:** Pure Nix implementation. No equivalent.
+**Отличие:** Pure Nix implementation. Нет аналога.
 
-**Installed:** NO
+**Установлен:** НЕТ
 
-**NixOS:** Not in nixpkgs. Available via `nix run github:...`.
+**NixOS:** Нет в nixpkgs. Доступен через `nix run github:...`.
 
-**Open Source:** Yes
+**Open Source:** Да
 
-**Maturity:** Early
+**Зрелость:** Ранняя
 
-**Recommendation:** LOW — fun but purely experimental
+**Рекомендация:** НИЗКАЯ — весело но чисто экспериментально
 
 ---
 
@@ -1250,130 +1250,130 @@ Also relevant here as a data processing tool. Already covered.
 
 ### 41. boxxy
 
-**What it is:** A self-improving Linux terminal powered by AI characters. Full terminal emulator with agentic AI layer (BoxxyClaw).
+**Что это:** Самоулучшающийся Linux терминал powered by AI characters. Full terminal emulator с agentic AI layer (BoxxyClaw).
 
-**What it does:**
-- AI characters that read your terminal buffer, remember preferences, autonomously fix dependencies
-- `Ctrl+/` to activate AI agent
+**Что умеет:**
+- AI characters которые читают terminal buffer, запоминают preferences, автономно фиксят зависимости
+- `Ctrl+/` для активации AI agent
 - GTK4/Adwaita UI
 - Headless terminal engine (boxxy-vte)
 - Agentic intelligence layer (boxxy-claw)
 - MCP support
 - Characters, skills, toolbox
 
-**Why it's interesting:** This is the most ambitious terminal project I found. It's not just a terminal — it's an AI-powered operating system inside your terminal. The agentic AI layer can autonomously manage your system.
+**Почему интересно:** Это самый амбициозный терминальный проект который я нашёл. Это не просто терминал — это AI-powered operating system внутри вашего терминала. Agentic AI layer может автономно управлять вашей системой.
 
-**What I already have:** Nothing comparable. No AI-powered terminal emulator.
+**Что уже есть:** Ничего сопоставимого. Нет AI-powered terminal emulator.
 
-**Difference:** AI agentic terminal emulator. Completely new category.
+**Отличие:** AI agentic terminal emulator. Совершенно новая категория.
 
-**Installed:** NO
+**Установлен:** НЕТ
 
-**NixOS:** Not in nixpkgs. Preview stage. Requires GTK 4.22 + libAdwaita 1.9.
+**NixOS:** Нет в nixpkgs. Preview стадия. Требует GTK 4.22 + libAdwaita 1.9.
 
-**Open Source:** Yes
+**Open Source:** Да
 
-**Maturity:** Preview/early access
+**Зрелость:** Preview/early access
 
-**Recommendation:** LOW — very early stage, requires specific GTK version, not production-ready
+**Рекомендация:** НИЗКАЯ — очень ранняя стадия, требует специфичную GTK версию, не production-ready
 
 ---
 
 ### 42. wibwob-dos
 
-**What it is:** A terminal-native desktop shell where humans and AI agents share the same screen. Operating system that lives inside your terminal.
+**Что это:** Terminal-native desktop shell где люди и AI агенты делят один экран. Operating system которая живёт внутри терминала.
 
-**What it does:**
+**Что умеет:**
 - Window manager, menu bar, overlapping draggable windows
 - 22+ microapps: drum machines, ant colony simulations, code editor, file manager
-- AI agent (Wib & Wob) embedded as desktop citizen
-- Control API on port 8099
-- Microapp SDK with stacks, rows, grids, tabs, filterable lists
+- AI agent (Wib & Wob) embedded как desktop citizen
+- Control API на порту 8099
+- Microapp SDK со stacks, rows, grids, tabs, filterable lists
 - Themes, hot-switchable
-- Runs in any terminal with 256-colour and mouse support
+- Работает в любом терминале с 256-colour и mouse support
 
-**Why it's interesting:** This is a complete desktop environment inside a terminal. It's the most ambitious "terminal OS" project. The microapp ecosystem and AI agent integration are unique.
+**Почему интересно:** Это полная desktop среда внутри терминала. Самый амбициозный «terminal OS» проект. Microapp экосистема и AI agent интеграция уникальны.
 
-**What I already have:** Nothing comparable. No terminal desktop environment.
+**Что уже есть:** Ничего сопоставимого. Нет terminal desktop environment.
 
-**Difference:** Complete terminal desktop OS with AI agent. No equivalent.
+**Отличие:** Complete terminal desktop OS с AI agent. Нет аналога.
 
-**Installed:** NO
+**Установлен:** НЕТ
 
-**NixOS:** Not in nixpkgs. Requires Bun, terminal with 256-colour + mouse support.
+**NixOS:** Нет в nixpkgs. Требует Bun, терминал с 256-colour + mouse support.
 
-**Open Source:** Yes
+**Open Source:** Да
 
-**Maturity:** Active development
+**Зрелость:** Активная разработка
 
-**Recommendation:** LOW — experimental, requires Bun, not production-ready
+**Рекомендация:** НИЗКАЯ — экспериментальный, требует Bun, не production-ready
 
 ---
 
 ### 43. seance
 
-**What it is:** A GTK4 terminal multiplexer for Linux that auto-detects Claude Code, Codex, and Pi sessions and tracks their status.
+**Что это:** GTK4 terminal multiplexer для Linux который авто-детектирует Claude Code, Codex, и Pi сессии и отслеживает их статус.
 
-**What it does:**
-- Auto-detects AI coding agent sessions (Claude Code, Codex, Pi)
-- Tracks status (working, waiting for permission, idle) in sidebar
-- Desktop notifications for permission requests and task completions
-- GTK4 + libadwaita with blur/transparency
-- GPU-accelerated terminal rendering via libghostty
+**Что умеет:**
+- Авто-детекция AI coding agent сессий (Claude Code, Codex, Pi)
+- Отслеживание статуса (working, waiting for permission, idle) в sidebar
+- Desktop notifications для permission requests и task completions
+- GTK4 + libadwaita с blur/transparency
+- GPU-accelerated terminal rendering через libghostty
 - Horizontal strip layout (niri-inspired)
-- `seance ctl` API for scripting
+- `seance ctl` API для scripting
 - Workspaces, session persistence, tabs within columns
-- AI agent skill file for `seance ctl` API
+- AI agent skill file для `seance ctl` API
 
-**Why it's interesting:** This is specifically designed for managing AI coding agent sessions. The auto-detection of Claude Code/Codex/Pi and status tracking is unique.
+**Почему интересно:** Специально спроектирован для управления AI coding agent сессиями. Auto-detection Claude Code/Codex/Pi и status tracking уникальны.
 
-**What I already have:** tmux (installed), but no AI agent session management.
+**Что уже есть:** tmux (установлен), но нет AI agent session management.
 
-**Difference:** AI agent session management with auto-detection and status tracking. No equivalent.
+**Отличие:** AI agent session management с auto-detection и status tracking. Нет аналога.
 
-**Installed:** NO
+**Установлен:** НЕТ
 
-**NixOS:** Not in nixpkgs. Available via flake, AUR, or AppImage. Requires Zig 0.15.2+, GTK4, OpenGL 4.3+.
+**NixOS:** Нет в nixpkgs. Доступен через flake, AUR, или AppImage. Требует Zig 0.15.2+, GTK4, OpenGL 4.3+.
 
-**Open Source:** Yes
+**Open Source:** Да
 
-**Maturity:** Active development
+**Зрелость:** Активная разработка
 
-**Recommendation:** MEDIUM — useful for AI agent management but requires specific dependencies
+**Рекомендация:** СРЕДНЯЯ — полезен для AI agent management но требует специфичных зависимостей
 
 ---
 
 ### 44. claurst
 
-**What it is:** Open-source, multi-provider terminal coding agent built in Rust. Clean-room reimplementation of Claude Code's behavior.
+**Что это:** Open-source, multi-provider terminal coding agent построенный на Rust. Clean-room reimplementation Claude Code behavior.
 
-**What it does:**
-- Multi-provider support (Claude, OpenAI, etc.)
-- TUI pair programmer with rich UI
+**Что умеет:**
+- Multi-provider support (Claude, OpenAI, и др.)
+- TUI pair programmer с rich UI
 - Plugin system
 - Companion named Rustle
 - Chat forking, memory consolidation
-- Agent Client Protocol (ACP) integration
-- `/share` to share sessions via GitHub Gists
-- `/goal` for sustained multi-turn objectives
-- `ultracode` — highest effort level with subagents
+- Agent Client Protocol (ACP) интеграция
+- `/share` для sharing сессий через GitHub Gists
+- `/goal` для sustained multi-turn objectives
+- `ultracode` — highest effort level с subagents
 - Voice/microphone support
 
-**Why it's interesting:** This is a Claude Code alternative that runs in your terminal. The multi-provider support and ACP integration make it flexible.
+**Почему интересно:** Это Claude Code альтернатива которая работает в терминале. Multi-provider support и ACP интеграция делают его гибким.
 
-**What I already have:** AI CLI tools (opencode, claude-code, lilo-code) already added as npm comments in tools.nix. claurst is a terminal-based alternative.
+**Что уже есть:** AI CLI tools (opencode, claude-code, lilo-code) уже добавлены как npm comments в tools.nix. claurst — terminal-based alternative.
 
-**Difference:** Terminal-based AI coding agent with multi-provider support. But AI tools already in config as npm comments.
+**Отличие:** Terminal-based AI coding agent с multi-provider support. Но AI tools уже в конфиге как npm comments.
 
-**Installed:** NO (AI tools are npm comments, not installed)
+**Установлен:** НЕТ (AI tools — npm comments, не установлены)
 
-**NixOS:** Not in nixpkgs. Available via `npm install -g claurst` or `cargo install`.
+**NixOS:** Нет в nixpkgs. Доступен через `npm install -g claurst` или `cargo install`.
 
-**Open Source:** Yes (MIT)
+**Open Source:** Да (MIT)
 
-**Maturity:** Beta v0.1.7
+**Зрелость:** Beta v0.1.7
 
-**Recommendation:** MEDIUM — terminal AI coding agent, but AI tools already planned as npm installs
+**Рекомендация:** СРЕДНЯЯ — terminal AI coding agent, но AI tools уже запланированы как npm installs
 
 ---
 
@@ -1381,76 +1381,76 @@ Also relevant here as a data processing tool. Already covered.
 
 ### chafa
 
-**What it already does:** ANSI/Unicode/Sixel terminal image rendering.
+**Что уже делает:** ANSI/Unicode/Sixel терминальный рендеринг изображений.
 
-**What you might not be using:**
+**Что вы можете не использовать:**
 - Animated GIF rendering (`chafa --animate`)
-- Python/JS bindings for embedding
+- Python/JS bindings для встраивания
 - Terminal capability detection
-- Multiple symbol sets (block, half-block, braille, etc.)
-- Sixel protocol output for supported terminals
+- Multiple symbol sets (block, half-block, braille, и т.д.)
+- Sixel protocol output для поддерживаемых терминалов
 
-**Suggestion:** Check if `chafa --animate` is being used for animated content. The Python bindings could be integrated into scripts.
+**Предложение:** Проверьте используется ли `chafa --animate` для анимированного контента. Python bindings могут быть интегрированы в скрипты.
 
 ---
 
 ### ImageMagick
 
-**What it already does:** Image conversion, manipulation, composition.
+**Что уже делает:** Image conversion, manipulation, composition.
 
-**What you might not be using:**
-- `convert` for terminal-compatible output generation
-- `magick` for batch processing
-- `compare` for diffing images
-- `identify` for metadata extraction
-- `montage` for image grids
-- `display` (if X11 available)
+**Что вы можете не использовать:**
+- `convert` для terminal-compatible output generation
+- `magick` для batch processing
+- `compare` для diffing images
+- `identify` для metadata extraction
+- `montage` для image grids
+- `display` (если X11 доступен)
 
-**Suggestion:** ImageMagick's `convert` can generate ANSI-compatible output. Combined with chafa, it's a powerful image processing pipeline.
+**Предложение:** ImageMagick's `convert` может генерировать ANSI-compatible output. В комбинации с chafa это мощный image processing pipeline.
 
 ---
 
 ### ffmpeg_7
 
-**What it already does:** Video/audio processing.
+**Что уже делает:** Video/audio processing.
 
-**What you might not be using:**
-- `ffmpeg` for generating terminal-compatible video frames
-- `ffprobe` for metadata extraction
-- `ffmpeg` filters for creating ASCII art from video
-- Streaming to terminal via `ffmpeg -f rawvideo`
+**Что вы можете не использовать:**
+- `ffmpeg` для generating terminal-compatible video frames
+- `ffprobe` для metadata extraction
+- `ffmpeg` filters для создания ASCII art из видео
+- Streaming to terminal через `ffmpeg -f rawvideo`
 
-**Suggestion:** ffmpeg can pipe video frames to chafa or other terminal renderers for terminal video playback.
+**Предложение:** ffmpeg может pipe video frames к chafa или другим terminal renderers для terminal video playback.
 
 ---
 
 ### neovim
 
-**What it already does:** Modal text editor with LSP, treesitter, lazy.nvim.
+**Что уже делает:** Modal text editor с LSP, treesitter, lazy.nvim.
 
-**What you might not be using:**
-- `nvim` as a terminal IDE (with lazyide-style features)
-- Terminal integration via `:term`
-- `nvim-treesitter` for syntax-aware terminal rendering
-- Neovim as a markdown/terminal previewer
+**Что вы можете не использовать:**
+- `nvim` как terminal IDE (с lazyide-style features)
+- Terminal integration через `:term`
+- `nvim-treesitter` для syntax-aware terminal rendering
+- Neovim как markdown/terminal previewer
 
-**Suggestion:** Neovim's `:term` command can replace many terminal tools. The treesitter integration could power terminal previews.
+**Предложение:** Neovim's `:term` команда может заменить многие terminal tools. Treesitter интеграция может питать terminal previews.
 
 ---
 
 ### yazi
 
-**What it already does:** Terminal file manager with async I/O, previews, sixel/kitty image rendering.
+**Что уже делает:** Terminal file manager с async I/O, previews, sixel/kitty image rendering.
 
-**What you might not be using:**
-- The `magick` plugin for ImageMagick integration
-- The `video` previewer for ffmpeg-based video previews
-- The `pdf` previewer for PDF inspection
-- The `font` previewer for font inspection
-- The `git` fetcher for repository info
-- Custom opener rules for specialized workflows
+**Что вы можете не использовать:**
+- `magick` plugin для ImageMagick integration
+- `video` previewer для ffmpeg-based video previews
+- `pdf` previewer для PDF inspection
+- `font` previewer для font inspection
+- `git` fetcher для repository info
+- Custom opener rules для специализированных workflow
 
-**Suggestion:** Yazi's plugin system is extensive. The `magick` and `video` previewers are particularly underused.
+**Предложение:** Yazi's plugin system обширен. `magick` и `video` previewers особенно недоиспользованы.
 
 ---
 
@@ -1503,11 +1503,11 @@ Also relevant here as a data processing tool. Already covered.
 
 | Tool | Underused Capability | Suggestion |
 |------|---------------------|------------|
-| chafa | Animated GIF rendering, Python bindings | Try `chafa --animate`, use Python API |
-| ImageMagick | Terminal-compatible output, montage | `magick convert` for ANSI output |
+| chafa | Animated GIF rendering, Python bindings | Попробуйте `chafa --animate`, используйте Python API |
+| ImageMagick | Terminal-compatible output, montage | `magick convert` для ANSI output |
 | ffmpeg_7 | Terminal video playback via frame piping | `ffmpeg -f rawvideo | chafa` |
-| yazi | magick/video/pdf previewers | Enable `magick` and `video` previewers |
-| neovim | `:term` command, treesitter previews | Use nvim as terminal IDE |
+| yazi | magick/video/pdf previewers | Включите `magick` и `video` previewers |
+| neovim | `:term` command, treesitter previews | Используйте nvim как terminal IDE |
 
 ---
 
