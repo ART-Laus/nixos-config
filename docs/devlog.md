@@ -49,6 +49,7 @@ SORT date DESC
 | 2026-09-18 | [[2026-09-18-add-vpn\|Добавлены Tor, OpenVPN, Tailscale, Docker]] | `feature` | ✅ evaluation OK |
 | 2026-09-18 | [[2026-09-18-phase3b\|Phase 3b — theme/ прошивка цветов в Neovim-плагины + сервисы]] | `feature` | ✅ evaluation OK |
 | 2026-09-20 | [[2026-09-20-prime-polish\|Prime Polish — audit и первые правки]] | `feature` | ✅ evaluation OK |
+| 2026-09-21 | [[2026-09-21-discovery-expansion\|Discovery Expansion — каталог находок (46 инструментов)]] | `research` | ✅ исследование завершено |
 
 ---
 
@@ -128,10 +129,10 @@ related:
 
 ## Статистика
 
-- Всего записей: `12`
-- Последняя: [[2026-09-20-prime-polish]] (2026-09-20)
+- Всего записей: `13`
+- Последняя: [[2026-09-21-discovery-expansion]] (2026-09-21)
 - Следующая фаза: `Phase 4 — ...` (см. [[architecture#10. Следующие шаги (обновлено)|architecture]])
 
 ---
 
-*Индекс обновлён: 2026-09-15 · Формат: Obsidian + Dataview + Wikilinks*
+*Индекс обновлён: 2026-09-21 · Формат: Obsidian + Dataview + Wikilinks*
