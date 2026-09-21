@@ -1,47 +1,69 @@
 {
   description = "Artlaus NixOS — модульный конструктор (hosts + features + theme)";
 
-  inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
-    nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
+   inputs = {
+     nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
+     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
 
-    home-manager = {
-      url = "github:nix-community/home-manager/release-25.05";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+     home-manager = {
+       url = "github:nix-community/home-manager/release-25.05";
+       inputs.nixpkgs.follows = "nixpkgs";
+     };
 
-    hyprland = {
-      url = "github:hyprwm/Hyprland";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-  };
+     hyprland = {
+       url = "github:hyprwm/Hyprland";
+       inputs.nixpkgs.follows = "nixpkgs";
+     };
 
-  outputs = { self, nixpkgs, nixpkgs-unstable, home-manager, hyprland, ... }@inputs:
-    let
-      system = "x86_64-linux";
-      username = "artlaus";
+     # Discovery tools — flake-based packages
+     nixmate.url = "github:daskladas/nixmate";
+     nixard.url = "github:manelinux/nixard";
+     verynix.url = "github:mipmip/verynix";
+     anima.url = "github:Yazelix/anima";
+     super-comma.url = "github:vivekanandan-ks/super-comma-nix";
+     nixy.url = "github:yusukeshib/nixy";
+     niux.url = "github:sayavc/niux";
+     nix-bonsai.url = "github:0xatrilla/nix-bonsai";
+   };
 
-      # Theme — единственный источник (утверждено: theme/ в корне)
-      theme = import ./theme;
+    outputs = { self, nixpkgs, nixpkgs-unstable, home-manager, hyprland, nixmate, nixard, verynix, anima, super-comma, nixy, niux, nix-bonsai, ... }@inputs:
+     let
+       system = "x86_64-linux";
+       username = "artlaus";
 
-      # pkgs с allowUnfree + overlays (если нужны)
-      pkgs = import nixpkgs {
-        inherit system;
-        config.allowUnfree = true;
-      };
-      pkgs-unstable = import nixpkgs-unstable {
-        inherit system;
-        config.allowUnfree = true;
-      };
+       # Theme — единственный источник (утверждено: theme/ в корне)
+       theme = import ./theme;
 
-      # Совместимость: pkgs2/spkgs → pkgs (старые модули используют pkgs2)
-      # После миграции artlaus/ → home/features/ заменить pkgs2 → pkgs
-      specialArgs = {
-        inherit inputs theme username;
-        pkgs2 = pkgs;
-        spkgs = pkgs;
-        pkgs-unstable = pkgs-unstable;
-      };
+       # pkgs с allowUnfree + overlays (если нужны)
+       pkgs = import nixpkgs {
+         inherit system;
+         config.allowUnfree = true;
+       };
+       pkgs-unstable = import nixpkgs-unstable {
+         inherit system;
+         config.allowUnfree = true;
+       };
+
+       # Внешние flake-пакеты
+       flakePkgs = {
+         nixmate = nixmate.packages.${system}.default;
+         nixard = nixard.packages.${system}.default;
+         verynix = verynix.packages.${system}.default;
+         anima = anima.packages.${system}.default;
+         super-comma = super-comma.packages.${system}.default;
+         nixy = nixy.packages.${system}.default;
+         niux = niux.packages.${system}.default;
+         nix-bonsai = nix-bonsai.packages.${system}.default;
+       };
+
+       # Совместимость: pkgs2/spkgs → pkgs (старые модули используют pkgs2)
+       # После миграции artlaus/ → home/features/ заменить pkgs2 → pkgs
+        specialArgs = {
+          inherit inputs theme flakePkgs;
+          pkgs2 = pkgs;
+          spkgs = pkgs;
+          pkgs-unstable = pkgs-unstable;
+        };
     in
     {
       nixosConfigurations = {

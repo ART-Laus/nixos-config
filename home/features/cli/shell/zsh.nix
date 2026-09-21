@@ -90,6 +90,10 @@ in
         cle = "clear";
         ".." = "cd ..";
         "..." = "cd ../..";
+        aln = "cd ~/Documents/ALN && nvim";
+        nn = "/home/artlaus/scripts/new_note.sh";
+
+        # --- Алиасы из референсного конфига ---
         rbs = "sudo nixos-rebuild switch --impure --flake ${flakeDir}";
         rbb = "sudo nixos-rebuild boot --impure --flake ${flakeDir}";
         upg = "sudo nixos-rebuild switch --impure --upgrade --flake ${flakeDir}";
