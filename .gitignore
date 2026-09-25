@@ -33,3 +33,6 @@ artlaus/features/cli/zsh/.zshenv
 # Temp
 /tmp/
 *.recovered
+
+# Wallpapers (binary images, not in git)
+home/features/desktop/wallpapers/
