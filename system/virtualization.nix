@@ -9,8 +9,19 @@ in
   config = lib.mkIf cfg.enable {
     virtualisation.docker = {
       enable = true;
-      enableOnBoot = false;
+      enableOnBoot = true;
+      autoPrune = {
+        enable = true;
+        dates = "weekly";
+      };
     };
     users.users.artlaus.extraGroups = [ "docker" ];
+
+    # SMB client для монтирования библиотеки с ноутбука
+    environment.systemPackages = with pkgs; [
+      cifs-utils
+      smbclient
+      mountcifs
+    ];
   };
 }

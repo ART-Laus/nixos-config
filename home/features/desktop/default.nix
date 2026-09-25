@@ -10,5 +10,6 @@
     ./lockscreen/swayidle.nix
     ./browsers.nix
     ./apps.nix
+    ./orpheus/default.nix
   ];
 }
