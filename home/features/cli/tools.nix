@@ -5,6 +5,7 @@ let
 in
 {
   home.packages = with pkgs; [
+    (import ../../../../scripts { inherit pkgs; })
     # Modern replacements (было: exa → eza)
     eza
     bat

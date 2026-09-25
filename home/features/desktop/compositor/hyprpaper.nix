@@ -8,6 +8,7 @@
       splash = false;
       preload = [ "${theme.colors.bg}" ];
       wallpaper = [ ",${theme.colors.bg}" ];
+      transition = "fade";
     };
   };
 }

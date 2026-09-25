@@ -22,6 +22,7 @@ pkgs.stdenv.mkDerivation {
     install -m 755 ./media/rofi-image.sh $out/bin/rofi-image
     install -m 755 ./media/rofi-video.sh $out/bin/rofi-video
     install -m 755 ./media/rofi-audio.sh $out/bin/rofi-audio
+    install -m 755 ./wallpaper.sh $out/bin/wallpaper
 
     # The scripts need access to tools like ffmpeg, rofi, etc. to run.
     # We use makeWrapper to add these tools to each script's PATH, so they

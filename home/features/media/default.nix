@@ -27,9 +27,10 @@
     gimp3
     gcolor3
 
-    # ── Продуктивность ──
-    obsidian
-    planify
+     # ── Продуктивность ──
+     obsidian
+     planify
+     qalculate
 
     # ── Скриншоты / запись ──
     ksnip
