@@ -52,6 +52,7 @@ SORT date DESC
 | 2026-09-21 | [[2026-09-21-discovery-expansion\|Discovery Expansion — каталог находок (46 инструментов)]] | `research` | ✅ исследование завершено |
 | 2026-09-21 | [[2026-09-21-integration\|Интеграция 24 инструментов Discovery Expansion]] | `feature` | ✅ завершено |
 | 2026-09-25 | [[2026-09-25-super-key-hotkeys\|Super-Key Hotkey System — Полная Переработка]] | `feature` | ✅ завершено |
+| 2026-09-25 | [[2026-09-25-orpheus-music\|Project Orpheus — Музыкальная Система (Docker, SMB, Navidrome)]] | `feature` | ✅ завершено |
 
 ---
 
@@ -131,9 +132,9 @@ related:
 
 ## Статистика
 
-- Всего записей: `15`
-- Последняя: [[2026-09-25-super-key-hotkeys]] (2026-09-25)
-- Следующая фаза: `Phase 4 — тестирование сборки flake` (см. [[2026-09-25-super-key-hotkeys]])
+- Всего записей: `16`
+- Последняя: [[2026-09-25-orpheus-music]] (2026-09-25)
+- Следующая фаза: `Phase 4 — тестирование сборки flake` (см. [[2026-09-25-orpheus-music]])
 
 ---
 
