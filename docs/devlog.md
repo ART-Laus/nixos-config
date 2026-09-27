@@ -55,6 +55,7 @@ SORT date DESC
 | 2026-09-25 | [[2026-09-25-orpheus-music\|Project Orpheus — Музыкальная Система (Docker, SMB, Navidrome)]] | `feature` | ✅ завершено |
 | 2026-09-27 | [[2026-09-27-automation-layer-audit\|Automation Layer — Этап 1: Полный Аудит]] | `audit` | ✅ завершено |
 | 2026-09-27 | [[2026-09-27-automation-layer-impl\|Automation Layer — Этап 2: Реализация (17 утилит)]] | `feature` | ✅ завершено |
+| 2026-09-27 | [[2026-09-27-automation-layer-rofi-menu\|Automation Layer — Этап 3: Графическое меню (rofi) + Разбор ошибок flake evaluation]] | `feature` | ✅ завершено |
 
 ---
 
@@ -134,9 +135,9 @@ related:
 
 ## Статистика
 
-- Всего записей: `18`
-- Последняя: [[2026-09-27-automation-layer-impl]] (2026-09-27)
-- Статус: Automation Layer реализован (17 утилит + 5 старых скриптов)
+- Всего записей: `19`
+- Последняя: [[2026-09-27-automation-layer-rofi-menu]] (2026-09-27)
+- Статус: Automation Layer + rofi menu завершено, `flake check` проходит
 
 ---
 

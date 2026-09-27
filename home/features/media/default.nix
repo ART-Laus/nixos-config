@@ -30,7 +30,7 @@
      # ── Продуктивность ──
      obsidian
      planify
-     qalculate
+     qalculate-gtk
 
     # ── Скриншоты / запись ──
     ksnip

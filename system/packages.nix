@@ -30,10 +30,9 @@
      curl
      wget
      htop
-     tar
+     gnutar
      zstd
      xz
-     lzma
 
     # ── VPN & Privacy ──
     tor

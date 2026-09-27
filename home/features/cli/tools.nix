@@ -2,10 +2,10 @@
 { config, pkgs, lib, flakePkgs, ... }:
 let
   c = config.lib.theme.colors or {};
+  automationScripts = builtins.attrValues (import ../../../scripts { inherit pkgs; });
 in
 {
-  home.packages = with pkgs; [
-    (import ../../../scripts { inherit pkgs; })
+  home.packages = automationScripts ++ (with pkgs; [
     # Modern replacements (было: exa → eza)
     eza
     bat
@@ -191,7 +191,7 @@ in
       pnpm add --prefix $out @amansingh-afk/milli
       ln -sf $out/node_modules/.bin/milli $out/bin/milli
     '')
-  ];
+  ]);
 
   programs = {
     zoxide = {

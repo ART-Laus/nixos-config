@@ -103,8 +103,8 @@ in
       bind = $mainMod SHIFT, F, fullscreen,
       bind = $mainMod, G, resizeactive,
       bind = $mainMod, R, exec, rofi-scripts
-      bind = $mainMod, L, exec, swaylock
-      bind = $mainMod, V, exec, cliphist list | rofi -dmenu | cliphist decode | wl-copy
+      bind = $mainMod, comma, exec, automation-menu
+      bind = $mainMod, L, exec, swaylock      bind = $mainMod, V, exec, cliphist list | rofi -dmenu | cliphist decode | wl-copy
       bind = $mainMod, H, exec, btop
       bind = $mainMod, N, exec, planify
       bind = $mainMod, K, exec, qalculate

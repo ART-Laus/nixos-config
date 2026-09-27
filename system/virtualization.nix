@@ -20,8 +20,7 @@ in
     # SMB client для монтирования библиотеки с ноутбука
     environment.systemPackages = with pkgs; [
       cifs-utils
-      smbclient
-      mountcifs
+      samba
     ];
   };
 }

@@ -1,5 +1,8 @@
 # home/features/desktop/launcher/rofi.nix — Rofi launcher (тема из theme/colors.nix)
 { config, pkgs, lib, theme, ... }:
+let
+  scripts = import ../../../../scripts { inherit pkgs; };
+in
 {
   programs.rofi = {
     enable = true;
@@ -25,8 +28,11 @@
     };
   };
 
-  # Rofi-media scripts — из scripts/
+  # Rofi-media scripts + automation menu — из scripts/
   home.packages = with pkgs; [
-    (import ../../../../scripts { inherit pkgs; })
+    scripts.rofi-image
+    scripts.rofi-video
+    scripts.rofi-audio
+    scripts.automation-menu
   ];
 }
