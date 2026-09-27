@@ -54,6 +54,7 @@ SORT date DESC
 | 2026-09-25 | [[2026-09-25-super-key-hotkeys\|Super-Key Hotkey System — Полная Переработка]] | `feature` | ✅ завершено |
 | 2026-09-25 | [[2026-09-25-orpheus-music\|Project Orpheus — Музыкальная Система (Docker, SMB, Navidrome)]] | `feature` | ✅ завершено |
 | 2026-09-27 | [[2026-09-27-automation-layer-audit\|Automation Layer — Этап 1: Полный Аудит]] | `audit` | ✅ завершено |
+| 2026-09-27 | [[2026-09-27-automation-layer-impl\|Automation Layer — Этап 2: Реализация (17 утилит)]] | `feature` | ✅ завершено |
 
 ---
 
@@ -133,8 +134,8 @@ related:
 
 ## Статистика
 
-- Всего записей: `17`
-- Последняя: [[2026-09-27-automation-layer-audit]] (2026-09-27)
+- Всего записей: `18`
+- Последняя: [[2026-09-27-automation-layer-impl]] (2026-09-27)
 - Следующая фаза: `Этап 3 — Interview: вопросы о pain points` (см. [[2026-09-27-automation-layer-audit]])
 
 ---
