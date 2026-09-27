@@ -25,12 +25,60 @@ in
     # pywal — оставить пока, но тема теперь из theme/
     # pywal
 
-    # Archives
-    zip
-    unzip
-    unrar
-    p7zip
-    bzip2
+     # Archives
+     zip
+     unzip
+     unrar
+     p7zip
+     bzip2
+     tar
+     zstd
+     xz
+     lzma
+
+     # PDF CLI
+     poppler_utils
+
+     # OCR
+     tesseract
+     ocrmypdf
+
+     # Image optimization
+     optipng
+     pngquant
+     jpegoptim
+     gifsicle
+
+     # Documents
+     pandoc
+
+    # Batch rename / duplicates
+    rename
+    fdupes
+
+    # QR
+    qrencode
+
+    # Nix UX
+    nh
+    nvd
+    nixpkgs-fmt
+
+    # Python for share script
+    python3Full
+
+    # Hash / file info
+    file
+    hashid
+
+    # Clipboard
+    wl-clipboard
+    wl-copy
+    wl-paste
+
+    # Unicode / color
+    unicode
+    color
 
     # Media CLI
     ffmpeg_7
@@ -64,6 +112,13 @@ in
     tree
     killall
     timer
+    file
+    hashid
+    wl-clipboard
+    wl-copy
+    wl-paste
+    unicode
+    color
 
     # ── Discovery Expansion — 🎨 Визуал / ASCII / Терминальная Графика ──
     # px2ansi-rs — рендерер терминальных изображений (10 стилей, SIMD)
@@ -120,6 +175,11 @@ in
     (runCommand "nix-pretty" { buildInputs = [ cargo rustc ]; } ''
       cargo install --root $out nix-pretty
     '')
+
+    # Nix UX wrappers
+    nh
+    nvd
+    nixpkgs-fmt
 
     # ── Discovery Expansion — ✍️ Текст / Unicode ──
     # coretilus — coreutils parody (sl, gti, mr)

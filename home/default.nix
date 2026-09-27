@@ -12,6 +12,7 @@
     ./features/development
     ./features/media
     ./features/gaming
+    ./features/automation
   ];
 
   # Совместимость: старые модули artlaus/* ожидают config.artlaus.cli.enable

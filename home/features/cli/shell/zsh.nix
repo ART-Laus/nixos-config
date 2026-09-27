@@ -101,6 +101,25 @@ in
         grb = "sudo nix-collect-garbage -d";
         pkgs = "nvim ${flakeDir}/nixos/packages.nix";
         t = "timer";
+
+        # ── Automation Layer ──
+        ex = "extract";
+        ar = "archive";
+        fi = "fileinfo";
+        sh = "share";
+        dc = "doctor";
+        nc = "nixcheck";
+        qr = "make-qr";
+        oc = "clip-ocr";
+        td = "tidy-downloads";
+        ir = "img-resize";
+        ic = "img-compress";
+        va = "vid2audio";
+        vg = "vid2gif";
+        pt = "pdf2text";
+        br = "batch-rename";
+        fdups = "find-duplicates";
+        hf = "hashfile";
       };
 
       # Дополнительный код Zsh (initContent — новые setopt + интеграции)
