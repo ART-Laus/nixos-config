@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+echo "=== System Doctor ==="
+echo ""
+
+echo "--- Nix ---"
+nix --version 2>/dev/null || echo "Nix not found"
+nix flake check 2>&1 | tail -5 || echo "Flake check failed"
+echo ""
+
+echo "--- Home Manager ---"
+home-manager --version 2>/dev/null || echo "home-manager not found"
+echo ""
+
+echo "--- Systemd ---"
+systemctl --failed 2>/dev/null || echo "No failed services"
+echo ""
+
+echo "--- Disk ---"
+df -h / 2>/dev/null || echo "df failed"
+echo ""
+
+echo "--- Memory ---"
+free -h 2>/dev/null || echo "free failed"
+echo ""
+
+echo "--- GPU ---"
+lspci | grep -i vga 2>/dev/null || echo "GPU not detected"
+echo ""
+
+echo "--- Audio ---"
+pactl info 2>/dev/null | grep "Server Name" || echo "PipeWire not found"
+echo ""
+
+echo "--- Network ---"
+ip addr show 2>/dev/null | head -20 || echo "ip failed"
+echo ""
+
+echo "--- DNS ---"
+resolvectl status 2>/dev/null | head -10 || echo "resolvectl failed"
+echo ""
+
+echo "--- Wayland ---"
+echo "XDG_SESSION_TYPE=$XDG_SESSION_TYPE"
+echo ""
+
+echo "--- Broken symlinks ---"
+find /home/artlaus -xtype l 2>/dev/null | head -20 || echo "No broken symlinks"
+echo ""
+
+echo "--- Missing binaries ---"
+for cmd in ffmpeg imagemagick jq fd ripgrep; do
+    command -v "$cmd" >/dev/null 2>&1 && echo "✓ $cmd" || echo "✗ $cmd"
+done
+echo ""
+
+echo "=== Doctor complete ==="

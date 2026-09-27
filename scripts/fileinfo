@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [ $# -eq 0 ]; then
+    echo "Usage: fileinfo <file...>" >&2
+    exit 1
+fi
+
+for f in "$@"; do
+    [ -e "$f" ] || { echo "Not found: $f" >&2; continue; }
+    echo "=== $(basename "$f") ==="
+    file "$f"
+    echo "Size: $(du -sh "$f" 2>/dev/null | cut -f1)"
+    echo "SHA256: $(sha256sum "$f" 2>/dev/null | cut -d' ' -f1)"
+    echo "Modified: $(stat -c '%y' "$f" 2>/dev/null)"
+    exiftool "$f" 2>/dev/null | head -20
+    echo ""
+done

@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [ $# -eq 0 ]; then
+    echo "Usage: extract <archive...>" >&2
+    exit 1
+fi
+
+extract() {
+    local archive="$1"
+    case "$archive" in
+        *.zip) unzip "$archive" -d "${archive%.zip}" ;;
+        *.tar.gz|*.tgz) tar xzf "$archive" -d "${archive%.tar.gz}" ;;
+        *.tar.bz2|*.tbz2) tar xjf "$archive" -d "${archive%.tar.bz2}" ;;
+        *.tar.xz|*.txz) tar xJf "$archive" -d "${archive%.tar.xz}" ;;
+        *.tar.zst) tar --zstd -xf "$archive" -d "${archive%.tar.zst}" ;;
+        *.tar.lzma) tar --lzma -xf "$archive" -d "${archive%.tar.lzma}" ;;
+        *.rar) unrar x "$archive" "${archive%.rar}/" ;;
+        *.7z) 7z x "$archive" -o"${archive%.7z}" ;;
+        *.gz) gunzip "$archive" ;;
+        *.bz2) bunzip2 "$archive" ;;
+        *.xz) unxz "$archive" ;;
+        *.zst) zstd -d "$archive" ;;
+        *) echo "Unknown archive format: $archive" >&2; exit 1 ;;
+    esac
+}
+
+for archive in "$@"; do
+    [ -f "$archive" ] || { echo "File not found: $archive" >&2; continue; }
+    echo "Extracting: $archive"
+    extract "$archive"
+done

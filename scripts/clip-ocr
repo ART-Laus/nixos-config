@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if ! command -v wl-paste &>/dev/null; then
+    echo "wl-paste not found. Are you on Wayland?" >&2
+    exit 1
+fi
+
+if ! command -v tesseract &>/dev/null; then
+    echo "tesseract not found." >&2
+    exit 1
+fi
+
+TEMP=$(mktemp /tmp/clip-ocr.XXXXXX.png)
+wl-paste -t image/png > "$TEMP"
+
+echo "OCR result:"
+tesseract "$TEMP" - 2>/dev/null
+
+rm -f "$TEMP"

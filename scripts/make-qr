@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [ $# -eq 0 ]; then
+    echo "Usage: make-qr <text|url> [output.png]" >&2
+    exit 1
+fi
+
+TEXT="$1"
+OUTPUT="${2:-qr.png}"
+
+qrencode -o "$OUTPUT" -s 10 "$TEXT"
+echo "QR code saved to: $OUTPUT"

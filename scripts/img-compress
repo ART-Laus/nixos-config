@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [ $# -eq 0 ]; then
+    echo "Usage: img-compress <file...>" >&2
+    exit 1
+fi
+
+for f in "$@"; do
+    [ -f "$f" ] || { echo "Not found: $f" >&2; continue; }
+    EXT="${f##*.}"
+    case "$EXT" in
+        png) optipng -o7 "$f" 2>/dev/null && echo "Optimized: $f" || echo "Failed: $f" ;;
+        jpg|jpeg) jpegoptim --strip-all "$f" 2>/dev/null && echo "Optimized: $f" || echo "Failed: $f" ;;
+        gif) gifsicle -O3 "$f" -o "${f%.*}_opt.${f##*.}" 2>/dev/null && echo "Optimized: $f" || echo "Failed: $f" ;;
+        *) echo "Unsupported format: $EXT" >&2 ;;
+    esac
+done

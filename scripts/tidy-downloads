@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+DOWNLOADS_DIR="${1:-$HOME/Downloads}"
+
+if [ ! -d "$DOWNLOADS_DIR" ]; then
+    echo "Directory not found: $DOWNLOADS_DIR" >&2
+    exit 1
+fi
+
+echo "=== Downloads Analysis ==="
+echo "Directory: $DOWNLOADS_DIR"
+echo ""
+
+echo "--- Images ---"
+find "$DOWNLOADS_DIR" -maxdepth 1 -type f \( -name "*.jpg" -o -name "*.png" -o -name "*.gif" -o -name "*.webp" -o -name "*.avif" \) -printf "%f\n" 2>/dev/null | head -20
+
+echo ""
+echo "--- Videos ---"
+find "$DOWNLOADS_DIR" -maxdepth 1 -type f \( -name "*.mp4" -o -name "*.mkv" -o -name "*.webm" -o -name "*.avi" \) -printf "%f\n" 2>/dev/null | head -20
+
+echo ""
+echo "--- Archives ---"
+find "$DOWNLOADS_DIR" -maxdepth 1 -type f \( -name "*.zip" -o -name "*.tar.gz" -o -name "*.7z" -o -name "*.rar" \) -printf "%f\n" 2>/dev/null | head -20
+
+echo ""
+echo "--- Documents ---"
+find "$DOWNLOADS_DIR" -maxdepth 1 -type f \( -name "*.pdf" -o -name "*.docx" -o -name "*.xlsx" -o -name "*.pptx" \) -printf "%f\n" 2>/dev/null | head -20
+
+echo ""
+echo "--- Audio ---"
+find "$DOWNLOADS_DIR" -maxdepth 1 -type f \( -name "*.mp3" -o -name "*.flac" -o -name "*.ogg" -o -name "*.wav" \) -printf "%f\n" 2>/dev/null | head -20
+
+echo ""
+echo "--- Total files: $(find "$DOWNLOADS_DIR" -maxdepth 1 -type f | wc -l) ---"
+echo ""
+echo "Dry run. No files moved."

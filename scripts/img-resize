@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [ $# -lt 2 ]; then
+    echo "Usage: img-resize <file> <geometry>" >&2
+    echo "  geometry: 1920x1080, 50%, 1920x1080>" >&2
+    exit 1
+fi
+
+FILE="$1"
+GEOMETRY="$2"
+
+[ -f "$FILE" ] || { echo "File not found: $FILE" >&2; exit 1; }
+
+OUTPUT="${FILE%.*}_resize.${FILE##*.}"
+convert "$FILE" -resize "$GEOMETRY" "$OUTPUT"
+echo "Resized: $FILE → $OUTPUT ($GEOMETRY)"

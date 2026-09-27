@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+DIR="${1:-.}"
+
+[ -d "$DIR" ] || { echo "Directory not found: $DIR" >&2; exit 1; }
+
+echo "Searching for duplicates in: $DIR"
+fdupes -r "$DIR"

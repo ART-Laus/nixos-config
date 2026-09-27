@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [ $# -lt 2 ]; then
+    echo "Usage: vid2gif <video> <output.gif>" >&2
+    exit 1
+fi
+
+VIDEO="$1"
+OUTPUT="${2:-${VIDEO%.*}.gif}"
+
+[ -f "$VIDEO" ] || { echo "Video not found: $VIDEO" >&2; exit 1; }
+
+ffmpeg -i "$VIDEO" -vf "fps=15,scale=480:-1" -t 10 "$OUTPUT"
+echo "GIF created: $VIDEO → $OUTPUT"

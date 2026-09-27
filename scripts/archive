@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [ $# -lt 2 ]; then
+    echo "Usage: archive <output> <files...>" >&2
+    exit 1
+fi
+
+output="$1"; shift
+case "$output" in
+    *.zip) zip "$output" "$@" ;;
+    *.tar.gz|*.tgz) tar czf "$output" "$@" ;;
+    *.tar.bz2|*.tbz2) tar cjf "$output" "$@" ;;
+    *.tar.xz|*.txz) tar cJf "$output" "$@" ;;
+    *.tar.zst) tar --zstd -cf "$output" "$@" ;;
+    *.tar.lzma) tar --lzma -cf "$output" "$@" ;;
+    *.rar) rar a "$output" "$@" ;;
+    *.7z) 7z a "$output" "$@" ;;
+    *) echo "Unknown archive format: $output" >&2; exit 1 ;;
+esac

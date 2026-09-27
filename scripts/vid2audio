@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [ $# -lt 2 ]; then
+    echo "Usage: vid2audio <video> <output.mp3>" >&2
+    exit 1
+fi
+
+VIDEO="$1"
+OUTPUT="${2:-${VIDEO%.*}.mp3}"
+
+[ -f "$VIDEO" ] || { echo "Video not found: $VIDEO" >&2; exit 1; }
+
+ffmpeg -i "$VIDEO" -vn -acodec libmp3lame -q:a 2 "$OUTPUT"
+echo "Audio extracted: $VIDEO → $OUTPUT"

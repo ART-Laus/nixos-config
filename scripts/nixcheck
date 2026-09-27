@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [ $# -eq 0 ]; then
+    echo "Usage: nixcheck [flake|build|eval|format|switch|generations|gc|search]" >&2
+    echo ""
+    echo "Commands: flake build eval format switch generations gc search"
+    exit 1
+fi
+
+case "$1" in
+    flake) nix flake check ;;
+    build) shift; nix build ".#$@" ;;
+    eval) shift; nix eval ".#$@" ;;
+    format) nixpkgs-fmt flake.nix ;;
+    generations) nixos-rebuild list ;;
+    gc) nix-collect-garbage -d ;;
+    search) shift; nix search nixpkgs "$@" ;;
+    *) echo "Unknown command: $1" >&2; exit 1 ;;
+esac
