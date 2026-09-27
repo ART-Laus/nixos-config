@@ -1,6 +1,6 @@
 # scripts/default.nix — все кастомные скрипты
 # Каждый скрипт — реальный файл в scripts/, упакованный через writeShellScriptBin
-{ pkgs, lib, ... }:
+{ pkgs, ... }:
 
 let
   readScript = name: builtins.readFile ./${name};

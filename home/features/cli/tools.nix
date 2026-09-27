@@ -5,7 +5,7 @@ let
 in
 {
   home.packages = with pkgs; [
-    (import ../../../../scripts { inherit pkgs; })
+    (import ../../../scripts { inherit pkgs; })
     # Modern replacements (было: exa → eza)
     eza
     bat
@@ -31,10 +31,6 @@ in
      unrar
      p7zip
      bzip2
-     tar
-     zstd
-     xz
-     lzma
 
      # PDF CLI
      poppler_utils
@@ -73,12 +69,7 @@ in
 
     # Clipboard
     wl-clipboard
-    wl-copy
-    wl-paste
 
-    # Unicode / color
-    unicode
-    color
 
     # Media CLI
     ffmpeg_7
@@ -115,10 +106,6 @@ in
     file
     hashid
     wl-clipboard
-    wl-copy
-    wl-paste
-    unicode
-    color
 
     # ── Discovery Expansion — 🎨 Визуал / ASCII / Терминальная Графика ──
     # px2ansi-rs — рендерер терминальных изображений (10 стилей, SIMD)

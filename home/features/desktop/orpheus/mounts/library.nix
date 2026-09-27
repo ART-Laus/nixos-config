@@ -7,11 +7,10 @@
   # Установка SMB-клиентских инструментов
   home.packages = with pkgs; [
     cifs-utils
-    smbclient
   ];
 
   # Файл учётных данных SMB
-  home.file(".config/orpheus/smb-credentials").text = ''
+  home.file.".config/orpheus/smb-credentials".text = ''
     # SMB credentials for laptop
     # Замените на реальные данные
     username=YOUR_USERNAME
@@ -39,7 +38,7 @@
   };
 
   # Символическая ссылка на библиотеку для docker-compose
-  home.file(".config/orpheus/library-symlink").text = ''
+  home.file.".config/orpheus/library-symlink".text = ''
     # Для docker-compose создайте symlink:
     # ln -sf /home/artlaus/Music /home/artlaus/nixos-config/home/features/desktop/orpheus/mounts/library
     #

@@ -2,7 +2,7 @@
 { config, pkgs, lib, ... }:
 
 let
-  scripts = import ../../../../scripts { inherit pkgs; };
+  scripts = import ../../../scripts { inherit pkgs; };
 in
 {
   home.packages = with pkgs; [

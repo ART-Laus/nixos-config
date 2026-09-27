@@ -24,12 +24,16 @@
     unifont_upper
   ];
 
-  environment.systemPackages = with pkgs; [
-    # ── Core CLI ──
-    git
-    curl
-    wget
-    htop
+   environment.systemPackages = with pkgs; [
+     # ── Core CLI ──
+     git
+     curl
+     wget
+     htop
+     tar
+     zstd
+     xz
+     lzma
 
     # ── VPN & Privacy ──
     tor
