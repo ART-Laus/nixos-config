@@ -136,7 +136,7 @@ related:
 
 - Всего записей: `18`
 - Последняя: [[2026-09-27-automation-layer-impl]] (2026-09-27)
-- Следующая фаза: `Этап 3 — Interview: вопросы о pain points` (см. [[2026-09-27-automation-layer-audit]])
+- Статус: Automation Layer реализован (17 утилит + 5 старых скриптов)
 
 ---
 
