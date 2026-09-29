@@ -1,7 +1,5 @@
-# home/features/desktop/browsers.nix — браузеры
+# home/features/desktop/browsers.nix — прочие браузеры
+# Firefox вынесен в ./firefox/default.nix (переносимый профиль).
 { config, pkgs, ... }:
 {
-  home.packages = with pkgs; [
-    firefox
-  ];
 }

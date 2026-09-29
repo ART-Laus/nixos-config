@@ -9,6 +9,7 @@
     ./lockscreen/swaylock.nix
     ./lockscreen/swayidle.nix
     ./browsers.nix
+    ./firefox/default.nix
     ./apps.nix
     ./orpheus/default.nix
   ];

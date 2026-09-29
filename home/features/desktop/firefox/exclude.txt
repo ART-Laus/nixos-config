@@ -1,0 +1,57 @@
+# Политика вычищения при импорте Windows-профиля (rsync --exclude-from).
+# Применялась при переносе: Windows → home/features/desktop/firefox/profile/
+# Воспроизводимость: rsync -a --exclude-from=exclude.txt <ИСХОДНЫЙ-ПРОФИЛЬ>/ profile/
+
+# ── Кэши и мусор, который Firefox регенерирует сам ──
+cache2/
+startupCache/
+shader-cache/
+minidumps/
+crashes/
+saved-telemetry-pings/
+datareporting/
+security_state/            # CRLite/crlite-дельты — качаются заново
+memory-report.json.gz
+Telemetry.FailedProfileLocks.txt
+Telemetry.ShutdownTime.txt
+targeting.snapshot.json
+ExperimentStoreData.json
+shield-preference-experiments.json
+breach-alerts.db*
+serviceworker.txt
+sessionCheckpoints.json
+*.corrupt
+
+# ── Плагины: бинарники под Windows, качаются заново в Linux ──
+gmp/
+gmp-gmpopenh264/
+gmp-widevinecdm/
+features/
+
+# ── Секреты и ключи (в публичный репозиторий не кладём) ──
+weave/                       # ключи шифрования Firefox Sync
+signedInUser.json            # живой refresh-токен FxA
+credentials.json
+logins.json                  # пароли зашифрованы DPAPI, на Linux не работают
+logins-backup.json
+logins.db
+key3.db
+key4.db
+cert9.db                     # вкл. клиентские сертификаты
+
+# ── Временные файлы ──
+parent.lock
+lock
+sessionstore-logs/
+extensions/staged/
+
+# ── Windows-специфика ──
+taskbartabs/
+storage/default/file++++++wsl.localhost*/       # локальные проекты WSL
+storage/default/http+++localhost*
+storage/default/https+++localhost*
+storage/default/http+++127.0.0.1*
+
+# ── Кэши сайтов в IndexedDB (большие, >10 MiB; данные аккаунтов — в cookies) ──
+# Правило при переносе: все origins из storage/default размером >10 MiB,
+# КРОМЕ moz-extension* (там живут настройки расширений, юзер-скрипты Tampermonkey).
