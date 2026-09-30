@@ -92,11 +92,10 @@
 > Если ключ нужен — положи файл **внутрь репозитория** (например `~/nixos-config/.secrets/tailscale.key`),
 > иначе абсолютный путь снаружи репозитория попадёт в store-путь флейка и сломает воспроизводимость.
 
-> ⚠️ **2. `system.stateVersion = "25.05"` и `nixpkgs.url = ".../nixos-25.05"`**
-> Конфиг привязан к ветке **nixos-25.05**. ISO можно брать свежее (26.05, см. [2.3](#23-скачать-iso-единственный-шаг-где-интернет-необходим-по-определению)):
-> минимальная система из такого образа поставится на его nixpkgs, а первая же `nixos-rebuild`
-> после перезагрузки пересоберёт всё на 25.05. `stateVersion` **не меняем** никогда —
-> это «версия, на которой система была поставлена впервые», а не «текущая версия».
+> ⚠️ **2. `system.stateVersion = "26.05"` и `nixpkgs.url = ".../nixos-26.05"`**
+> Конфиг привязан к ветке **nixos-26.05** (и home-manager к `release-26.05`) — то же, что и ISO.
+> `stateVersion` **не меняем** никогда — это «версия, на которой система была поставлена впервые»,
+> а не «текущая версия». При переходе на следующую ветку (27.05) её поднимать не нужно.
 
 ---
 
@@ -175,10 +174,10 @@ Toshiba 2 ТБ (SATA) · ARDOR NOVA ULTRA 27" 4K160 · МФУ Pantum M6500W/M650
 ~4.5 ГБ, внутри live-десктоп KDE Plasma. Десктоп для установки не обязателен, но удобен:
 сетевое подключение настраивается мышью, а не командами (см. [4.4](#44-сеть-в-live-образе)).
 
-> 💡 **Версия ISO не обязана совпадать с версией конфига.** Конфиг привязан к ветке
-> `nixos-25.05` (см. ⚠️ 2 в [разделе 0](#0-что-вообще-нужно-знать-про-этот-конфиг)), а ISO
-> берём текущий 26.05 — это нормально: live-окружение соберёт минимальную систему из своего
-> nixpkgs, а после перезагрузки первая же `nixos-rebuild` соберёт всё из 25.05-пакетов флейка.
+> 💡 **Версия ISO = версия конфига.** Флейк привязан к ветке `nixos-26.05`, home-manager —
+> к `release-26.05`, `stateVersion` = `26.05` (см. ⚠️ 2 в [разделе 0](#0-что-вообще-нужно-знать-про-этот-конфиг)).
+> ISO берём ту же 26.05: live-окружение соберёт минимальную систему, а после перезагрузки
+> первая же `nixos-rebuild` соберёт всё из тех же 26.05-пакетов флейка.
 
 Где брать (официальные страницы, без выдуманных прямых ссылок):
 
@@ -189,13 +188,11 @@ Toshiba 2 ТБ (SATA) · ARDOR NOVA ULTRA 27" 4K160 · МФУ Pantum M6500W/M650
 
 В том же каталоге лежит файл `SHA256SUMS` (или `<имя>.iso.sha256`) — сверь хеш после скачивания.
 
-> 💡 **Если захочешь переехать конфиг целиком на 26.05.** Вариант «А»: в `flake.nix:5`
-> заменить `nixos-25.05` на `nixos-26.05` (и `home-manager` в `flake.nix:9` на соответствующую
-> ветку), выполнить `sudo nix flake update ~/nixos-config`, затем выставить `system.stateVersion`
-> (`system/nix.nix:33`) в `26.05` и то же самое в `home/default.nix:28`. Вариант «Б»
-> (рекомендуемый, в этом гайде по умолчанию): флейк и `stateVersion` не трогать — оставить
-> 25.05. Система и так соберётся из 25.05-пакетов после первой `nixos-rebuild`, просто двумя
-> поколениями: live (из ISO 26.05) → настоящее (из флейка 25.05). Вариант «Б» безопаснее.
+> 💡 **Как обновлять конфиг между ветками (на будущее).** В `flake.nix` заменить
+> `nixos-26.05` → `nixos-27.05` (и home-manager в `flake.nix` на соответствующую ветку),
+> `sudo nix flake update`, затем решить по `system.stateVersion` (`system/nix.nix`) и
+> `home/default.nix`: поднимать только когда система уже живёт на новой ветке.
+> `stateVersion` выше старой — нельзя.
 
 ---
 
@@ -571,7 +568,7 @@ nano /mnt/etc/nixos/configuration.nix
   time.timeZone = "Europe/Moscow";
   services.openssh.enable = true;          # чтобы зайти по SSH, если экран сдохнет
 
-  system.stateVersion = "25.05";          # именно 25.05, как во флейке, НЕ версия ISO — см. раздел 0
+  system.stateVersion = "26.05";          # как во флейке, чтобы потом не гонять миграции — см. раздел 0
 }
 ```
 
@@ -600,7 +597,7 @@ sudo nixos-install
 
 Что произойдёт по шагам:
 1. Соберётся минимальная система (5–15 минут в зависимости от скорости сети).
-2. Создастся окружение с `nix-channel` на **26.05** (совпадает с ISO; на флейк не влияет — он соберётся на 25.05).
+2. Создастся окружение с `nix-channel` на **26.05** (совпадает и с ISO, и с флейком).
 3. Поставится `systemd-boot` в ESP.
 4. Попросит задать пароль root.
 
@@ -871,43 +868,42 @@ hardware.graphics = { enable = true; enable32Bit = true; };
 hardware.amdgpu.opencl.enable = true;
 hardware.enableAllFirmware = true;
 
-# system/services.nix:39-46
+# system/services.nix:40-52 (26.05: опции acceleration/rocmOverrideGfx удалены,
+# пакет выбирается явно)
 services.ollama = {
-  acceleration = "rocm";
-  rocmOverrideGfx = "10.3.0";
+  enable = lib.mkDefault true;
+  package = pkgs.ollama-rocm;   # собран под все цели clr.gpuTargets (incl. gfx1201)
   ...
 };
 ```
 
-**newbox: RX 9060 XT (RDNA4) — уже настроено.** В `system/services.nix` стоит
-`rocmOverrideGfx = "11.0.0"` (gfx1100/RDNA3). Это потому, что в nixpkgs 25.05 ROCm 6.3.3,
-в котором целей gfx12 (RDNA4) нет; перекрытие «9060 XT → gfx1100» работает на ROCm ≥6.1.3.
+**newbox: RX 9060 XT (RDNA4) — уже настроено.** nixpkgs 26.05 содержит ROCm 6.4.3+,
+где `gfx1200`/`gfx1201` уже в целях сборки (проверено:
+`pkgs.rocmPackages.clr.gpuTargets` → `... "gfx1200" "gfx1201"`), поэтому
+`rocmOverrideGfx` тут **не нужен** — Ollama на `ollama-rocm` работает нативно.
 **Ничего в конфиге менять не нужно.** Проверить после первой загрузки:
 
 ```bash
-journalctl -u ollama | grep -i gfx     # ждём строки про gfx1100 / gfx1201
+journalctl -u ollama | grep -i gfx     # ждём строки с gfx1201 (или "found compatible GPUs")
 ```
 
-> 💡 При переезде флейка на 26.05 (ROCm 6.4.3+): удалить строку `rocmOverrideGfx`
-> из `system/services.nix` — тогда ROCm сам определит gfx1201 (native RDNA4).
-
-**Если видеокарта другая AMD (не RDNA4):** строка `10.3.0` / `11.0.0` — это перекрытие
-под RX 6000/7000 (RDNA2/RDNA3). На твоём железе правильнее позволить ROCm определить
-самому — **удалить строку `rocmOverrideGfx` целиком**.
+> 💡 Если Ollama вдруг «не видит» GPU (например, появятся гонки с новым ISA) — вернуть
+> совместимость через `rocmOverrideGfx = "11.0.0"` в `system/services.nix` (перекрытие на
+> gfx1100/RDNA3 работает на ROCm ≥6.1.3).
 
 **Если видеокарта Intel:**
 
 ```nix
 # 1. Убрать из system/boot-hardware.nix строку
 #      hardware.amdgpu.opencl.enable = true;
-# 2. В system/services.nix заменить
+# 2. В system/services.nix заменить пакет
 services.ollama = {
   enable = lib.mkDefault true;
-  acceleration = "none";     # было "rocm"
+  package = pkgs.ollama-cpu;     # было "ollama-rocm" — CPU fallback
   host = "127.0.0.1";
   port = 11434;
   openFirewall = false;
-};                              # и удалить строку rocmOverrideGfx
+};
 ```
 
 **Если видеокарта NVIDIA — самый объёмный случай.** В конфиге поддержки NVIDIA нет

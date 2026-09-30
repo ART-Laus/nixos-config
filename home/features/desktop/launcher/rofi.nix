@@ -6,7 +6,8 @@ in
 {
   programs.rofi = {
     enable = true;
-    package = pkgs.rofi-wayland;
+    # 26.05: rofi-wayland влит в rofi
+    package = pkgs.rofi;
     terminal = "${pkgs.alacritty}/bin/alacritty";
     theme = let
       inherit (theme) colors;

@@ -24,8 +24,8 @@
   features.virtualization.enable = true;
 
   # Hardware-специфика нового десктопа
-  # ── GPU RDNA4: ROCm 6.3.3 (25.05) не знает gfx1201 → Ollama наследует
-  #    настройку rocmOverrideGfx из system/services.nix ("11.0.0" = gfx1100).
+  # ── GPU RDNA4: nixpkgs 26.05 / ROCm 6.4.3+ знает gfx1201 -> Ollama работает
+  #    нативно (rocmOverrideGfx убран, см. system/services.nix).
 
   # ── Принтер/сканер Pantum M6500W — печать и скан по WiFi/USB
   #    (system/printing.nix: CUPS + pantum-driver + sane-airscan).

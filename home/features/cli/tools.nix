@@ -33,7 +33,7 @@ in
      bzip2
 
      # PDF CLI
-     poppler_utils
+     poppler-utils
 
      # OCR
      tesseract
@@ -60,8 +60,8 @@ in
     nvd
     nixpkgs-fmt
 
-    # Python for share script
-    python3Full
+    # Python for share script (26.05: python3Full удалён, tkinter в python3 по умолчанию)
+    python3
 
     # Hash / file info
     file

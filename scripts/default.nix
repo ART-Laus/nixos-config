@@ -73,7 +73,7 @@ in
   share = pkgs.writeShellApplication {
     name = "share";
     text = readScript "share";
-    runtimeInputs = with pkgs; [ python3Full ];
+    runtimeInputs = with pkgs; [ python3 ];
   };
 
   # ── Система ──
@@ -141,7 +141,7 @@ in
   pdf2text = pkgs.writeShellApplication {
     name = "pdf2text";
     text = readScript "pdf2text";
-    runtimeInputs = with pkgs; [ poppler_utils ];
+    runtimeInputs = with pkgs; [ poppler-utils ];
   };
 
   # ── Переименование ──

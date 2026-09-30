@@ -8,7 +8,7 @@
     ./git.nix
     ./yazi.nix
     ./tmux.nix
-    ./neofetch.nix
+    ./fastfetch.nix
     ./neovim
     ./tools.nix
   ];

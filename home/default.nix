@@ -25,7 +25,7 @@
     home = {
       username = "artlaus";
       homeDirectory = "/home/artlaus";
-      stateVersion = "25.05";
+      stateVersion = "26.05";
       sessionVariables = {
         EDITOR = "nvim";
         BROWSER = "firefox";

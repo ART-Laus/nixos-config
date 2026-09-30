@@ -30,5 +30,5 @@
   nixpkgs.config.allowUnfree = true;
 
   # Для совместимости с `nix flake check` на старых системах
-  system.stateVersion = "25.05";
+  system.stateVersion = "26.05";
 }

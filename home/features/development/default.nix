@@ -3,8 +3,8 @@
 {
   home.packages = with pkgs; [
     # ── Языки и LSP ──
-    # Python
-    python3Full
+    # Python (26.05: python3Full удалён, всё включено в python3)
+    python3
     pyright
     ruff
     # Nix

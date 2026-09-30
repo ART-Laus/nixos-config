@@ -36,17 +36,19 @@
   programs.xfconf.enable = true;
 
   # Ollama — 127.0.0.1 по умолчанию (безопасно, не 0.0.0.0)
-  # GPU newbox: RX 9060 XT = RDNA4 (gfx1201). nixpkgs 25.05 содержит ROCm 6.3.3,
-  # в котором целей gfx12 нет (native gfx1201 появится в ROCm 6.4.3 / ветке 26.05).
-  # Поэтому перекрываем gfx1201 → gfx1100 (RDNA3): работает на ROCm ≥6.1.3.
-  # ── При переезде флейка на 26.05: rocmOverrideGfx удалить (native RDNA4).
+  # GPU newbox: RX 9060 XT = RDNA4 (gfx1201). nixpkgs 26.05 содержит ROCm 6.4.3+,
+  # где gfx12 уже в clr.gpuTargets — native RDNA4 без перекрытия. Если когда-нибудь
+  # снова увидишь в journalctl ollama "no compatible GPUs" — проверь:
+  #   nix eval --impure .#nixosConfigurations.newbox.pkgs.rocmPackages.clr.gpuTargets
+  # и при необходимости верни rocmOverrideGfx = "11.0.0" (gfx1100/RDNA3).
   services.ollama = {
     enable = lib.mkDefault true;
-    acceleration = "rocm";
+    # 26.05: опции acceleration нет — пакет выбирается явно (ollama-rocm собран
+    # под все цели из clr.gpuTargets, включая gfx1201 для RX 9060 XT)
+    package = pkgs.ollama-rocm;
     host = "127.0.0.1";
     port = 11434;
     openFirewall = false;
-    rocmOverrideGfx = "11.0.0";
     environmentVariables = {
       OLLAMA_FLASH_ATTENTION = "1";
     };

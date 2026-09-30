@@ -80,6 +80,7 @@ in
         top = "btop";
         bt = "btop";
         htop = "btop";
+        neofetch = "fastfetch";
         jq = "jq";
         jj = "jq";
         h = "http";
