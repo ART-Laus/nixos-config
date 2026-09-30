@@ -21,6 +21,7 @@
     brightnessctl
     qmk
     vial
+    simple-scan
 
     # ── Соцсети ──
     discord

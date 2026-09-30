@@ -19,7 +19,7 @@
 ```
 flake.nix
 ├── inputs: nixpkgs 23.11, home-manager 23.11, Hyprland (main), hypr-niri (plugin)
-├── nixosConfigurations."msi-laptop"
+├── nixosConfigurations."newbox"
 │   ├── ./modules/common            (пустой заглушка)
 │   ├── ./system/configuration.nix
 │   │   ├── ./system/packages.nix
@@ -362,7 +362,7 @@ flake.nix
 ```
 flake.nix                      → inputs: nixpkgs 25.05(+1 overlay stable/unstable), home-manager 25.05, hyprland (пин), agenix/sops
 ├── lib/default.nix            → toRgba, mkTheme helpers
-├── hosts/msi-laptop/
+├── hosts/newbox/
 │   ├── system.nix             → boot(UEFI/systemd-boot), fileSystems, network, pipewire, opengl, displayManager(greetd|sddm), xdg.portal, users, nix settings
 │   ├── packages.nix           → системные пакеты (GPU, wine, steam)
 │   └── services.nix           → ollama(127.0.0.1), polkit, steam firewall, gnupg
@@ -443,9 +443,9 @@ flake.nix                      → inputs: nixpkgs 25.05(+1 overlay stable/unsta
 cd ~/nixos-config
 nix flake show
 nix flake check
-nixos-rebuild dry-build --flake .#msi-laptop
-nixos-rebuild build --flake .#msi-laptop        # -> /result
-sudo nixos-rebuild switch --flake .#msi-laptop
+nixos-rebuild dry-build --flake .#newbox
+nixos-rebuild build --flake .#newbox        # -> /result
+sudo nixos-rebuild switch --flake .#newbox
 systemctl --user status pipewire wireplumber
 systemctl status display-manager
 systemctl status ollama                          # слушает 127.0.0.1?

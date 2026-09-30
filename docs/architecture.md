@@ -36,14 +36,12 @@ about.md                           # аудит
 docs/
 ├── architecture.md                # ← этот файл
 ├── neovim.md                      # исследование Neovim (выбор: Lazy.nvim)
-└── devlog.md                      # индекс девлога (Obsidian)
-└── devlog/                        # каждая запись — отдельная заметка
-    ├── 2026-09-14-audit.md
-    ├── 2026-09-15-architecture.md
-    └── 2026-09-15-neovim.md
+└── INSTALL.md                     # инструкция по установке (единственная «эксплуатируемая» документация)
+
+# Девлог (docs/devlog.md + docs/devlog/) — ТОЛЬКО локально, в git не хранится (см. .gitignore)
 
 hosts/
-└── msi-laptop/                    # один хост = одна папка (готовность ко второму хосту)
+└── newbox/                    # один хост = одна папка (готовность ко второму хосту)
     ├── default.nix                # nixosSystem: импортирует system + home
     ├── hardware-configuration.nix # сгенерирован nixos-generate-config (fileSystems, swap, boot)
     └── disko.nix                  # (опционально) декларативная разметка диска
@@ -101,7 +99,7 @@ scripts/
 - **`features/` сохраняется** — как **инкубатор**. Правило: пока `desktop.nix` < ~200 строк — живёт плоско. Как только `desktop.nix` разрастётся (например, waybar + rofi + dunst требуют своих тем) — **расщепляем**: `home/desktop.nix` → `home/features/desktop/{hyprland.nix, waybar.nix, rofi.nix, dunst.nix}`. Аналогично `gaming.nix` → `features/gaming/`. Это даёт **эволюционный путь** без переписывания сейчас.
 - `neovim/` уже в `features/` — потому что это единственный компонент, который **уже** сложный (30 плагинов, Lua-дерево). Ему нужна папка сейчас.
 - `theme/` в корне (утверждено) — доступен и `system` (greetd, grub) и `home` (waybar, nvim) через `specialArgs.theme` без относительных `../../../theme`.
-- `hosts/msi-laptop/` — готовность ко второму хосту без копипасты (`hosts/second-laptop/default.nix` импортирует те же `system/` + `home/`).
+- `hosts/newbox/` — готовность ко второму хосту без копипасты (`hosts/second-laptop/default.nix` импортирует те же `system/` + `home/`).
 
 **Чего НЕ должно быть в каждой папке:**
 
@@ -183,7 +181,7 @@ home/desktop.nix  →  home/features/desktop/
 ### 3.2 Где хранить переключатели
 
 ```nix
-# hosts/msi-laptop/default.nix
+# hosts/newbox/default.nix
 {
   features = {
     cli.enable = true;            # всегда
@@ -331,9 +329,9 @@ home/desktop.nix  →  home/features/desktop/
 # flake.nix
 let theme = import ./theme/colors.nix;
 in {
-  nixosConfigurations.msi-laptop = nixpkgs.lib.nixosSystem {
+  nixosConfigurations.newbox = nixpkgs.lib.nixosSystem {
     specialArgs = { inherit inputs theme; };
-    modules = [ ./hosts/msi-laptop/default.nix ];
+    modules = [ ./hosts/newbox/default.nix ];
   };
 }
 # любой модуль: { theme, ... }: { background = theme.primary; }
@@ -366,9 +364,9 @@ in {
 
 - [x] Утверждено: плоско + `features/` + `theme/` в корне + `greetd` + `Lazy.nvim`
 - [x] Обновить `docs/neovim.md` (Lazy) и `docs/devlog.md` (Obsidian)
-- [x] Phase 1: `hosts/msi-laptop/` + `system/nix.nix` + `theme/colors.nix` + `flake.nix` (specialArgs, 25.05)
+- [x] Phase 1: `hosts/newbox/` + `system/nix.nix` + `theme/colors.nix` + `flake.nix` (specialArgs, 25.05)
 - [x] Phase 2: удаление `artlaus/`, `system/home.nix`, `system/configuration.nix`; фикс devShell; `nix flake check` OK
 - [x] Phase 3: `theme/` прошивка цветов через все компоненты (waybar CSS, hyprland rgba, rofi, dunst, swaylock, nvim theme.lua, alacritty, kitty, yazi)
 - [x] Добавлены Tor, OpenVPN, Tailscale, Docker | `phase` | ✅ evaluation OK |
 
-*Вопросы — в `docs/devlog.md` или PR к этому файлу.*
+*Вопросы — в Issues/PR к этому репозиторию на GitHub; локальный девлог держим вне git.*

@@ -9,7 +9,7 @@
 окружения.
 
 **Источник истины:** репозиторий `~/nixos-config` (remote `git@github.com:ART-Laus/nixos-config.git`,
-ветка `main`, коммит `99eb3f6`). Все пути и номера строк ниже — актуальны для этого коммита.
+ветка `main`, коммит `2efcf16`). Все пути и номера строк ниже — актуальны для этого коммита.
 Если строки «поехали» — ищи по имени опции, а не по номеру.
 
 ---
@@ -55,9 +55,9 @@
 
 Четыре вложенных «кирпичика»:
 
-- `hosts/msi-laptop/` — единственный хост. Внутри только импорты и `hardware-configuration.nix`.
-- `system/` — 6 модулей, отвечают за машину: `nix`, `boot-hardware`, `networking-security`,
-  `services`, `virtualization`, `packages`. (Файл `system/gaming.nix` существует, но **не подключён** — см. [Приложение D](#приложение-d-известные-мелочи-и-поломки).)
+- `hosts/newbox/` — единственный хост. Внутри только импорты и `hardware-configuration.nix`.
+- `system/` — 7 модулей, отвечают за машину: `nix`, `boot-hardware`, `networking-security`,
+  `services`, `virtualization`, `packages`, `printing`. (Файл `system/gaming.nix` существует, но **не подключён** — см. [Приложение D](#приложение-d-известные-мелочи-и-поломки).)
 - `home/` — Home Manager, отвечает за пользователя: оболочка, терминалы, Neovim, Hyprland,
   панель, лаунчер, приложения, dev-тулы, медиа, автоматизация.
 - `theme/` — единственный источник цветов и шрифтов (палитра «Artlaus Neon»), прокидывается
@@ -93,8 +93,9 @@
 > иначе абсолютный путь снаружи репозитория попадёт в store-путь флейка и сломает воспроизводимость.
 
 > ⚠️ **2. `system.stateVersion = "25.05"` и `nixpkgs.url = ".../nixos-25.05"`**
-> Конфиг привязан к ветке **nixos-25.05**. Ставь ISO той же ветки, иначе первая сборка
-> переедет с другой версии nixpkgs на 25.05. `stateVersion` **не меняем** никогда —
+> Конфиг привязан к ветке **nixos-25.05**. ISO можно брать свежее (26.05, см. [2.3](#23-скачать-iso-единственный-шаг-где-интернет-необходим-по-определению)):
+> минимальная система из такого образа поставится на его nixpkgs, а первая же `nixos-rebuild`
+> после перезагрузки пересоберёт всё на 25.05. `stateVersion` **не меняем** никогда —
 > это «версия, на которой система была поставлена впервые», а не «текущая версия».
 
 ---
@@ -102,6 +103,12 @@
 ## 1. Требования к железу
 
 Проверь до того, как начнёшь. Если что-то не совпадает — правки конфига описаны в [этапе 7](#этап-7--правка-конфига-под-новую-машину).
+
+**Целевое железо (newbox, по чеку DNS):** Ryzen 9 9950X3D · RX 9060 XT 8 ГБ (RDNA4) ·
+MSI X870 Gaming Plus WiFi · 64 ГБ DDR5-5600 · Samsung 9100 PRO 1 ТБ (NVMe) ·
+Toshiba 2 ТБ (SATA) · ARDOR NOVA ULTRA 27" 4K160 · МФУ Pantum M6500W/M6502W.
+Всё ниже уже учтено в конфиге: GPU/ROCm — в [9.5](#95-видеокарта-и-gpu), разметка дисков — в [этапе 3](#этап-3--разметка-диска),
+печать/скан — в разделе «Печать и сканирование» (см. [12.8](#128-остальное-личное)).
 
 | Параметр | Требование | Где зашито | Что будет, если не так |
 |---|---|---|---|
@@ -135,7 +142,8 @@
 
 - [ ] **SSH-ключи** (`~/.ssh/`) — без них не склонировать репозиторий (см. [этап 6](#этап-6--клонирование-репозитория))
 - [ ] **GPG-ключи** (`~/.gnupg/`) — конфиг включает `programs.gnupg.agent` с SSH-поддержкой
-- [ ] **Профили браузера** — Firefox в конфиге ставится с нуля, профиль не в репозитории
+- [ ] **Профили браузера** — Firefox-профиль **уже в репозитории** (`home/features/desktop/firefox/`),
+  обновлять его не нужно (если захочешь свежий снимок — см. [12.8](#128-остальное-личное))
 - [ ] **Пароли** — менеджер паролей (`pass` в системе есть, но сам он пуст)
 - [ ] **Wallpapers** — 122 картинки, **в git их нет** (`.gitignore:37-38`), нужно скопировать отдельно
 - [ ] **Музыкальная библиотека Orpheus** — 600 ГБ, живёт на отдельном диске/SMB, в конфиге только точка монтирования
@@ -150,7 +158,7 @@
 Два варианта:
 
 - **Вариант А (по умолчанию в этом гайде) — переименовать.** Старая машина больше не нужна →
-  переименовываем `hosts/msi-laptop` в `hosts/<новое-имя>` и правим `flake.nix`.
+  `hosts/msi-laptop` уже переименован в `hosts/newbox` и правится в `flake.nix`.
   Конфиг остаётся чистым, в нём один хост.
 - **Вариант Б — добавить второй хост.** Старая машина остаётся →
   создаём `hosts/<новое-имя>/` с собственным `hardware-configuration.nix`,
@@ -162,33 +170,38 @@
 
 ### 2.3 Скачать ISO (единственный шаг, где интернет необходим по определению)
 
-Нужен **NixOS 25.05**, минимальный (`*-nixos-minimal-x86_64-linux.iso`).
-Полный образ не нужен: он весит ~2.5 ГБ против ~1 ГБ, а на нём ничего, что нужно этому конфигу.
+Нужен **NixOS 26.05, графический, x86_64** (`nixos-kde-26.05.xxxxxxx-x86_64-linux.iso`).
+Это образ, который на <https://nixos.org/download/> обозначен как **Graphical · 64-bit Intel/AMD**:
+~4.5 ГБ, внутри live-десктоп KDE Plasma. Десктоп для установки не обязателен, но удобен:
+сетевое подключение настраивается мышью, а не командами (см. [4.4](#44-сеть-в-live-образе)).
+
+> 💡 **Версия ISO не обязана совпадать с версией конфига.** Конфиг привязан к ветке
+> `nixos-25.05` (см. ⚠️ 2 в [разделе 0](#0-что-вообще-нужно-знать-про-этот-конфиг)), а ISO
+> берём текущий 26.05 — это нормально: live-окружение соберёт минимальную систему из своего
+> nixpkgs, а после перезагрузки первая же `nixos-rebuild` соберёт всё из 25.05-пакетов флейка.
 
 Где брать (официальные страницы, без выдуманных прямых ссылок):
 
-- <https://channels.nixos.org/nixos-25.05/> — каталог релизов ветки 25.05
-- <https://releases.nixos.org/> — если ветки 25.05 уже нет в каталоге, ищи там `nixos-25.05*`
-- <https://nixos.org/download/> — общая страница, но там по умолчанию «latest» (не 25.05)
+- <https://nixos.org/download/> — основная страница: сейчас «current» = **26.05** →
+  выбрать тип **Graphical** (64-bit Intel/AMD, т.е. x86_64, KDE Plasma)
+- <https://channels.nixos.org/nixos-26.05/> — каталог релизов ветки 26.05
+- <https://releases.nixos.org/> — если 26.05 нет в каталоге, ищи там `nixos-26.05*`
 
 В том же каталоге лежит файл `SHA256SUMS` (или `<имя>.iso.sha256`) — сверь хеш после скачивания.
-Если ветки 25.05 в каталоге уже нет — см. врезку ниже.
 
-> 💡 **Что делать, если ISO 25.05 недоступен.** Вариант «А»: поставить свежий ISO, а в
-> `flake.nix:5` заменить `nixos-25.05` на нужную ветку и выполнить
-> `sudo nix flake update ~/nixos-config` (пересканирует и обновит `flake.lock`;
-> `home-manager` в `flake.nix:9` тоже стоит перевести на соответствующую ветку),
-> после чего выставить `system.stateVersion` (`system/nix.nix:33`) в номер новой
-> ветки, и то же самое в `home/default.nix:28`. Вариант «Б» (рекомендуемый): оставить
-> флейк на 25.05, а `stateVersion` не трогать вообще — оставить `25.05`. Система
-> соберётся из 25.05-пакетов, и это ровно то, на чём конфиг написан и отлажен.
-> Второй вариант безопаснее.
+> 💡 **Если захочешь переехать конфиг целиком на 26.05.** Вариант «А»: в `flake.nix:5`
+> заменить `nixos-25.05` на `nixos-26.05` (и `home-manager` в `flake.nix:9` на соответствующую
+> ветку), выполнить `sudo nix flake update ~/nixos-config`, затем выставить `system.stateVersion`
+> (`system/nix.nix:33`) в `26.05` и то же самое в `home/default.nix:28`. Вариант «Б»
+> (рекомендуемый, в этом гайде по умолчанию): флейк и `stateVersion` не трогать — оставить
+> 25.05. Система и так соберётся из 25.05-пакетов после первой `nixos-rebuild`, просто двумя
+> поколениями: live (из ISO 26.05) → настоящее (из флейка 25.05). Вариант «Б» безопаснее.
 
 ---
 
 ## 3. Этап 1 — загрузочная флешка
 
-Нужна флешка **8 ГБ или больше**. Данные на ней будут стёрты.
+Нужна флешка **8 ГБ или больше** (графический образ ~4.5 ГБ). Данные на ней будут стёрты.
 
 ### Из Linux или macOS
 
@@ -201,7 +214,8 @@ sudo umount /dev/sdb1 2>/dev/null
 sudo umount /dev/sdb2 2>/dev/null
 
 # 3. Записать образ (bs=4M + conv=fsync — чтобы не обрезалось)
-sudo dd if=nixos-minimal-25.05.xxxxxxx-x86_64-linux.iso \
+#    ~4.5 ГБ запишутся несколько минут — это нормально, не прерывай
+sudo dd if=nixos-kde-26.05.xxxxxxx-x86_64-linux.iso \
         of=/dev/sdb bs=4M status=progress oflag=direct conv=fsync
 sync
 ```
@@ -221,7 +235,7 @@ sync
 
 ```bash
 # На Linux/macOS — сверь хеш
-sha256sum nixos-minimal-25.05.xxxxxxx-x86_64-linux.iso
+sha256sum nixos-kde-26.05.xxxxxxx-x86_64-linux.iso
 # сравни с содержимым SHA256SUMS из того же каталога
 ```
 
@@ -241,9 +255,13 @@ sha256sum nixos-minimal-25.05.xxxxxxx-x86_64-linux.iso
 В меню загрузки отключи **Secure Boot**, если он включён (NixOS с systemd-boot
 не загрузится с ним без `shim`).
 
-### 4.2 Проверить, что мы действительно в UEFI
+### 4.2 Графический live: где открыть терминал
 
-Live-образ открывает shell автоматически (если нет — `Alt+F2`, затем `bash`).
+Графический образ загружается в **рабочий стол KDE Plasma** (пользователь `nixos`, пароль
+пустой, вход автоматический). Все команды ниже выполняй в терминале:
+
+- открыть терминал: `Super` → ввести «Konsole» → Enter (или значок терминала на панели);
+- запасной вариант — текстовая консоль: `Ctrl+Alt+F3` (вернуться на десктоп: `Ctrl+Alt+F2`).
 
 ```bash
 test -d /sys/firmware/efi && echo "UEFI: OK" || echo "Legacy BIOS — стоп, установка не получится"
@@ -281,13 +299,16 @@ lscpu | grep -E 'Model name|Architecture'
 nixos-version
 ```
 
-> 💡 `nixos-version` в live-образе покажет что-то вроде `25.05.20250901....`.
-> Это подтверждает, что ISO той ветки, что нужна. Если нет — см. врезку в [2.3](#23-скачать-iso-единственный-шаг-где-интернет-необходим-по-определению).
+> 💡 `nixos-version` в live-образе покажет что-то вроде `26.05.20260601....`. Это версия
+> live-образа (у тебя 26.05). Она не обязана совпадать с версией флейка — см. [2.3](#23-скачать-iso-единственный-шаг-где-интернет-необходим-по-определению).
 
 ### 4.4 Сеть в live-образе
 
+В графическом live NetworkManager уже запущен: подключись к Wi-Fi **мышью** — значок сети
+в системном трее Plasma. Проверка и запасной путь — командами:
+
 ```bash
-# В live-образе сетевой менеджер обычно не запущен. Включи:
+# В графическом live менеджер обычно уже работает; команда ниже — только fallback
 sudo systemctl start NetworkManager
 ping -c3 cache.nixos.org
 ```
@@ -311,15 +332,22 @@ nvme0n1
 ├── nvme0n1p1   1 GiB    EFI System Partition   FAT32   метка "boot"    → монтируется в /boot
 ├── nvme0n1p2   swap     Linux swap             swap    метка "nixos-swap" (опционально)
 └── nvme0n1p3   остаток ext4                    ext4    метка "nixos"  → монтируется в /
+
+# на newbox — второй жёсткий диск 2 ТБ под данные/музыку:
+sda
+└── sda1       весь     ext4                    ext4    метка "data"   → /mnt/data (nofail)
 ```
 
 Почему ESP 1 ГБ: `systemd-boot` ставит в `/boot/EFI` и ядра, и все поколения
 конфигураций (`configurationLimit = 10` в `system/boot-hardware.nix:7`).
 На 512 МБ при десяти поколениях теоретически может не хватить места.
 
-**Swap.** Можно не делать. NixOS из коробки не требует swap; при нехватке памяти
-включается zram. Если делаешь swap — 4–8 ГБ, и обязательно добавь в
-`hardware-configuration.nix` через `swapDevices`, иначе он не подмонтируется.
+**Swap.** На newbox 64 ГБ ОЗУ — swap можно вообще не делать (NixOS включает zram на случай
+нехватки памяти). В `hardware-configuration.nix` раздел `nixos-swap` уже прописан —
+если откажешься от него, удали строки `swapDevices` из файла.
+
+**HDD `data`.** Это единственная машина, где библиотека Orpheus живёт локально
+(600 ГБ музыки). Раздел монтируем в `/mnt/data` c `nofail` — система загрузится и без диска.
 
 ### 5.2 Разметка (GPT + BIOS boot не нужен)
 
@@ -346,6 +374,13 @@ sudo parted /dev/nvme0n1 print
 > Если `parted` жалуется на «unrecognised partition table» — это нормально после
 > любой очистки; просто повтори разметку.
 
+**Второй диск (newbox, HDD 2 ТБ под данные):**
+
+```bash
+sudo parted /dev/sda --script mklabel gpt mkpart data ext4 1MiB 100%
+sudo parted /dev/sda print
+```
+
 ### 5.3 Форматирование
 
 ```bash
@@ -358,6 +393,9 @@ sudo swapon /dev/nvme0n1p2
 
 # корень
 sudo mkfs.ext4 -L nixos -m 1 /dev/nvme0n1p3
+
+# (newbox) диск данных — вся ёмкость HDD, `-m 0` — резерв в 1% не нужен
+sudo mkfs.ext4 -L data -m 0 /dev/sda1
 ```
 
 `-m 1` резервирует 1% под root — спасает систему, когда кончится место.
@@ -390,18 +428,23 @@ sudo mkdir -p /mnt/etc/nixos
 
 ## 6. Этап 4 — снятие hardware-конфига
 
-В репозитории лежит **заглушка**, а не настоящий файл:
+В репозитории лежит **предзаполненный** файл под newbox — с метками дисков и пунктами
+железа (микрокод AMD, `amdgpu` в initrd, разделы `boot`/`nixos-swap`/`nixos`/`data`):
 
 ```text
-hosts/msi-laptop/hardware-configuration.nix
-  ⚠️ ЗАГЛУШКА — замените на реальный файл
-  fileSystems."/" = /dev/disk/by-label/nixos   ← метки, которой не будет
-  imports = [ (modulesPath + "/installer/scan/not-detected.nix") ]   ← отключает автоопределение
-  подписи fileSystems."/boot" и swapDevices — закомментированы
+hosts/newbox/hardware-configuration.nix
+  fileSystems."/"         = /dev/disk/by-label/nixos
+  fileSystems."/boot"     = /dev/disk/by-label/boot
+  fileSystems."/mnt/data" = /dev/disk/by-label/data   (nofail)
+  swapDevices             = /dev/disk/by-label/nixos-swap
+  hardware.cpu.amd.updateMicrocode = ...                (AMD)
+  boot.initrd.kernelModules = [ "amdgpu" ]             (экран с раннего старта)
+
+  это РАБОЧИЙ файл под newbox (не заглушка). Всё же сверь его с генерацией ниже.
 ```
 
-Его надо заменить целиком. Генерируем его **по смонтированному целевому диску** —
-команда сама прочтёт твои разделы из `/mnt`:
+Всё равно генерируем его **по смонтированному целевому диску** — команда сама прочтёт
+твои разделы из `/mnt` (проверка, что метки/имена совпали с реальностью):
 
 ```bash
 sudo nixos-generate-config --root /mnt
@@ -528,7 +571,7 @@ nano /mnt/etc/nixos/configuration.nix
   time.timeZone = "Europe/Moscow";
   services.openssh.enable = true;          # чтобы зайти по SSH, если экран сдохнет
 
-  system.stateVersion = "25.05";          # НЕ БЫТЬ 25.11/26.05 здесь — см. раздел 0
+  system.stateVersion = "25.05";          # именно 25.05, как во флейке, НЕ версия ISO — см. раздел 0
 }
 ```
 
@@ -557,7 +600,7 @@ sudo nixos-install
 
 Что произойдёт по шагам:
 1. Соберётся минимальная система (5–15 минут в зависимости от скорости сети).
-2. Создастся `/mnt/etc/nixos/flake.nix`-совместимое окружение: `nix-channel` на 25.05.
+2. Создастся окружение с `nix-channel` на **26.05** (совпадает с ISO; на флейк не влияет — он соберётся на 25.05).
 3. Поставится `systemd-boot` в ESP.
 4. Попросит задать пароль root.
 
@@ -640,7 +683,7 @@ cd ~/nixos-config && git status
 
 ```bash
 cd ~/nixos-config
-git log --oneline -1          # ожидается 99eb3f6 или новее
+git log --oneline -1          # ожидается 2efcf16 или новее
 git remote -v                 # origin → git@github.com:ART-Laus/nixos-config.git
 git status                    # должно быть чисто
 ```
@@ -742,19 +785,22 @@ passwd                                         # проще: сменить па
 
 ### 9.3 Имя хоста (обязательно, 4 места)
 
+**На newbox переименование уже сделано** — `hosts/msi-laptop` переименован в
+`hosts/newbox`, `flake.nix` и `networking.hostName` поправлены (`default.nix`):
+
 ```bash
 cd ~/nixos-config
-git mv hosts/msi-laptop hosts/newbox
+git status            # увидишь:  R  hosts/newbox/...  — переименование пришло из репо
+git log --oneline -1  # свежий коммит должен совпадать с "Источником истины" в разделе 0
 ```
 
-| Файл:строка | Что там |
+| Файл | Что там |
 |---|---|
-| `hosts/newbox/default.nix:19` | `networking.hostName = "msi-laptop";` → `"newbox"` |
-| `flake.nix:70` | `"msi-laptop" = nixpkgs.lib.nixosSystem {` → `"newbox"` |
-| `flake.nix:74` | `./hosts/msi-laptop/default.nix` → `./hosts/newbox/default.nix` |
+| `hosts/newbox/default.nix` | `networking.hostName = "newbox"` |
+| `flake.nix` | `"newbox" = nixpkgs.lib.nixosSystem {`, `./hosts/newbox/default.nix` |
 
-Папку переименовать **обязательно** — иначе `flake.nix:74` упадёт.
-`flake.nix:82` и `:91` используют переменную `username`, там менять нечего.
+Хочешь другое имя — поменяй в обоих местах (БЕЗ `git mv`: папка уже называется правильно).
+`flake.nix` использует переменную `username` (`:82`, `:91`) — там менять нечего.
 
 > 💡 **Вариант Б (второй хост).** Не переименовывай. Создай `hosts/newbox/` копией
 > `hosts/msi-laptop/`, замени в копии только `networking.hostName`, и в `flake.nix`
@@ -777,25 +823,33 @@ git mv hosts/msi-laptop hosts/newbox
 > ```
 > У каждого хоста — свой `hardware-configuration.nix`, сгенерированный на его железе.
 
-### 9.4 hardware-configuration.nix (обязательно — заменить целиком)
+### 9.4 hardware-configuration.nix (проверить и совместить)
+
+В репозитории лежит уже **рабочий** файл с метками `boot`/`nixos-swap`/`nixos`/`data` под newbox
+(см. [этап 4](#этап-4--снятие-hardware-конфига)). Сгенерированный установкой файл тоже живой —
+сверь их и совмести:
 
 ```bash
-# Берём файл, сгенерированный на этапе «снятия» и переживший перезагрузку.
-# В live-образе он лежал по /mnt/etc/nixos/hardware-configuration.nix,
-# после загрузки системы он находится по /etc/nixos/hardware-configuration.nix.
-cp /etc/nixos/hardware-configuration.nix ~/nixos-config/hosts/newbox/hardware-configuration.nix
+# Сгенерированный установкой файл (по UUID):
+cat /etc/nixos/hardware-configuration.nix
+# Репозиторный (по меткам):
+cat ~/nixos-config/hosts/newbox/hardware-configuration.nix
 ```
 
-Потом **вручную** проверь в нём секции `fileSystems` и `swapDevices` — они должны
-быть теми же, что в bootstrap-конфиге ([этап 5](#этап-5--минимальный-bootstrap-конфиг-и-nixos-install)).
-Проверь, что:
+Совмещение за 1 минуту: возьми из сгенерированного **секции `fileSystems` и `swapDevices`**
+(там UUID/части `boot.initrd.availableKernelModules`), но **оставь метки** как основную схему
+(в репо-файле) или замени `device` на UUID — оба пути рабочие, метки удобнее (диск можно
+переткнуть в другой порт). Главное — чтобы файл в репозитории совпал с реальностью диска.
 
-- [ ] `fileSystems."/"` указывает на **твой** корневой раздел по UUID, `fsType = "ext4"`
-- [ ] `fileSystems."/boot"` существует и указывает на ESP, `fsType = "vfat"`
+Проверь после правки:
+
+- [ ] `fileSystems."/"` — корневой ext4
+- [ ] `fileSystems."/boot"` — ESP, `fsType = "vfat"`
 - [ ] `swapDevices` на месте, если делал swap
+- [ ] `fileSystems."/mnt/data"` — с `nofail` (newbox: HDD 2 ТБ)
 - [ ] `nixpkgs.hostPlatform` = `"x86_64-linux"`
 - [ ] **нет** строки `imports = [ (modulesPath + "/installer/scan/not-detected.nix") ];` — она отключает автоопределение железа
-- [ ] если не AMD — **нет** строки `hardware.cpu.amd.updateMicrocode`
+- [ ] AMD — на месте `hardware.cpu.amd.updateMicrocode`
 
 Быстрая проверка, что файл вообще живой:
 
@@ -825,15 +879,21 @@ services.ollama = {
 };
 ```
 
-**Если видеокарта AMD — ничего не трогай**, только проверь `rocmOverrideGfx`.
-Строка `10.3.0` — это gfx1030 (серия RX 6000/6700, RDNA2). Если у тебя RX 7000 (RDNA3) —
-это `11.0.0`, и вообще правильнее позволить ROCm определить самому, то есть **удалить
-строку `rocmOverrideGfx` целиком**. Проверить можно после первой загрузки:
+**newbox: RX 9060 XT (RDNA4) — уже настроено.** В `system/services.nix` стоит
+`rocmOverrideGfx = "11.0.0"` (gfx1100/RDNA3). Это потому, что в nixpkgs 25.05 ROCm 6.3.3,
+в котором целей gfx12 (RDNA4) нет; перекрытие «9060 XT → gfx1100» работает на ROCm ≥6.1.3.
+**Ничего в конфиге менять не нужно.** Проверить после первой загрузки:
 
 ```bash
-journalctl -u ollama | grep -i gfx
-rocm-smi          # если есть в PATH
+journalctl -u ollama | grep -i gfx     # ждём строки про gfx1100 / gfx1201
 ```
+
+> 💡 При переезде флейка на 26.05 (ROCm 6.4.3+): удалить строку `rocmOverrideGfx`
+> из `system/services.nix` — тогда ROCm сам определит gfx1201 (native RDNA4).
+
+**Если видеокарта другая AMD (не RDNA4):** строка `10.3.0` / `11.0.0` — это перекрытие
+под RX 6000/7000 (RDNA2/RDNA3). На твоём железе правильнее позволить ROCm определить
+самому — **удалить строку `rocmOverrideGfx` целиком**.
 
 **Если видеокарта Intel:**
 
@@ -918,13 +978,13 @@ services.tailscale = {
 
 ### 9.7 Project Orpheus — решение: включить, починить или выключить
 
-Это самый «грязный» кусок конфига: в нём **абсолютные пути `/home/artlaus/...`**,
-незаполненные плейсхолдеры SMB и коллизия портов. Выбери явно одно из трёх.
+**На newbox Орpheus работает БЕЗ правок**: библиотека теперь на локальном HDD 2 ТБ
+(`/mnt/data`, биндится в `/home/artlaus/Music` сервисом `orpheus-library-mount` —
+см. `hosts/newbox/hardware-configuration.nix` и `orpheus/mounts/library.nix`).
+Достаточно скопировать музыку на `data`-раздел и ничего не чинить. SMB-вариант
+оставлен в комментарии `library.nix` на случай ноутбука.
 
-#### Вариант 1 — выключить на время установки (рекомендую для первого прогона)
-
-Пока не настроена SMB-шара, не трогай Orpheus вообще. Чтобы убрать его из сборки,
-убери одну строку из `home/features/desktop/default.nix`:
+Если хочешь выключить Orpheus на время установки:
 
 ```nix
 # было:
@@ -940,38 +1000,18 @@ services.tailscale = {
 
 Вернёшь обратно на этапе 11.
 
-#### Вариант 2 — включить и починить
+#### Вариант 2 — если библиотека всё же на SMB-шаре (например, ноутбук)
 
-Что нужно исправить (файл `home/features/desktop/orpheus/`):
+В `home/features/desktop/orpheus/mounts/library.nix` замените локальный bind-mount
+на cifs (готовый шаблон — в комментарии в конце файла):
 
 ```nix
-# mounts/library.nix:31-33  — ExecStart/ExecStartPost/ExecStop
-#   /home/artlaus/...        → /home/НОВОЕ_ИМЯ/...
-#   //LAPTOP-HOST/E$/Library → //<реальный-хост-или-tailscale-IP>/<реальная-шара>
-#   uid=1000,gid=1000        → твои реальные uid/gid  (проверь: id -u && id -g)
-
-# mounts/library.nix:13-19  — home.file ".config/orpheus/smb-credentials"
-#   username=YOUR_USERNAME / password=YOUR_PASSWORD / domain=WORKGROUP
-#   ⚠️ Это home.file → Home Manager заменит файл на СИМЛИНК в /nix/store (read-only).
-#      Править его руками в ~/.config/orpheus/smb-credentials бессмысленно —
-#      он будет перезаписан при каждой активации. Редактируй ТЕКСТ в library.nix.
-
-# default.nix:15  — cd /home/artlaus/nixos-config/... → свой путь
-# docker-compose.nix:18,36 — -v /home/artlaus/...        → свой путь
-#        и -v .../data/filebrowser.db  ← ФАЙЛА НЕТ, docker создаст вместо него
-#                                     каталог и монтирование сломается
+# 1. Оставить из Variant'ов — в юните сервиса
+#      ExecStart = ${pkgs.cifs-utils}/bin/mount -t cifs //<хост-или-tailscale-IP>/<шара> \
+#                  /home/artlaus/Music -o credentials=...,vers=3.0,uid=1000,gid=1000,_netdev
+# 2. Вместо /mnt/data в ExecStartPre — просто указывать свой путь,
+#    UID/GID сверь: id -u; id -g
 ```
-
-Про UID/GID:
-
-```bash
-id -u; id -g
-```
-
-#### Вариант 3 — оставить как есть, но не запускать
-
-Модуль импортируется, `home.file` создаются, но юниты `systemd --user`
-ты не стартуешь — ничего не работает и ничего не ломается. Компромисс.
 
 ### 9.8 Коллизия порта 8080
 
@@ -1389,7 +1429,6 @@ bluetoothctl show
 ### 12.7 Блокировка и сон
 
 - `SUPER+L` → swaylock
-- Крышка ноутбука → suspend (`system/boot-hardware.nix:43-46`)
 
 ### 12.8 Остальное личное
 
@@ -1399,6 +1438,21 @@ bluetoothctl show
 ln -s /media/ФЛЕШКА/backup-gnupg ~/.gnupg      # GPG
 mkdir -p ~/Documents/ALN                          # алиас `aln` из zsh.nix:93
 ```
+
+#### Печать и сканирование (Pantum M6500W / M6502W)
+
+Всё встроено (`system/printing.nix`): CUPS + `pantum-driver`, обнаружение МФУ по сети
+(avahi/mDNS), сканирование (`sane-airscan`, WebScan/eSCL) и USB (`ipp-usb`).
+
+```bash
+systemctl status cups avahi-daemon ipp-usb   # сервисы подняты?
+lpinfo --make-and-model Pantum -m            # драйвер виден CUPS?
+scanimage -L                                 # сканер найден (по WiFi или USB)?
+```
+
+Если МФУ нет в списке — узнай его IP: оба аппарата поддерживают Wi-Fi Direct
+и/или WPS; подключи их к своему роутеру (2.4 ГГц), и они обычно находятся сами.
+Интерфейс МФУ: <http://pantum-xxxxxx.local> в браузере.
 
 **Firefox уже настроен.** Профиль (тема, все расширения `.xpi`, скрипты
 Tampermonkey, закладки, история, cookies, поисковики, панель) лежит снимком
@@ -1748,17 +1802,18 @@ flake.lock                      ← НЕ УДАЛЯТЬ. Пины все вер�
 .envrc                          `use flake` — для direnv/nix-direnv
 .gitignore                      игнорирует обои, .obsidian, старые artlaus/
 
-hosts/msi-laptop/
+hosts/newbox/
   default.nix                   импорты system/*, hostname, флаги features
-  hardware-configuration.nix    ← ЗАГЛУШКА, заменяется на сгенерированный
+  hardware-configuration.nix    метки boot/nixos-swap/nixos/data, микрокод AMD, amdgpu
 
 system/                         отвечает за МАШИНУ
   nix.nix                       flakes, gc, substituters, trusted-users, stateVersion
-  boot-hardware.nix             systemd-boot, amdgpu, pipewire, bluetooth, power, lid
+  boot-hardware.nix             systemd-boot, amdgpu, pipewire, bluetooth, power, fstrim
   networking-security.nix       NetworkManager, firewall, локаль, пользователь, gnupg, polkit
   services.nix                  greetd+tuigreet, portals, ollama, nix-ld, appimage, tor, openvpn, tailscale
   virtualization.nix            docker + cifs-utils + samba (за флагом features.virtualization)
   packages.nix                  системные пакеты: шрифты, core CLI, иконки, библиотеки
+  printing.nix                  CUPS + pantum-driver, avahi/mDNS, sane-airscan, ipp-usb
   gaming.nix                    ⚠️ НЕ ИМПОРТИРОВАН — см. Приложение D
   openvpn/client/example.conf   шаблон VPN-конфига
 
@@ -1848,14 +1903,11 @@ docs/                           этот гайд, архитектура, де�
 
 ### Что не сходится между документами
 
-- `docs/devlog/2026-09-27-automation-layer-audit.md` пишет `smbclient`,
-  в `system/virtualization.nix` стоит `samba`.
-- `docs/devlog/2026-09-25-super-key-hotkeys.md` пишет обои в `~/Pictures/wallpapers/`,
+- Гайд говорит про `smbclient`, в `system/virtualization.nix` стоит `samba` — это
+  заготовка под SMB-шару; на newbox не используется (музыка на локальном HDD).
+- В записях локального девлога обои фигурируют как `~/Pictures/wallpapers/`,
   фактически `home/features/desktop/wallpapers/`.
-- `docs/devlog/2026-09-25-orpheus-music.md` говорит, что создан симлинк
-  `Music → /home/artlaus/Music`; такого симлинка в репозитории нет.
 
 ---
 
-*Конец памятки. При следующей установке правь этот файл, а не девлог —
-он одноразовый, гайд переиспользуемый.*
+*Конец памятки. При следующей установке правь этот файл, гайд переиспользуемый.*

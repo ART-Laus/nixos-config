@@ -34,6 +34,6 @@
     };
   };
 
-  # Feature flags — единое место (переопределяются в hosts/msi-laptop/default.nix)
+  # Feature flags — единое место (переопределяются в hosts/newbox/default.nix)
   # features.gaming.enable = true; # пример
 }

@@ -36,13 +36,20 @@
   programs.xfconf.enable = true;
 
   # Ollama — 127.0.0.1 по умолчанию (безопасно, не 0.0.0.0)
+  # GPU newbox: RX 9060 XT = RDNA4 (gfx1201). nixpkgs 25.05 содержит ROCm 6.3.3,
+  # в котором целей gfx12 нет (native gfx1201 появится в ROCm 6.4.3 / ветке 26.05).
+  # Поэтому перекрываем gfx1201 → gfx1100 (RDNA3): работает на ROCm ≥6.1.3.
+  # ── При переезде флейка на 26.05: rocmOverrideGfx удалить (native RDNA4).
   services.ollama = {
     enable = lib.mkDefault true;
     acceleration = "rocm";
     host = "127.0.0.1";
     port = 11434;
     openFirewall = false;
-    rocmOverrideGfx = "10.3.0";
+    rocmOverrideGfx = "11.0.0";
+    environmentVariables = {
+      OLLAMA_FLASH_ATTENTION = "1";
+    };
   };
 
   # Nix-LD — для неродных бинарей

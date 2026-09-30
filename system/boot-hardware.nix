@@ -35,16 +35,15 @@
   };
   services.blueman.enable = true;
 
-  # Power — для ноутбука
+  # Power — десктоп (без батареи/крышки), профили производительности в трее
   services.power-profiles-daemon.enable = true;
-  services.thermald.enable = true;
 
-  # Logind — крышка ноутбука
-  services.logind.extraConfig = ''
-    HandleLidSwitch=suspend
-    HandleLidSwitchExternalPower=suspend
-  '';
+  # SSD trim — Samsung 9100 PRO NVMe (fstrim.timer)
+  services.fstrim.enable = true;
 
-  # Firmware updates
+  # Logind — дефолты (крышки нет; если захочется авто-suspend для idle —
+  # повесить в swayidle, см. home/features/desktop/lockscreen/swayidle.nix)
+
+  # Firmware updates (X870 — ME/BIOS/фирмварь WiFi и GPU через fwupd)
   services.fwupd.enable = true;
 }

@@ -30,6 +30,10 @@ artlaus/features/cli/zsh/.zshenv
 .obsidian/
 .trash/
 
+# Девлог — только локально (на этом компьютере), в репозитории нет
+docs/devlog/
+docs/devlog.md
+
 # Temp
 /tmp/
 *.recovered

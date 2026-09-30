@@ -67,11 +67,11 @@
     in
     {
       nixosConfigurations = {
-        "msi-laptop" = nixpkgs.lib.nixosSystem {
+        "newbox" = nixpkgs.lib.nixosSystem {
           inherit system;
           specialArgs = specialArgs;
           modules = [
-            ./hosts/msi-laptop/default.nix
+            ./hosts/newbox/default.nix
 
             # Home Manager как NixOS модуль (новый путь: home/)
             home-manager.nixosModules.home-manager

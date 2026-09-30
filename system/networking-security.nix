@@ -3,7 +3,7 @@
 {
   # Networking — NetworkManager
   networking.networkmanager.enable = true;
-  # hostName задаётся в hosts/msi-laptop/default.nix
+  # hostName задаётся в hosts/newbox/default.nix
 
   # Firewall — закрыт по умолчанию, точечные открытия — в других модулях
   networking.firewall.enable = true;
@@ -20,7 +20,7 @@
   users.users.artlaus = {
     isNormalUser = true;
     description = "artlaus";
-    extraGroups = [ "networkmanager" "wheel" "video" "audio" ];
+    extraGroups = [ "networkmanager" "wheel" "video" "audio" "render" ];
     shell = pkgs.zsh;
     # initialHashedPassword = "..."; # сгенерировать: mkpasswd -m sha-512
   };
