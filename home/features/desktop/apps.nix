@@ -4,9 +4,9 @@
   home.packages = with pkgs; [
     # ── Файловые менеджеры и тумбнейлы (из legacy) ──
     # ranger удалён — заменён на yazi (home/features/cli/yazi.nix)
-    xfce.thunar
-    xfce.catfish
-    xfce.exo
+    thunar
+    catfish
+    xfce4-exo
     file-roller
     ffmpegthumbnailer
     gnome-epub-thumbnailer

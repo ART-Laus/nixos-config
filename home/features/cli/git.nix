@@ -7,10 +7,7 @@ in
 {
   programs.git = {
     enable = true;
-    userName = "ART-Laus";
-    userEmail = "yzen26431@gmail.com";
 
-    # Глобальные игнорирования из .gitignore_global
     ignores = [
       ".vscode/"
       ".idea/"
@@ -38,40 +35,41 @@ in
       "bin/stubs"
     ];
 
-    # Алиасы из .gitconfig
-    aliases = {
-      co = "checkout";
-      ci = "commit";
-      st = "status";
-      br = "branch";
-      hist = "log --all --graph --decorate --oneline -n30";
-      type = "cat-file -t";
-      dump = "cat-file -p";
-    };
-
-    # Дополнительные настройки Git из .gitconfig
-    extraConfig = {
+    settings = {
+      user = {
+        name = "ART-Laus";
+        email = "yzen26431@gmail.com";
+      };
+      alias = {
+        co = "checkout";
+        ci = "commit";
+        st = "status";
+        br = "branch";
+        hist = "log --all --graph --decorate --oneline -n30";
+        type = "cat-file -t";
+        dump = "cat-file -p";
+      };
       core = {
         editor = "nvim";
       };
       color = {
         ui = "auto";
-      };
-      color.branch = {
-        current = c.error;
-        local = c.warning;
-        remote = c.success;
-      };
-      color.diff = {
-        meta = c.accentBlue;
-        frag = c.secondary;
-        old = c.error;
-        new = c.success;
-      };
-      color.status = {
-        added = c.success;
-        changed = c.warning;
-        untracked = c.accentBlue;
+        branch = {
+          current = c.error;
+          local = c.warning;
+          remote = c.success;
+        };
+        diff = {
+          meta = c.accentBlue;
+          frag = c.secondary;
+          old = c.error;
+          new = c.success;
+        };
+        status = {
+          added = c.success;
+          changed = c.warning;
+          untracked = c.accentBlue;
+        };
       };
       filter.lfs = {
         clean = "git-lfs clean %f";

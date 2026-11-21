@@ -5,7 +5,7 @@ let
 in
 
 {
-  programs.neovim.extraLuaConfig = ''
+  programs.neovim.initLua = ''
     vim.g.mapleader = " "
     vim.g.maplocalleader = " "
   '';

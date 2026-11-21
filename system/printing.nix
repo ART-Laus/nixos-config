@@ -10,7 +10,7 @@
 
   # mDNS — чтобы CUPS/sane находили МФУ по сети (Pantum-XXXX.local)
   services.avahi.enable = true;
-  services.avahi.nssmdns = true;
+  services.avahi.nssmdns4 = true;
   services.avahi.openFirewall = true;
 
   # ── Сканирование ──

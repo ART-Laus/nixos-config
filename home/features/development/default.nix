@@ -29,7 +29,7 @@
 
     # ── API / DB ──
     dbeaver-bin
-    pgadmin4
+    # pgadmin4 # временно выключен (ломает сборку тестами)
     postman
     insomnia
 

@@ -149,6 +149,7 @@ in
     name = "batch-rename";
     text = readScript "batch-rename";
     runtimeInputs = with pkgs; [ ];
+    excludeShellChecks = [ "SC2001" ];
   };
 
   # ── Дубликаты ──
@@ -158,10 +159,4 @@ in
     runtimeInputs = with pkgs; [ fdupes ];
   };
 
-  # ── Графическое меню автоматизации ──
-  automation-menu = pkgs.writeShellApplication {
-    name = "automation-menu";
-    text = readScript "automation-menu.sh";
-    runtimeInputs = with pkgs; [ rofi ];
-  };
 }

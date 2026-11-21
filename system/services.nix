@@ -6,7 +6,7 @@
     enable = true;
     settings = {
       default_session = {
-        command = "${pkgs.greetd.tuigreet}/bin/tuigreet --time --cmd Hyprland --remember --remember-session";
+        command = "${pkgs.tuigreet}/bin/tuigreet --time --cmd Hyprland --remember --remember-session";
         user = "greeter";
       };
     };
@@ -27,7 +27,7 @@
   services.tumbler.enable = true;
   programs.thunar = {
     enable = true;
-    plugins = with pkgs.xfce; [
+    plugins = with pkgs; [
       thunar-media-tags-plugin
       thunar-archive-plugin
       thunar-volman

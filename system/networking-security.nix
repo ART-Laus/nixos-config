@@ -16,13 +16,11 @@
   };
   console.keyMap = "us";
 
-  # Users — перенесите hashedPassword в sops после установки
   users.users.artlaus = {
     isNormalUser = true;
     description = "artlaus";
     extraGroups = [ "networkmanager" "wheel" "video" "audio" "render" ];
     shell = pkgs.zsh;
-    # initialHashedPassword = "..."; # сгенерировать: mkpasswd -m sha-512
   };
   programs.zsh.enable = true;
 

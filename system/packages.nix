@@ -56,9 +56,6 @@
     kdePackages.breeze-icons
 
     # ── File support libs (нужны системе для тумбнейлов) ──
-    kdePackages.kimageformats
-    libsForQt5.kimageformats
-    kdePackages.qtimageformats
     libsForQt5.qt5.qtimageformats
     kdePackages.qtsvg
     kdePackages.karchive

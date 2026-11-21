@@ -16,7 +16,6 @@
      };
 
      # Discovery tools — flake-based packages
-     nixmate.url = "github:daskladas/nixmate";
      nixard.url = "github:manelinux/nixard";
      verynix.url = "github:mipmip/verynix";
      anima.url = "github:Yazelix/anima";
@@ -26,7 +25,7 @@
      nix-bonsai.url = "github:0xatrilla/nix-bonsai";
    };
 
-    outputs = { self, nixpkgs, nixpkgs-unstable, home-manager, hyprland, nixmate, nixard, verynix, anima, super-comma, nixy, niux, nix-bonsai, ... }@inputs:
+    outputs = { self, nixpkgs, nixpkgs-unstable, home-manager, hyprland, nixard, verynix, anima, super-comma, nixy, niux, nix-bonsai, ... }@inputs:
      let
        system = "x86_64-linux";
        username = "artlaus";
@@ -46,7 +45,6 @@
 
        # Внешние flake-пакеты
        flakePkgs = {
-         nixmate = nixmate.packages.${system}.default;
          nixard = nixard.packages.${system}.default;
          verynix = verynix.packages.${system}.default;
          anima = anima.packages.${system}.default;

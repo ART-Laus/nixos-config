@@ -10,8 +10,8 @@ fi
 
 case "$1" in
     flake) nix flake check ;;
-    build) shift; nix build ".#$@" ;;
-    eval) shift; nix eval ".#$@" ;;
+    build) shift; nix build ".#$*";;
+    eval) shift; nix eval ".#$*";;
     format) nixpkgs-fmt flake.nix ;;
     generations) nixos-rebuild list ;;
     gc) nix-collect-garbage -d ;;
