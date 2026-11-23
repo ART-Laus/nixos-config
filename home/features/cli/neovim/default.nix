@@ -9,7 +9,5 @@
 
   programs.neovim = {
     enable = true;
-    # Install lazy.nvim itself as a home-manager plugin.
-    plugins = [ pkgs.vimPlugins.lazy-nvim ];
   };
 }

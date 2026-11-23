@@ -41,8 +41,7 @@
   # SSD trim — Samsung 9100 PRO NVMe (fstrim.timer)
   services.fstrim.enable = true;
 
-  # Logind — сон/гибернация и крышка отключены в hosts/newbox/default.nix;
-  # swayidle также отключён (home/features/desktop/lockscreen/swayidle.nix)
+  # Logind — сон/гибернация, крышка и кнопки питания отключены в hosts/newbox/default.nix
 
   # Firmware updates (X870 — ME/BIOS/фирмварь WiFi и GPU через fwupd)
   services.fwupd.enable = true;

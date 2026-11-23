@@ -24,22 +24,20 @@
     unifont_upper
   ];
 
-   environment.systemPackages = with pkgs; [
-     # ── Core CLI ──
-     git
-     curl
-     wget
-     htop
-     gnutar
-     zstd
-     xz
+  environment.systemPackages = with pkgs; [
+    # ── Core CLI ──
+    git
+    curl
+    wget
+    htop
+    gnutar
+    zstd
+    xz
 
     # ── VPN & Privacy ──
     tor
     openvpn
     tailscale
-    docker
-    docker-compose
 
     # ── Hardware utils ──
     pciutils
@@ -49,6 +47,7 @@
     clinfo
     alsa-utils
     pamixer
+    ntfs3g
 
     # ── Icons (системные, дополняют home/gtk-qt.nix) ──
     # Papirus-Dark — основной (используется в gtk.iconTheme)

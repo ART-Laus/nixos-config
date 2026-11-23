@@ -3,11 +3,11 @@
   imports = [
     ./compositor/hyprland.nix
     ./compositor/hyprpaper.nix
-    ./bar/waybar.nix
+    ./bar/default.nix
+    ./carpheus/default.nix
     ./launcher/rofi.nix
     ./notifications/dunst.nix
-    ./lockscreen/swaylock.nix
-    ./lockscreen/swayidle.nix
+    ./udiskie.nix
     ./browsers.nix
     ./firefox/default.nix
     ./apps.nix

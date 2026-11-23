@@ -1,0 +1,3 @@
+module qs.appcenter.views
+ApplicationsView 1.0 ApplicationsView.qml
+ProcessesView 1.0 ProcessesView.qml

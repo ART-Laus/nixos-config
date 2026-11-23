@@ -1,0 +1,19 @@
+singleton MusicState 1.0 MusicState.qml
+NavidromeClient 1.0 NavidromeClient.qml
+PlaybackController 1.0 PlaybackController.qml
+MprisController 1.0 MprisController.qml
+ArtworkCache 1.0 ArtworkCache.qml
+ApiRequest 1.0 ApiRequest.qml
+MusicCenter 1.0 MusicCenter.qml
+IslandCenter 1.0 IslandCenter.qml
+CompactPill 1.0 CompactPill.qml
+MusicPanel 1.0 MusicPanel.qml
+MiniPlayer 1.0 MiniPlayer.qml
+MusicSearch 1.0 MusicSearch.qml
+AlbumView 1.0 AlbumView.qml
+ArtistView 1.0 ArtistView.qml
+CoverImage 1.0 ui/CoverImage.qml
+IconButton 1.0 ui/IconButton.qml
+MarqueeText 1.0 ui/MarqueeText.qml
+SectionLabel 1.0 ui/SectionLabel.qml
+ResultRow 1.0 ui/ResultRow.qml

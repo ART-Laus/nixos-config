@@ -22,35 +22,33 @@
     config.common.default = "*";
   };
 
-  # Thunar + GVFS (из старого packages.nix)
+  # dconf — нужен Home Manager для gtk/dconf-настроек (иначе падает активация)
+  programs.dconf.enable = true;
+
+  services.upower.enable = true;
+
+  # GVFS + Tumbler — общие сервисы для тумбнейлов и виртуальных ФС
+  # (Dolphin ставится в home/features/desktop/apps.nix, Xfce-часть удалена)
+  services.udisks2.enable = true;
+  environment.etc."udisks2/mount_options.conf".text = ''
+    [defaults]
+    ntfs_drivers=ntfs,ntfs3
+  '';
   services.gvfs.enable = true;
   services.tumbler.enable = true;
-  programs.thunar = {
-    enable = true;
-    plugins = with pkgs; [
-      thunar-media-tags-plugin
-      thunar-archive-plugin
-      thunar-volman
-    ];
-  };
-  programs.xfconf.enable = true;
 
   # Ollama — 127.0.0.1 по умолчанию (безопасно, не 0.0.0.0)
-  # GPU newbox: RX 9060 XT = RDNA4 (gfx1201). nixpkgs 26.05 содержит ROCm 6.4.3+,
-  # где gfx12 уже в clr.gpuTargets — native RDNA4 без перекрытия. Если когда-нибудь
-  # снова увидишь в journalctl ollama "no compatible GPUs" — проверь:
-  #   nix eval --impure .#nixosConfigurations.newbox.pkgs.rocmPackages.clr.gpuTargets
-  # и при необходимости верни rocmOverrideGfx = "11.0.0" (gfx1100/RDNA3).
+  # Ноутбук: AMD Barcelo (1002:15e7, gfx90c) — ROCm не поддерживает gfx90c,
+  # поэтому используем Vulkan (RADV), который работает на этом iGPU.
   services.ollama = {
     enable = lib.mkDefault true;
-    # 26.05: опции acceleration нет — пакет выбирается явно (ollama-rocm собран
-    # под все цели из clr.gpuTargets, включая gfx1201 для RX 9060 XT)
-    package = pkgs.ollama-rocm;
+    package = pkgs.ollama-vulkan;
     host = "127.0.0.1";
     port = 11434;
     openFirewall = false;
     environmentVariables = {
       OLLAMA_FLASH_ATTENTION = "1";
+      OLLAMA_IGPU_ENABLE = "1";
     };
   };
 

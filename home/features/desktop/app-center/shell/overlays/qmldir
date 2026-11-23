@@ -1,0 +1,6 @@
+module qs.appcenter.overlays
+EdgeTrigger 1.0 EdgeTrigger.qml
+AppCenterWindow 1.0 AppCenterWindow.qml
+ProcessDetails 1.0 ProcessDetails.qml
+NewProcessDialog 1.0 NewProcessDialog.qml
+ConfirmDialog 1.0 ConfirmDialog.qml

@@ -22,7 +22,7 @@ in
 
       cursor = {
         style = "Underline";
-        blinking = "On";
+        blink_interval = 750;
       };
 
       colors = {

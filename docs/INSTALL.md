@@ -65,7 +65,6 @@
 
 ### Что система ставит (сводно)
 
-- **Графика:** Hyprland (Wayland) + Waybar + rofi + dunst + swaylock/swayidle + hyprpaper
 - **Вход в систему:** greetd + tuigreet (не SDDM/GDM)
 - **Терминалы:** alacritty (основной), kitty
 - **Оболочка:** zsh + oh-my-zsh + starship + zoxide + fzf
@@ -277,10 +276,6 @@ lsblk -e7 -o NAME,SIZE,TYPE,FSTYPE,LABEL,PARTLABEL,MOUNTPOINTS,MODEL
 
 # 2. Видеокарта — от этого зависит правка GPU-секции
 lspci | grep -iE 'vga|3d|display'
-
-# 3. Температурные сенсоры — пути для Waybar
-for f in /sys/class/hwmon/hwmon*/name; do echo "$f -> $(cat $f)"; done
-ls /sys/class/thermal/ 2>/dev/null
 
 # 4. UEFI-раздел — есть ли он, смонтирован ли
 efibootmgr -v
@@ -701,7 +696,7 @@ mkdir -p ~/nixos-config/home/features/desktop/orpheus/tools/slskd
 # каталог data/filebrowser не нужен: docker-compose.nix ждёт ФАЙЛ data/filebrowser.db
 
 # 4. Каталог обоев (в .gitignore, в клоне его нет)
-mkdir -p ~/nixos-config/home/features/desktop/wallpapers
+mkdir -p ~/nixos-config/wallpapers
 #   → скопируй сюда картинки со старой машины (122 файла, 212 МБ)
 #   → либо возьми из репозитория dharmx/walls (нужны коллекции
 #     anime / abstract / apocalypse / dreamcore)
@@ -1046,42 +1041,6 @@ API_KEY="YOUR_API_KEY"
 в панели. Файл попадает в `/nix/store` через `writeShellApplication`, поэтому
 правится **только в репозитории**, а не в `~/.local/bin/now.sh`.
 
-### 9.11 Температуры в панели (waybar)
-
-```nix
-# home/features/desktop/bar/waybar.nix:52-57
-temperature = {
-  "hwmon-path" = [
-    "/sys/class/hwmon/hwmon2/temp1_input"      # ← индекс hwmon у каждой машины свой
-    "/sys/class/thermal/thermal_zone0/temp"
-  ];
-};
-```
-
-Индекс `hwmon2` — это WSL-наследие. Узнай свой:
-
-```bash
-for f in /sys/class/hwmon/hwmon*/name; do echo "$f -> $(cat $f)"; done
-ls /sys/class/thermal/thermal_zone*
-```
-
-Подставь найденные пути. Модуль `temperature` сейчас **не выведен** в
-`modules-left`/`modules-right` (`waybar.nix:19-20`), так что это не срочно —
-до тех пор, пока не добавишь `"temperature"` в список модулей.
-
-### 9.12 Дисплейная строка в Waybar (если десктоп)
-
-```nix
-# home/features/desktop/bar/waybar.nix:20
-"modules-right" = [ "tray" "clock" "battery" ];
-```
-
-На машине без батареи модуль `battery` просто ничего не покажет.
-Для десктопа замени на `[ "tray" "clock" ]`.
-
-### 9.13 QMK/Vial
-
-```nix
 # home/features/desktop/apps.nix:22-23
 qmk
 vial
@@ -1259,7 +1218,6 @@ sudo reboot
 2. systemd → PipeWire, NetworkManager, greetd
 3. **greetd + tuigreet** — терминальный экран входа с часами (`--time`)
 4. Вводишь имя и пароль → запускается **Hyprland**
-5. В Hyprland стартуют: `waybar`, `nm-applet`, Hyprpaper, Dunst, swayidle
 6. Открываешь alacritty — стартует zsh со starship
 
 ### 11.2 Если Hyprland не запустился
@@ -1317,9 +1275,6 @@ echo $XDG_CURRENT_DESKTOP             # ожидается Hyprland
 pactl info | grep "Server Name"       # PipeWire
 wpctl status | head -20
 
-# Waybar
-hyprctl clients                       # список окон
-
 # Пакеты
 which eza bat ripgrep fd btop zoxide fzf lazygit delta git-lfs
 ```
@@ -1347,7 +1302,7 @@ nvim
 
 ```bash
 # Файлы уже должны лежать в (если скопировал на этапе 8)
-ls ~/nixos-config/home/features/desktop/wallpapers | wc -l   # ожидается ~122
+ls ~/nixos-config/wallpapers | wc -l   # ожидается ~122
 
 # Рандомная обоина
 SUPER+W     # вызовет скрипт `wallpaper`
@@ -1422,11 +1377,7 @@ blueman-manager      # services.blueman.enable = true
 bluetoothctl show
 ```
 
-### 12.7 Блокировка и сон
-
-- `SUPER+L` → swaylock
-
-### 12.8 Остальное личное
+### 12.7 Остальное личное
 
 По необходимости:
 
@@ -1468,7 +1419,7 @@ Tampermonkey, закладки, история, cookies, поисковики, �
 
 Проверить, что профиль на месте:
 
-### 12.9 Общая проверка
+### 12.8 Общая проверка
 
 ```bash
 doctor
@@ -1482,7 +1433,7 @@ doctor
 > - `nix flake check` на строке 9 запускается **без `--impure`** и упадёт
 > - `find /home/artlaus` на строке 49 ищет не в твоём `$HOME`, если имя пользователя другое
 
-### 12.10 Сделай первый коммит в репозиторий
+### 12.9 Сделай первый коммит в репозиторий
 
 После того как конфиг заработал — зафиксируй правки, чтобы следующая установка
 не начиналась с нуля:
@@ -1692,7 +1643,6 @@ systemctl --failed                                  # упавшие серви�
 | Скриншот (`Print`) не работает | **в конфиге нет `grim`, `slurp`, `swappy`** | см. [Приложение D](#приложение-d-известные-мелочи-и-поломки) |
 | Буфер обмена (`SUPER+V`) не работает | **нет `cliphist`** | там же |
 | Обои одноцветные | каталог обоев пуст (в git его нет) | [8.4](#84-убрать-артефакты-старой-машины-важно) |
-| Температура в панели не показывается | путь `hwmon2` с чужой машины | [9.11](#911-температуры-в-панели-waybar) |
 | «Music: not playing» в панели | не заполнены ключи Last.fm | [9.10](#910-lastfm-в-панели) |
 | Медленная первая сборка | 10 локальных `cargo install` | [10.1](#101-сколько-это-займёт) |
 | Порт 8080 занят | Tor + FileBrowser + скрипт `share` | [9.8](#98-коллизия-порта-8080) |
@@ -1741,7 +1691,6 @@ Leader — **Super** (Meta/Windows). Источник: `home/features/desktop/co
 
 | Клавиши | Действие |
 |---|---|
-| `SUPER + L` | блокировка (swaylock) |
 | `SUPER + V` | история буфера обмена ⚠️ не работает — нет `cliphist` |
 | `SUPER + R` | скрипты (rofi-scripts) |
 | `SUPER + ,` | меню автоматизации (17 утилит) |
@@ -1819,7 +1768,6 @@ home/                           отвечает за ПОЛЬЗОВАТЕЛЯ
   features/
     cli/                        zsh+starship, alacritty+kitty, git+lfs+delta, yazi, tmux, neovim,
                                 neofetch, tools (46 discovery-инструментов)
-    desktop/                    hyprland, hyprpaper, waybar, rofi, dunst, swaylock, swayidle,
                                 browsers, firefox/, apps, orpheus
     development/                python+pyright+ruff, nixd, rust-analyzer, gopls, LSP для TS,
                                 dbeaver, pgadmin, postman, drawio, obsidian-инструменты
@@ -1860,7 +1808,6 @@ docs/                           этот гайд, архитектура, де�
 |---|---|---|
 | `grim`, `slurp`, `swappy` | `hyprland.nix:113-114` (`Print` и `SHIFT+Print`) | скриншоты не работают. Лечится добавлением в `home/features/cli/tools.nix` |
 | `cliphist` | `hyprland.nix:27` (`exec-once`) и `:107` (`SUPER+V`) | буфер обмена не работает; в логе Hyprland будет ошибка при старте |
-| `swaylock` в `system` | `hyprland.nix:107` | в `home.packages` есть (через HM), так что работает |
 
 ### Не подключено
 
@@ -1886,7 +1833,6 @@ docs/                           этот гайд, архитектура, де�
 
 - `hyprpaper.nix` задаёт обоями **цвет** (`theme.colors.bg`), а не файл.
   Файловые обои включаются только скриптом `wallpaper` по `SUPER+W`.
-- `waybar.nix:51-57` — модуль `temperature` описан, но не выведен в
   `modules-left`/`modules-right`. Мёртвая конфигурация.
 - `home/default.nix:29-33` переопределяет `EDITOR`/`TERMINAL`, которые
   `zsh.nix:27-39` уже задал. Значения совпадают, конфликта нет, но дублирование есть.
@@ -1902,7 +1848,7 @@ docs/                           этот гайд, архитектура, де�
 - Гайд говорит про `smbclient`, в `system/virtualization.nix` стоит `samba` — это
   заготовка под SMB-шару; на newbox не используется (музыка на локальном HDD).
 - В записях локального девлога обои фигурируют как `~/Pictures/wallpapers/`,
-  фактически `home/features/desktop/wallpapers/`.
+  фактически `wallpapers/` в корне конфига.
 
 ---
 

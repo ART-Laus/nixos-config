@@ -1,5 +1,5 @@
 # home/features/desktop/compositor/hyprland.nix — Hyprland (Home Manager)
-{ config, pkgs, lib, theme, inputs, ... }:
+{ theme, ... }:
 let
   toRgba = hex: "rgba(${builtins.substring 1 2 hex}${builtins.substring 3 2 hex}${builtins.substring 5 2 hex}ff)";
   c = theme.colors;
@@ -7,7 +7,8 @@ in
 {
   wayland.windowManager.hyprland = {
     enable = true;
-    # package = pkgs.hyprland; # use nixpkgs hyprland (pin via flake if needed)
+    configType = "hyprlang";
+    systemd.enable = true;
 
     settings = {
       # Will be generated via extraConfig for now (keep your existing config)
@@ -22,7 +23,6 @@ in
       # -----------------------------------------------------
       # Autostart
       # -----------------------------------------------------
-      exec-once = waybar &
       exec-once = nm-applet --indicator
       exec-once = wl-paste --watch cliphist store
 
@@ -46,19 +46,21 @@ in
 
       decoration {
           rounding = 8
-          active_opacity = 0.95
-          inactive_opacity = 0.85
+          active_opacity = 0.9
+          inactive_opacity = 0.8
           blur {
               enabled = true
-              size = 4
-              passes = 2
+              size = 5
+              passes = 3
               new_optimizations = true
               xray = true
           }
-          drop_shadow = yes
-          shadow_range = 10
-          shadow_render_power = 3
-          col.shadow = ${c.shadow};
+          shadow {
+              enabled = yes
+              range = 10
+              render_power = 3
+              color = ${c.shadow}
+          }
       }
 
       animations {
@@ -73,15 +75,11 @@ in
 
       input {
           kb_layout = us,ru
-          kb_options = grp:alt_shift_toggle
+          kb_options =
           follow_mouse = 1
           touchpad {
               natural_scroll = no
           }
-      }
-
-      gestures {
-          workspace_swipe = on
       }
 
       misc {
@@ -89,37 +87,45 @@ in
           disable_splash_rendering = true
       }
 
+      # Полупрозрачность Dolphin (blur включён выше в decoration)
+      windowrule = opacity 0.65 0.5, match:class ^(dolphin|org\.kde\.dolphin)$
+
       $mainMod = SUPER
-      bind = $mainMod, Space, exec, rofi -show drun
+      bind = SHIFT, Tab, exec, hyprctl switchxkblayout current next
+      bind = $mainMod, Space, exec, quickshell ipc -c bar call appCenter toggle
       bind = $mainMod, Return, exec, alacritty
-      bind = $mainMod, B, exec, firefox
-      bind = $mainMod, T, exec, ayugram-desktop
-      bind = $mainMod, E, exec, thunar
+      bind = $mainMod, code:56, exec, firefox
+      bind = $mainMod, code:28, exec, AyuGram
+      bind = $mainMod, code:26, exec, dolphin
       bind = $mainMod, W, exec, wallpaper
-      bind = $mainMod, Q, killactive,
-      bind = $mainMod, C, killactive,
-      bind = $mainMod, M, exit,
-      bind = $mainMod, F, togglefloating,
-      bind = $mainMod SHIFT, F, fullscreen,
-      bind = $mainMod, G, resizeactive,
-      bind = $mainMod, R, exec, rofi-scripts
-      bind = $mainMod, L, exec, swaylock
+      bind = $mainMod, code:32, exec, obsidian
+      bind = $mainMod, code:40, exec, show-desktop
+      bind = $mainMod, code:24, killactive,
+      bind = $mainMod, code:54, killactive,
+      bind = $mainMod, code:58, exit,
+      bind = $mainMod, code:41, togglefloating,
+      bind = $mainMod SHIFT, code:41, fullscreen,
+      bind = $mainMod, minus, movetoworkspacesilent, special:minimized
+      bind = $mainMod, equal, togglespecialworkspace, minimized
+      bind = $mainMod, code:27, exec, rofi-scripts
       bind = $mainMod, V, exec, cliphist list | rofi -dmenu | cliphist decode | wl-copy
-      bind = $mainMod, H, exec, btop
-      bind = $mainMod, N, exec, planify
-      bind = $mainMod, K, exec, qalculate
-      bind = $mainMod, Y, exec, yazi
-      bind = $mainMod, P, exec, ksnip
-      bind = , Print, exec, grim -g "$(slurp)" - | swappy -f -
-      bind = SHIFT, Print, exec, grim - | swappy -f -
-      bind = $mainMod, left, movefocus, l
-      bind = $mainMod, right, movefocus, r
-      bind = $mainMod, up, movefocus, u
-      bind = $mainMod, down, movefocus, d
-      bind = $mainMod SHIFT, left, movewindow, l
-      bind = $mainMod SHIFT, right, movewindow, r
-      bind = $mainMod SHIFT, up, movewindow, u
-      bind = $mainMod SHIFT, down, movewindow, d
+      bind = $mainMod, code:57, exec, io.github.alainm23.planify
+      bind = $mainMod, code:53, exec, qalculate-gtk
+      bind = $mainMod, code:29, exec, alacritty -e yazi
+      bind = , Print, execr, grim -g "$(slurp)" - | swappy -f -
+      bind = SHIFT, Print, execr, grim - | swappy -f -
+      bind = $mainMod, code:43, movefocus, l
+      bind = $mainMod, code:44, movefocus, d
+      bind = $mainMod, code:45, movefocus, u
+      bind = $mainMod, code:46, movefocus, r
+      bind = $mainMod SHIFT, code:43, movewindow, l
+      bind = $mainMod SHIFT, code:44, movewindow, d
+      bind = $mainMod SHIFT, code:45, movewindow, u
+      bind = $mainMod SHIFT, code:46, movewindow, r
+      binde = $mainMod, left, resizeactive, -5 0
+      binde = $mainMod, right, resizeactive, 5 0
+      binde = $mainMod, up, resizeactive, 0 -5
+      binde = $mainMod, down, resizeactive, 0 5
       bind = $mainMod, 1, workspace, 1
       bind = $mainMod, 2, workspace, 2
       bind = $mainMod, 3, workspace, 3

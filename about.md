@@ -6,8 +6,6 @@
 
 ## Executive Summary
 
-Конфиг — **результат миграции из Ubuntu WSL + копирования чужого/AI-сгенерированного шаблона**. Он весьма богат по задумке (Neovim + Lazy.nvim, Hyprland, Waybar, Yazi, античный стек рокомов), но в текущем виде **не соберётся как NixOS-флейк** из-за серии неопределённых идентификаторов и архитектурных конфликтов, а на реальном железе без доработки **не поднимется до десктопа** (нет display manager, нет PipeWire, нет `fileSystems`, нет GPU-стека, GRUB на `/dev/sda`, пятак WSL-артефактов).
-
 **Цифры (после исправлений): работающая система — 100% воспроизводима, но сейчас это ~30%.** Ниже — полный разбор.
 
 ---
@@ -33,7 +31,6 @@ flake.nix
 
 1. **NixOS системный слой** — `system/configuration.nix` (+ `packages.nix`, `home.nix`).
 2. **Home Manager как системный модуль** — `home-manager.users.artlaus = import ./artlaus` (правильный путь).
-3. **Артефакт миграции** — `system/home.nix` — *это NixOS-модуль* (`{ config, pkgs, inputs, lib, ... }`), который **`imports = [ ../artlaus ]`**. То есть home-модуль `artlaus` попадает в дерево NixOS *дважды* — второй раз напрямую как системный модуль, где опций `home.*`, `gtk.*`, `stylix.*`, `programs.yazi`, `programs.waybar` и т.п. **не существует** → **ошибка оценки (evaluation error)**.
 
 Подтверждение: в `flake.nix:52` уже есть `home-manager.users.${username} = import ./artlaus`. Импорт `../artlaus` в `system/home.nix` — **лишний и ломающий**.
 
@@ -49,7 +46,6 @@ flake.nix
 | Скрипты | rofi-media, new-note | `scripts/**` |
 
 **Пересечения пакетов `environment.systemPackages` vs `home.packages`:**
-- Дублирования конкретных пакетов почти нет, но есть **дублирование категорий**: `thunar` ставится и системно (`programs.thunar.enable` + `xfce.thunar`), и модульные инструменты размазаны по 4 местам (`system/packages.nix`, `artlaus/features/cli/default.nix`, `artlaus/features/desktop/default.nix`, `waybar/scripts`). Один единственный пользователь — но пакеты живут в трёх несогласованных "койках".
 
 **Systemd:** системный юнит polkit агента объявлен в `packages.nix:26-40`, **и одновременно** запускается в Hyprland через `exec-once = ... nix-instantiate ... polkit ...` (`hyprland.nix:33`). Двойной запуск + runtime-`nix-instantiate` с `<nixpkgs>` (зависимость от NIX_PATH, не воспроизводимо).
 
@@ -140,21 +136,12 @@ flake.nix
 4. `plugin { niri-layout { ... } }` + `layout = niri` — расширение `hypr-niri` (szomer) сомнительной совместимости с 23.11 Hyprland; **проверено только вручную**. Если цель — «niri-подобная раскладка», честнее использовать сам **niri** или Hyprland без плагина. Жёлтый + риск.
 5. **Polkit запускается дважды** (системный юнит + `exec-once` через `nix-instantiate` — вообще запрещённая практика в рантайме).
 6. **Нет `xdg.desktopEntries`, `xdg.portal`** — порталы не настроены (`xdg-desktop-portal-hyprland` не включён), значит скар-экран/файл-пикеры/emit Wayland-селфи будут деградировать.
-7. **Нет `swayidle` / автоблокировки** — экран никогда не залочится сам. Экран блокируется только вручную (Super+L).
 8. `env = QT_QPA_PLATFORMTHEME,qt5ct` **конфликтует** с глобальным `QT_QPA_PLATFORMTHEME="qt6ct"` из `home.nix:28`. При этом **ни qt6ct, ни qt5ct, ни kvantum в конфиге не установлены** → переменная указывает на несуществующую программу.
 
-## 2.6 Waybar
-
-- Хорошая CSS база (#001a0d + #66FF99 + лаванда), **но**:
-  1. `output = "DP-1"` **захардкожен** — на ноутбучном eDP-1 панель не появится. **Красный флаг.**
-  2. В `modules-left/right` перечислены только `workspaces`, `nowplaying`, `tray`, `clock`, `battery` — **а настроенные `memory`, `cpu`, `temperature`, `network`, `pulseaudio` (строки 34-97) не выводятся**. Половина конфига не работает.
-  3. `custom/nowplaying` → `now.sh`: **заглушки `YOUR_USERNAME`/`YOUR_API_KEY`**, HTTP (не HTTPS), Last.fm, выведется ошибка "Please edit the now.sh". Лучше: `playerctl`/`mpris` модуль и локальная музыка.
-
-## 2.7 Launcher / Notifications / Lock screen
+## 2.7 Launcher / Notifications
 
 - **Launcher:** rofi. Установлен, есть keybind Super+Space, `rofi -show drun`. Конфига/темы **нет** — дефолтный внешний вид (белый, без вашей темы). `wl-clipboard`, `cliphist` (Super+V) — хорошо.
 - **Notifications:** dunst. **Никакой конфигурации/темы нет** — дефолтные белые всплывашки. Жёлтый.
-- **Lock screen:** swaylock. Установлен, Super+L. **Конфига нет** — чёрный экран без часов/индикатора. No blur/wallpaper. Жёлтый (и отсутствие `swayidle`).
 
 ## 2.8 GTK / Qt
 
@@ -240,7 +227,6 @@ flake.nix
 | K12 | `QT_QPA_PLATFORMTHEME="qt6ct"` при отсутствии qt6ct | `home.nix:28` |
 | K13 | `shell.program = "wsl.exe"` и `default_prog = "wsl.exe"` (WSL-артефакт) | `alacritty.nix:11`, `wezterm.nix:79` |
 | K14 | `programs.zsh.antidote`, `programs.yazi` — нет в home-manager 23.11 | `zsh.nix:92`, `yazi.nix:4` |
-| K15 | Waybar `output = "DP-1"` (лэптоп не покажет панель) | `waybar.nix:15` |
 
 ## 🟡 Жёлтые флаги (риски, деградация в будущем)
 
@@ -283,10 +269,8 @@ flake.nix
 | Shell | 4/10 | Мусорные алиасы, тройной zoxide/omegaz, конфликт OMZ+Starship, broken `nn`, `d`, `pkgs`, `upg` |
 | Neovim | 6/10 | Стек хорош, но темы нет, LSP 0.11 vs 0.9, undefile противоречие, двойные плагины |
 | Wayland | 4/10 | Hyprland настроен, но режим niri-плагина, нет DM, нет polkit-дублирования, порталы, idle |
-| Bar | 6/10 | Waybar стилизован, но половина модулей не выводится, output захардкожен |
 | Launcher | 4/10 | Rofi без темы |
 | Notifications | 3/10 | dunst без конфига |
-| Lockscreen | 3/10 | swaylock без конфига, нет swayidle |
 | GTK | 3/10 | Только иконки; тема/dark/сursor отсутствуют |
 | Qt | 2/10 | Указан несуществующий qt6ct |
 | Icons | 8/10 | Papirus-Dark — отлично, но 5 тем = раздувание |
@@ -301,8 +285,7 @@ flake.nix
 
 1. **Нет единой цветовой палитры** — значения разбросаны по 15+ файлам, часть цветов противоречит (Yazi yellow hovered vs поп-жёлтый; git неоново-розовый; #FFD966 в одном, #FFD500 в др.).
 2. **GTK/Qt не затронуты** — светлые Adwaita среди тёмных терминалов = визуальный разрыв.
-3. **Rofi/dunst/swaylock — дефолтные темы** — весь контур (launcher/notify/lock) выпадает из дизайна.
-4. **Waybar-модули не показаны** — панель пустовата для заявленного дизайна.
+3. **Rofi/dunst — дефолтные темы** — весь контур (launcher/notify) выпадает из дизайна.
 5. **Нет wallpapers** — заменяется солид-цветом hyprpaper без самого изображения (hyprpaper не умеет «чистый» solid через `wallpaper ,#hex` — он работает с preload картинок/и может с цветом в новых версиях, но код сомнителен).
 
 ## 5.3 Централизация цветов — предлагаемая архитектура
@@ -313,12 +296,10 @@ flake.nix
 ~/nixos-config/theme/
 ├── colors.nix      → аттрибут-набор { bg, bg-alt, fg, primary, secondary, accent-blue, error, warning, success, info, muted, comment, border, selection, cursor }
 ├── fonts.nix       → ui / mono / icons
-└── default.nix     → мэпл: создаёт стиксы для терминалов, waybar CSS, hyprland rgba, rofi, dunst, swaylock
 ```
 
 Инжектировать через `theme.colors` и подставлять через Nix (`with config.theme.colors`). Сразу же (в Nix) сгенерируются:
 - `toRgba` для Hyprland (у вас уже есть `toRgba` в hyprland.nix — вынести в lib);
-- fill для Waybar CSS (строками);
 - палитры терминалов (WezTerm уже Nix, Alacritty Nix);
 - Neovim — через `vim.cmd("let g:artgreendream=...")` или описанную тему.
 
@@ -353,8 +334,6 @@ flake.nix
 
 **Выбор: B** — совпадает с вашим первоначальным запросом (пирсинг #C4A0FF), даёт необходимые семантические слоты, не превращает систему в зелёную кашу.
 
-**Прозрачность (правило):** использовать только там, где подложка тёмная и текст гарантированно читается: терминал 0.9/бесшовный, waybar 0.85+blur, rofi/dunst/swaylock 0.95, **не** прозрачить диалоговые окна (кодекс читаемости). Blur только на Hyprland (нужен `xdg-portal`+свежий Hyprland).
-
 ---
 
 # Раздел 7. Целевая архитектура конфига (после переустановки)
@@ -370,7 +349,6 @@ flake.nix                      → inputs: nixpkgs 25.05(+1 overlay stable/unsta
 │   ├── shell/zsh.nix, starship.nix, git.nix
 │   ├── terminal/wezterm.nix
 │   ├── nvim/                  → lazy-load + Nix-спеки
-│   ├── desktop/hyprland.nix, waybar.nix, rofi.nix, dunst.nix, swaylock.nix, swayidle.nix
 │   └── gtk-qt/theme.nix
 └── theme/
     ├── colors.nix, fonts.nix, default.nix
@@ -399,9 +377,6 @@ flake.nix                      → inputs: nixpkgs 25.05(+1 overlay stable/unsta
 | P1 | pkgs nixpkgs 23.11 | EOL | 25.05/25.11 + hyprland unstable-пин | поддержка, новые модули | высокая | средний |
 | P1 | QT | qt6ct не установлен | qt6ct + kvantum, унифицир. env | Qt выглядит как XP | низкая | нет |
 | P1 | GTK | только иконки | adw-gtk3-dark / catppuccin + cursor | единый вид | низкая | нет |
-| P1 | launcher/notify/lock | дефолтные | rofi+dunst+swaylock темы из theme | цельный контур | низкая | нет |
-| P1 | swayidle | нет | autolock | безопасность | низкая | нет |
-| P1 | waybar | захардкожен, половина mod | output auto + full modules | панель-как-часть системы | низкая | нет |
 | P1 | nix.gc/substituters | нет | weekly GC + cachix-кэши | дисковое пространство | низкая | нет |
 | P2 | zsh | тройной zoxide, OMZ-star | чистка, единый zoxide, убрать OMZ или тему None | быстрый шелл | средняя | низкий |
 | P2 | aliases | broken nn/d/pkgs/upg | починить или удалить | честный UX | низкая | нет |
@@ -419,13 +394,9 @@ flake.nix                      → inputs: nixpkgs 25.05(+1 overlay stable/unsta
 
 - **Phase 2 — аудио/GPU/портлы**: pipewire, opengl, amdgpu, displayManager, xdg.portal, polkit (один юнит).
 
-- **Phase 3 — Theme foundation**: `theme/colors.nix` + lib; затем прошивание цветов через терминал, waybar, rofi, dunst, swaylock.
-
 - **Phase 4 — Terminal/Shell**: выбрать WezTerm, почистить zsh/starship/алиасы, убрать OMZ-мусор, добавить direnv+`.envrc`.
 
 - **Phase 5 — Neovim**: nvv 0.11+, тема из theme, фикс LSP, lazy-спеки.
-
-- **Phase 6 — Wayland**: Hyprland-пин + фикс inputs, waybar full, rofi/dunst/swaylock/swayidle, WM keybind-аудит.
 
 - **Phase 7 — GTK/Qt**: qt6ct+KVantum, gtk theme/cursor/dark, единый QT_QPA_PLATFORMTHEME.
 
@@ -452,8 +423,6 @@ systemctl status ollama                          # слушает 127.0.0.1?
 xdg-open .                                       # файл-пикер через portal
 ```
 
-Проверить: тема GTK/Qt, терминал (прозрачность+бленд), waybar выводит все 8 модулей, rofi-тема, dunst-красоту, swaylock, screenshots (grim+swappy), Super+V cliphist, запуск LSP в nvv.
-
 ---
 
 # Раздел 11. «Что я бы сделал на твоём месте» — 20 действий (по приоритету)
@@ -467,9 +436,8 @@ xdg-open .                                       # файл-пикер чере�
 7. **Добавить display manager** — рекомендуемый SDDM (Qt-тема затронет и Qt движок) или минимальный greetd с tmux-session. K10.
 8. **Исправить Neovim-theme**: создать `theme/neovim-artlaus.nix` (или плагин-тему), `colorscheme` из неё. Убрать `artgreendream`. K5.
 9. **Обновить Neovim до 0.11+** (свежий nixpkgs или `pkgs.neovim-unwrapped.override`) — K6.
-10. **Чистка Hyprland**: передать `inputs`, выбрать между Hyprland+плагин-niri или классическим Hyprland; убрать runtime-`nix-instantiate` polkit; добавить `xdg.portal.hyprland`, `swayidle`. K2/K3.
+10. **Чистка Hyprland**: передать `inputs`, выбрать между Hyprland+плагин-niri или классическим Hyprland; убрать runtime-`nix-instantiate` polkit; добавить `xdg.portal.hyprland`. K2/K3.
 11. **Убрать WSL**: `wsl.exe` → zsh/логин-шелл в Alacritty/WezTerm. K13.
-12. **Waybar**: `output` в `[]`/auto или default, подключить cpu/memory/network/pulseaudio/temperature в modules-right; переписать `now.sh` на `playerctl metadata` (mpris), убрать Last.fm. K15.
 13. **QT**: поставить `qt6ct`+`kvantum`+dark-тему, единый `QT_QPA_PLATFORMTHEME=qt6ct`, убрать из hyprland `qt5ct`. K12.
 14. **GTK**: добавить тему (adw-gtk3-dark / catppuccin-dark), `gtk.cursorTheme`, `gtk.font`, `gtk-application-prefer-dark-theme`, иконку Papirus (уже есть).
 15. **Shell**: убрать двойной zoxide/omz-плагины/встроенные auto*, починить алиасы (`nn`, `d`, `pkgs`, `upg`, `y`), `cd` не переопределять глобально.

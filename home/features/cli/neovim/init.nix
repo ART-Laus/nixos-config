@@ -8,18 +8,20 @@ in
   programs.neovim.initLua = ''
     vim.g.mapleader = " "
     vim.g.maplocalleader = " "
+    require("artlaus_core")
   '';
 
-  home.file.".config/nvim/lua/init.lua".text = ''
-    -- init.lua
+  home.file.".config/nvim/lua/artlaus_core.lua".text = ''
+    require("core.options")
     vim.cmd("colorscheme artgreendream")
-    require("options")
-    require("keymaps")
-    require("autocmds")
-    require("lazy")
+    require("core.keymaps")
+    require("core.autocmds")
   '';
 
-  home.file.".config/nvim/lua/colors/artgreendream.lua".text = ''
+  home.file.".config/nvim/lua/init.lua".enable = false;
+  home.file.".config/nvim/lua/lazy.lua".enable = false;
+
+  home.file.".config/nvim/colors/artgreendream.lua".text = ''
     local colors = {
       bg        = "NONE",
       fg        = "${c.primary}",
@@ -31,6 +33,7 @@ in
       turquoise = "${c.turquoise}",
       red       = "${c.error}",
       gray      = "${c.comment}",
+      muted     = "${c.muted}",
       darkgray  = "${c.bgAlt}",
     }
 
@@ -39,6 +42,7 @@ in
     end
 
     vim.cmd("highlight clear")
+    vim.g.colors_name = "artgreendream"
 
     hi("Normal",        { fg = colors.fg, bg = colors.bg })
     hi("Comment",       { fg = colors.gray, italic = true })
@@ -68,6 +72,7 @@ in
     hi("Todo",          { fg = "${c.nearBlack}", bg = colors.yellow, bold = true })
 
     hi("@variable",     { fg = colors.fg })
+    hi("@variable.member", { fg = colors.lavender })
     hi("@variable.builtin", { fg = colors.cyan, italic = true })
     hi("@function",     { fg = colors.cyan, bold = true })
     hi("@function.builtin", { fg = colors.cyan, italic = true })
@@ -75,6 +80,11 @@ in
     hi("@field",        { fg = colors.fg })
     hi("@property",     { fg = colors.yellow })
     hi("@parameter",    { fg = colors.fg, italic = true })
+    hi("@operator",     { fg = colors.cyan })
+    hi("@punctuation",  { fg = colors.muted })
+    hi("@punctuation.bracket", { fg = colors.muted })
+    hi("@punctuation.delimiter", { fg = colors.muted })
+    hi("@punctuation.special", { fg = colors.muted })
     hi("@keyword",      { fg = colors.lavender, italic = true })
     hi("@keyword.function", { fg = colors.lavender })
     hi("@type",         { fg = colors.yellow, bold = true })

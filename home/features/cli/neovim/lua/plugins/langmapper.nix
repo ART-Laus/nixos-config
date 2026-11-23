@@ -1,10 +1,12 @@
-{
-  home.file.".config/nvim/lua/plugins/langmapper.lua".text = ''
-    return {
-      "gen740/langmapper.nvim",
-      config = function()
-        require('langmapper').setup()
-      end
-    }
-  '';
-}
+{ pkgs, theme, ... }:
+
+with pkgs.vimPlugins;
+[
+  {
+    type = "lua";
+    plugin = langmapper-nvim;
+    config = ''
+      require("langmapper").setup()
+    '';
+  }
+]

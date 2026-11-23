@@ -1,6 +1,5 @@
 {
-  home.file.".config/nvim/lua/keymaps.lua".text = ''
-    -- keymaps.lua
+  home.file.".config/nvim/lua/core/keymaps.lua".text = ''
     (function()
       local opts = { noremap = true, silent = true }
       local keymap = vim.keymap

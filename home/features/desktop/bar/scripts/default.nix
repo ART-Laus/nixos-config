@@ -1,9 +1,9 @@
-# artlaus/features/desktop/hypr/waybar/scripts/default.nix
-# This file packages the now.sh script for use in Waybar.
+# artlaus/features/desktop/bar/scripts/default.nix
+# This file packages the now.sh script for use in the desktop bar.
 { pkgs }:
 
 pkgs.stdenv.mkDerivation {
-  pname = "waybar-now-playing";
+  pname = "quickshell-now-playing";
   version = "1.0.0";
   
   # The source is this directory, so it can find now.sh

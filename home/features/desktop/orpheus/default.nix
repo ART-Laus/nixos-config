@@ -3,9 +3,9 @@
 # Не изменяет сам проект — всё на уровне системы.
 { config, pkgs, lib, ... }:
 {
-  # Docker-сервисы (Navidrome, FileBrowser)
+  # Podman-сервисы (Navidrome, FileBrowser)
   imports = [
-    ./docker-compose.nix
+    ./podman.nix
     ./mounts/library.nix
   ];
 
@@ -28,7 +28,8 @@
        systemctl --user start orpheus-library-mount
        (Настройте /home/artlaus/.config/orpheus/smb-credentials)
 
-    2. Docker-сервисы:
+     2. Podman-сервисы:
+
        systemctl --user start orpheus-navidrome
        systemctl --user start orpheus-filebrowser
 

@@ -9,7 +9,7 @@
   networking.firewall.enable = true;
 
   # Time & locale — из старого system/configuration.nix
-  time.timeZone = "Europe/Moscow";
+  time.timeZone = "Asia/Yekaterinburg";
   i18n.defaultLocale = "en_US.UTF-8";
   i18n.extraLocaleSettings = {
     LC_TIME = "en_GB.UTF-8";

@@ -1,26 +1,27 @@
-# system/virtualization.nix — Docker / Podman (флаг features.virtualization)
 { config, lib, pkgs, ... }:
 let
   cfg = config.features.virtualization or { enable = false; };
 in
 {
-  options.features.virtualization.enable = lib.mkEnableOption "virtualization (Docker)" // { default = false; };
+  options.features.virtualization.enable = lib.mkEnableOption "virtualization (Podman)" // { default = false; };
 
   config = lib.mkIf cfg.enable {
-    virtualisation.docker = {
+    virtualisation.podman = {
       enable = true;
-      enableOnBoot = true;
+      dockerCompat = true;
+      dockerSocket.enable = true;
       autoPrune = {
         enable = true;
         dates = "weekly";
       };
     };
-    users.users.artlaus.extraGroups = [ "docker" ];
 
-    # SMB client для монтирования библиотеки с ноутбука
+    users.users.artlaus.extraGroups = [ "podman" ];
+
     environment.systemPackages = with pkgs; [
       cifs-utils
       samba
+      podman-compose
     ];
   };
 }

@@ -1,0 +1,12 @@
+Workspaces 1.0 Workspaces.qml
+Memory 1.0 Memory.qml
+Cpu 1.0 Cpu.qml
+NowPlaying 1.0 NowPlaying.qml
+Battery 1.0 Battery.qml
+Tray 1.0 Tray.qml
+Brightness 1.0 Brightness.qml
+Audio 1.0 Audio.qml
+Bluetooth 1.0 Bluetooth.qml
+Network 1.0 Network.qml
+Language 1.0 Language.qml
+Clock 1.0 Clock.qml

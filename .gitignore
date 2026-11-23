@@ -39,4 +39,5 @@ docs/devlog.md
 *.recovered
 
 # Wallpapers (binary images, not in git)
-home/features/desktop/wallpapers/
+/wallpapers/
+

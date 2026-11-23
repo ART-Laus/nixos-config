@@ -1,11 +1,18 @@
 # home/features/cli/tools.nix — CLI утилиты (eza, bat, ripgrep, fd, fzf, btop...)
 { config, pkgs, lib, flakePkgs, ... }:
 let
-  c = config.lib.theme.colors or {};
+  c = config.lib.theme.colors or { };
   automationScripts = builtins.attrValues (import ../../../scripts { inherit pkgs; });
+  dockerCompat = pkgs.writeShellScriptBin "docker" ''exec ${pkgs.podman}/bin/podman "$@"'';
+  dockerComposeCompat = pkgs.writeShellScriptBin "docker-compose" ''exec ${pkgs.podman-compose}/bin/podman-compose "$@"'';
 in
 {
-  home.packages = automationScripts ++ (with pkgs; [
+  home.packages = automationScripts ++ [
+    pkgs.podman
+    pkgs.podman-compose
+    dockerCompat
+    dockerComposeCompat
+  ] ++ (with pkgs; [
     # Modern replacements (было: exa → eza)
     eza
     bat
@@ -25,28 +32,28 @@ in
     # pywal — оставить пока, но тема теперь из theme/
     # pywal
 
-     # Archives
-     zip
-     unzip
-     unrar
-     p7zip
-     bzip2
+    # Archives
+    zip
+    unzip
+    unrar
+    p7zip
+    bzip2
 
-     # PDF CLI
-     poppler-utils
+    # PDF CLI
+    poppler-utils
 
-     # OCR
-     tesseract
-     ocrmypdf
+    # OCR
+    tesseract
+    ocrmypdf
 
-     # Image optimization
-     optipng
-     pngquant
-     jpegoptim
-     gifsicle
+    # Image optimization
+    optipng
+    pngquant
+    jpegoptim
+    gifsicle
 
-     # Documents
-     pandoc
+    # Documents
+    pandoc
 
     # Batch rename / duplicates
     rename
@@ -69,6 +76,7 @@ in
 
     # Clipboard
     wl-clipboard
+    cliphist
 
 
     # Media CLI
@@ -89,8 +97,8 @@ in
     git-lfs
     delta
 
-    # AI CLI tools (устанавливаются через npm: npm install -g opencode @anthropic-ai/claude-code lilo-code)
-    # opencode — AI code editor
+    # AI CLI tools
+    opencode
     # claude-code — Anthropic Claude CLI
     # lilo-code — AI coding assistant
 
@@ -103,9 +111,6 @@ in
     tree
     killall
     timer
-    file
-    hashid
-    wl-clipboard
 
     # ── Discovery Expansion — 🎨 Визуал / ASCII / Терминальная Графика ──
     # anima — набор терминальных анимаций (boids, matrix, mandelbrot)
@@ -124,16 +129,9 @@ in
     flakePkgs.nixy
     flakePkgs.niux
 
-    # Nix UX wrappers
-    nh
-    nvd
-    nixpkgs-fmt
-
     # ── Discovery Expansion — 🎲 Fun ──
     # nix-bonsai — бонсай-деревогенератор на чистом Nix
     flakePkgs.nix-bonsai
-
-
   ]);
 
   programs = {

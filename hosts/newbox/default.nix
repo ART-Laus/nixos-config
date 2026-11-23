@@ -23,6 +23,8 @@
   # Feature flags — единое место правды (см. docs/architecture.md §3)
   features.virtualization.enable = true;
 
+  powerManagement.enable = false;
+
   systemd.sleep.settings.Sleep = {
     AllowSuspend = "no";
     AllowHibernation = "no";
@@ -34,13 +36,20 @@
     HandleLidSwitch = "ignore";
     HandleLidSwitchExternalPower = "ignore";
     HandleLidSwitchDocked = "ignore";
+    HandlePowerKey = "ignore";
+    HandlePowerKeyLongPress = "ignore";
+    HandleRebootKey = "ignore";
+    HandleRebootKeyLongPress = "ignore";
+    HandleSuspendKey = "ignore";
+    HandleSuspendKeyLongPress = "ignore";
+    HandleHibernateKey = "ignore";
+    HandleHibernateKeyLongPress = "ignore";
     IdleAction = "ignore";
     IdleActionSec = "0";
   };
 
-  # Hardware-специфика нового десктопа
-  # ── GPU RDNA4: nixpkgs 26.05 / ROCm 6.4.3+ знает gfx1201 -> Ollama работает
-  #    нативно (rocmOverrideGfx убран, см. system/services.nix).
+  # Hardware-специфика ноутбука
+  # ── GPU AMD Barcelo (gfx90c): ROCm не поддерживается, Ollama через Vulkan.
 
   # ── Принтер/сканер Pantum M6500W — печать и скан по WiFi/USB
   #    (system/printing.nix: CUPS + pantum-driver + sane-airscan).

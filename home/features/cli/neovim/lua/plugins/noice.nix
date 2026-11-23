@@ -1,80 +1,76 @@
-{ theme, ... }:
+{ pkgs, theme, ... }:
 
 let
   c = theme.colors;
 in
-{
-  home.file.".config/nvim/lua/plugins/noice.lua".text = ''
-    return {
-      "folke/noice.nvim",
-      config = function()
-        require("noice").setup({
-          lsp = {
-            signature = {
-              enabled = true,
-              auto_open = {
-                enabled = true,
-                trigger = true,
-                luasnip = true,
-                throttle = 50,
-              },
-              view = nil,
-              opts = {},
-            },
-            override = {},
-          },
-
-          cmdline = {
+with pkgs.vimPlugins;
+[
+  {
+    type = "lua";
+    plugin = noice-nvim;
+    config = ''
+      require("noice").setup({
+        lsp = {
+          signature = {
             enabled = true,
-            view = "cmdline_popup",
-            format = {
-              cmdline = { pattern = "^:", icon = "", lang = "vim" },
-              search_down = { kind = "search", pattern = "^/", icon = "", lang = "regex" },
-              search_up = { kind = "search", pattern = "^%?", icon = "", lang = "regex" },
+            auto_open = {
+              enabled = true,
+              trigger = true,
+              luasnip = true,
+              throttle = 50,
+            },
+            view = nil,
+            opts = {},
+          },
+          override = {},
+        },
+
+        cmdline = {
+          enabled = true,
+          view = "cmdline_popup",
+          format = {
+            cmdline = { pattern = "^:", icon = "", lang = "vim" },
+            search_down = { kind = "search", pattern = "^/", icon = "", lang = "regex" },
+            search_up = { kind = "search", pattern = "^%?", icon = "", lang = "regex" },
+          },
+        },
+
+        views = {
+          cmdline_popup = {
+            position = { row = "10%", col = "50%" },
+            size = { width = "60%", height = "auto" },
+            border = { style = "rounded", padding = { 0, 1 } },
+            win_options = {
+              winhighlight = { Normal = "NormalFloat", FloatBorder = "FloatBorder" },
             },
           },
+        },
 
-          views = {
-            cmdline_popup = {
-              position = { row = "10%", col = "50%" },
-              size = { width = "60%", height = "auto" },
-              border = { style = "rounded", padding = { 0, 1 } },
-              win_options = {
-                winhighlight = { Normal = "NormalFloat", FloatBorder = "FloatBorder" },
+        routes = {
+          {
+            filter = {
+              event = "msg_show",
+              any = {
+                { find = "%d+L, %d+B" },
+                { find = "; after #%d+" },
+                { find = "; before #%d+" },
               },
             },
+            view = "mini",
           },
+        },
 
-          routes = {
-            {
-              filter = {
-                event = "msg_show",
-                any = {
-                  { find = "%d+L, %d+B" },
-                  { find = "; after #%d+" },
-                  { find = "; before #%d+" },
-                },
-              },
-              view = "mini",
-            },
-          },
+        presets = {
+          bottom_search = false,
+          command_palette = true,
+          long_message_to_split = true,
+        },
+      })
 
-          presets = {
-            bottom_search = false,
-            command_palette = true,
-            long_message_to_split = true,
-          },
-        })
-        
-        if vim.o.filetype == "lazy" then
-          vim.cmd([[messages clear]])
-        end
-        
-        vim.api.nvim_set_hl(0, "NoiceCmdlinePopup", { bg = "NONE", fg = c.primary })
-        vim.api.nvim_set_hl(0, "NoiceCmdlinePopupBorder", { fg = c.accentBlue, bg = "NONE" })
-        vim.api.nvim_set_hl(0, "NoiceCmdlineIcon", { fg = c.accentBlue, bg = "NONE" })
-        vim.api.nvim_set_hl(0, "NoiceCmdlinePopupTitle", { fg = c.primary, bg = "NONE", bold = true })
-      end
-    }
-  '';
-}
+      vim.api.nvim_set_hl(0, "NoiceCmdlinePopup", { bg = "NONE", fg = "${c.primary}" })
+      vim.api.nvim_set_hl(0, "NoiceCmdlinePopupBorder", { fg = "${c.accentBlue}", bg = "NONE" })
+      vim.api.nvim_set_hl(0, "NoiceCmdlineIcon", { fg = "${c.accentBlue}", bg = "NONE" })
+      vim.api.nvim_set_hl(0, "NoiceCmdlinePopupTitle", { fg = "${c.primary}", bg = "NONE", bold = true })
+    '';
+  }
+]

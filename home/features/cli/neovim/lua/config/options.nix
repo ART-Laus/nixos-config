@@ -1,9 +1,7 @@
 {
-  home.file.".config/nvim/lua/options.lua".text = ''
-    -- options.lua
+  home.file.".config/nvim/lua/core/options.lua".text = ''
     (function()
       local opt = vim.opt
-      local data_path = vim.fn.stdpath("data")
 
       opt.number = true
       opt.relativenumber = true
@@ -24,23 +22,19 @@
       opt.swapfile = false
       opt.backup = false
       opt.writebackup = false
-      opt.undofile = false
       opt.wrap = false
       opt.scrolloff = 8
       opt.sidescrolloff = 8
       opt.splitright = true
       opt.splitbelow = true
       opt.mouse = "a"
-      vim.opt.backspace = "start,eol,indent"
-      vim.opt.isfname:append("@-@")
-      vim.opt.hlsearch = true
-      vim.opt.incsearch = true
-      vim.opt.inccommand = "split"
-      vim.opt.wildmenu = true
-      vim.opt.wildmode = "longest:full,full"
-
-      -- NOTE: swap, undo, and backup directories are managed by Nix/Home-manager,
-      -- so the manual directory creation part is removed.
+      opt.backspace = "start,eol,indent"
+      opt.isfname:append("@-@")
+      opt.hlsearch = true
+      opt.incsearch = true
+      opt.inccommand = "split"
+      opt.wildmenu = true
+      opt.wildmode = "longest:full,full"
     end)()
   '';
 }

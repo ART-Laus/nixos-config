@@ -49,7 +49,6 @@ hosts/
 theme/                             # ← ЕДИНСТВЕННЫЙ источник темы (утверждено: в корне)
 ├── colors.nix                     # палитра Artlaus Neon
 ├── fonts.nix                      # ui / mono / nerd — имена шрифтов
-└── default.nix                    # хелперы: toRgba, mkWaybarCss (опционально)
 
 lib/
 └── theme.nix                      # чистые функции: hexToRgba, mkAlpha
@@ -66,7 +65,6 @@ system/                            # ← отвечает за МАШИНУ (Nix
 home/                              # ← отвечает за ПОЛЬЗОВАТЕЛЯ (Home Manager) — ПЛОСКО + features/
 ├── default.nix                    # home-manager.users.artlaus: импортирует features/* + theme
 ├── shell.nix                      # zsh + starship + aliases (один файл — одна роль: shell)
-├── desktop.nix                    # hyprland + hyprpaper + waybar + rofi + dunst + swaylock + swayidle + clipboard + screenshots
 ├── cli.nix                        # git (delta/lfs) + tools (eza/bat/ripgrep/fzf/btop) + yazi + tmux
 ├── terminal.nix                   # wezterm (главный, greetd-совместимый) — kitty/alacritty опционально
 ├── development.nix                # languages (direnv, devShells) + containers (lazydocker)
@@ -96,16 +94,13 @@ scripts/
 **Почему плоско + `features/` (ваш выбор):**
 
 - **Плоско** — для одного хоста `system/` из 6 файлов и `home/` из 8 файлов **читается за 10 секунд**. Иерархия `system/core + system/hardware + system/services` была бы избыточна сейчас (нарушает принцип «не впадать в противоположную крайность»).
-- **`features/` сохраняется** — как **инкубатор**. Правило: пока `desktop.nix` < ~200 строк — живёт плоско. Как только `desktop.nix` разрастётся (например, waybar + rofi + dunst требуют своих тем) — **расщепляем**: `home/desktop.nix` → `home/features/desktop/{hyprland.nix, waybar.nix, rofi.nix, dunst.nix}`. Аналогично `gaming.nix` → `features/gaming/`. Это даёт **эволюционный путь** без переписывания сейчас.
 - `neovim/` уже в `features/` — потому что это единственный компонент, который **уже** сложный (30 плагинов, Lua-дерево). Ему нужна папка сейчас.
-- `theme/` в корне (утверждено) — доступен и `system` (greetd, grub) и `home` (waybar, nvim) через `specialArgs.theme` без относительных `../../../theme`.
 - `hosts/newbox/` — готовность ко второму хосту без копипасты (`hosts/second-laptop/default.nix` импортирует те же `system/` + `home/`).
 
 **Чего НЕ должно быть в каждой папке:**
 
 | Папка | Не должно содержать |
 |---|---|
-| `system/` | `programs.zsh`, `gtk.*`, `waybar`, `nvim`, `aliases` |
 | `home/` | `boot.loader`, `fileSystems`, `services.pipewire`, `hardware.*` |
 | `hosts/` | логики (только импорты + hardware-configuration) |
 | `theme/` | логики сервисов, только данные (цвета/шрифты) |
@@ -237,7 +232,6 @@ home/desktop.nix  →  home/features/desktop/
 
 - ✅ `theme/ → всё` (цвета используются везде, greetd тоже)
 - ✅ `CLI → Neovim` (Neovim зависит от shell/tools, но не наоборот)
-- ✅ `Desktop → theme` (waybar/rofi берут цвета)
 - ❌ `Desktop ↛ CLI` (отключение Neovim не ломает Hyprland)
 - ❌ `CLI ↛ Desktop` (CLI работает headless без Hyprland)
 - ❌ Циклы (`A → B → A`)
@@ -269,7 +263,6 @@ home/desktop.nix  →  home/features/desktop/
 | **CLI: Terminal** | `features.cli` | Shell, Theme | Home | `home/terminal.nix` | **WezTerm** |
 | **CLI: Tools** | `features.cli` | — | Home | `home/cli.nix` | git+delta/lfs, eza, ripgrep, yazi, tmux |
 | **CLI: Neovim** | `features.neovim` | CLI | Home | `home/features/neovim/` | **Lazy.nvim** + `lazy-lock.json` |
-| **Desktop** | `features.desktop` | Theme, HW | Оба | `home/desktop.nix` | Hyprland + waybar + rofi + dunst + swaylock/idle |
 | **Desktop: GTK/Qt** | `features.desktop` | Theme | Home | `home/gtk-qt.nix` | qt6ct+kvantum, единый стиль |
 | **Dev** | `features.development` | CLI | Home | `home/development.nix` | direnv + devShells |
 | **Gaming** | `features.gaming` | HW, Audio | Оба | `system/gaming.nix` + `home/features/gaming/` | Steam only (mangohud/protonup удалены) |
@@ -346,7 +339,6 @@ in {
 | Задача | Сейчас | После |
 |---|---|---|
 | «Не хочу Docker» | `grep docker` по репо | `features.virtualization.docker.enable = false` |
-| «Заменить Waybar» | Правлю 3 файла, боюсь сломать | Удаляю `waybar` секцию в `home/desktop.nix` |
 | «Поменять Neovim» | 20 файлов + home.nix | `home/features/neovim/` — один вход |
 | «Поменять тему» | `grep #66FF99` | `theme/colors.nix` |
 | «Дебажить звук» | Ищу среди 266 строк | `system/boot-hardware.nix` |
@@ -366,7 +358,6 @@ in {
 - [x] Обновить `docs/neovim.md` (Lazy) и `docs/devlog.md` (Obsidian)
 - [x] Phase 1: `hosts/newbox/` + `system/nix.nix` + `theme/colors.nix` + `flake.nix` (specialArgs, 25.05)
 - [x] Phase 2: удаление `artlaus/`, `system/home.nix`, `system/configuration.nix`; фикс devShell; `nix flake check` OK
-- [x] Phase 3: `theme/` прошивка цветов через все компоненты (waybar CSS, hyprland rgba, rofi, dunst, swaylock, nvim theme.lua, alacritty, kitty, yazi)
 - [x] Добавлены Tor, OpenVPN, Tailscale, Docker | `phase` | ✅ evaluation OK |
 
 *Вопросы — в Issues/PR к этому репозиторию на GitHub; локальный девлог держим вне git.*

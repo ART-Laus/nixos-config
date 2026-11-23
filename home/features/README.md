@@ -13,7 +13,7 @@ tags: [nixos, architecture, features]
 
 ```text
 home/desktop.nix  < 200 строк  →  остаётся в home/*.nix (плоско)
-home/desktop.nix  > 200 строк  →  расщепить → home/features/desktop/{hyprland.nix, waybar.nix, rofi.nix}
+home/desktop.nix  > 200 строк  →  расщепить → home/features/desktop/{hyprland.nix, bar/, rofi.nix}
 ```
 
 **Сейчас в `features/`:**
@@ -25,7 +25,7 @@ home/desktop.nix  > 200 строк  →  расщепить → home/features/de
 **Когда выносить:**
 
 - `home/gaming.nix` → `features/gaming/` когда добавите 5+ gaming-инструментов
-- `home/desktop.nix` → `features/desktop/` когда Waybar/Rofi/Dunst потребуют своих тем
+- `home/desktop.nix` → `features/desktop/` когда панель/Rofi/Dunst потребуют своих тем
 - `home/development.nix` → `features/development/` когда языков >3
 
 ## Как выносить
@@ -36,7 +36,7 @@ imports = [ ./desktop.nix ];
 
 # Стало: home/default.nix
 imports = [ ./features/desktop ];
-# home/features/desktop/default.nix  →  imports = [ ./hyprland.nix ./waybar.nix ... ];
+# home/features/desktop/default.nix  →  imports = [ ./hyprland.nix ./bar/ ... ];
 ```
 
 Никакого Enterprise Java — просто `imports`.

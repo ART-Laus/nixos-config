@@ -1,6 +1,6 @@
 # theme/fonts.nix — единый источник шрифтов
 {
-  # UI (GTK, Waybar, Rofi, SwayNC)
+  # UI (GTK, панель, Rofi, SwayNC)
   ui = {
     name = "JetBrainsMono Nerd Font";
     size = 14;
@@ -14,7 +14,7 @@
     fallback = [ "Noto Sans Mono" "DejaVu Sans Mono" ];
   };
 
-  # Nerd Font glyphs (иконки в Waybar, Neovim, Yazi)
+  # Nerd Font glyphs (иконки в панели, Neovim, Yazi)
   nerd = {
     name = "JetBrainsMono Nerd Font";
   };

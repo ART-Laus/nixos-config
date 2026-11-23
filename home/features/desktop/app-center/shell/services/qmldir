@@ -1,0 +1,4 @@
+module qs.appcenter.services
+singleton ApplicationsService 1.0 ApplicationsService.qml
+singleton ProcessService 1.0 ProcessService.qml
+singleton WindowTracking 1.0 WindowTracking.qml

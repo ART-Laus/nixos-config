@@ -3,16 +3,6 @@
 
 set -euo pipefail
 
-# Find the directory this script is in
-SCRIPTS_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
-MEDIA_SCRIPTS_DIR="$SCRIPTS_DIR/media"
-
-# Check if the media scripts directory exists
-if [[ ! -d "$MEDIA_SCRIPTS_DIR" ]]; then
-    rofi -e "Error: Media scripts directory not found at $MEDIA_SCRIPTS_DIR"
-    exit 1
-fi
-
 # Rofi menu options
 options="🖼️ Image
 🎥 Video

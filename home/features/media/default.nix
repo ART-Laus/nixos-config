@@ -11,6 +11,7 @@
     obs-studio
     pavucontrol
     playerctl
+    mpv
     strawberry
     easyeffects
 
@@ -27,13 +28,16 @@
     gimp3
     gcolor3
 
-     # ── Продуктивность ──
-     obsidian
-     planify
-     qalculate-gtk
+    # ── Продуктивность ──
+    obsidian
+    planify
+    qalculate-gtk
 
     # ── Скриншоты / запись ──
     ksnip
+    grim
+    slurp
+    swappy
     screenkey
 
     # ── Торренты ──

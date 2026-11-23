@@ -1,12 +1,11 @@
-# home/features/desktop/apps.nix — файловые менеджеры, утилиты, системные GUI-приложения
+# home/features/desktop/apps.nix — файловый менеджер, утилиты, системные GUI-приложения
 { config, pkgs, ... }:
 {
   home.packages = with pkgs; [
-    # ── Файловые менеджеры и тумбнейлы (из legacy) ──
+    # ── Файловый менеджер: Dolphin (Thunar/Xfce удалён полностью) ──
     # ranger удалён — заменён на yazi (home/features/cli/yazi.nix)
-    thunar
+    kdePackages.dolphin
     catfish
-    xfce4-exo
     file-roller
     ffmpegthumbnailer
     gnome-epub-thumbnailer
@@ -17,6 +16,7 @@
     # Оставлены только GUI-тулы; библиотеки — в system/packages.nix
 
     # ── Системные GUI утилиты ──
+    podman-desktop
     networkmanagerapplet
     brightnessctl
     qmk
@@ -27,4 +27,11 @@
     discord
     ayugram-desktop
   ];
+
+  # Каталог открывается в Dolphin везде (xdg-open, файл-пикеры, рабочий стол)
+  xdg.mimeApps.enable = true;
+  xdg.mimeApps.defaultApplications = {
+    "inode/directory" = "org.kde.dolphin.desktop";
+    "x-directory/normal" = "org.kde.dolphin.desktop";
+  };
 }

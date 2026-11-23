@@ -1,0 +1,12 @@
+singleton ScriptStore 1.0 ScriptStore.qml
+singleton ScriptRegistry 1.0 ScriptRegistry.qml
+singleton ScriptExecutor 1.0 ScriptExecutor.qml
+HubButton 1.0 HubButton.qml
+HubField 1.0 HubField.qml
+ArgumentRow 1.0 ArgumentRow.qml
+ScriptCard 1.0 ScriptCard.qml
+ScriptArgumentForm 1.0 ScriptArgumentForm.qml
+ScriptMetadataEditor 1.0 ScriptMetadataEditor.qml
+RunningTasks 1.0 RunningTasks.qml
+ScriptHubPill 1.0 ScriptHubPill.qml
+ScriptHubPopup 1.0 ScriptHubPopup.qml

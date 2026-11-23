@@ -1,0 +1,3 @@
+module qs.appcenter.core
+singleton Ranking 1.0 Ranking.qml
+singleton UsageStore 1.0 UsageStore.qml

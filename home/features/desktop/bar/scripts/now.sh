@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# now.sh: Fetches the currently playing track from Last.fm for Waybar.
+# now.sh: Fetches the currently playing track from Last.fm for the desktop bar.
 
 # --- IMPORTANT ---
 # You need to fill in your own Last.fm username and API key below.

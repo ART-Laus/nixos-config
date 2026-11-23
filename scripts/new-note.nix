@@ -6,7 +6,7 @@ pkgs.writeShellScriptBin "new-note" ''
   set -euo pipefail
 
   # Check if a note title is provided
-  if [ -z "$1" ]; then
+  if [ -z "''${1-}" ]; then
     echo "Please provide a title for your note."
     exit 1
   fi

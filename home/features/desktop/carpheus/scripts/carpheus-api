@@ -1,0 +1,162 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+CONFIG="${CARPPHEUS_CONFIG:-$HOME/.config/carpheus/navidrome.env}"
+
+esc() {
+  local s="$1"
+  s=${s//\\/\\\\}
+  s=${s//\"/\\\"}
+  printf '%s' "$s"
+}
+
+fail() {
+  jq -nc --arg m "$1" --arg c "${2:-error}" '{status:"failed",error:{code:$c,message:$m}}'
+  exit "${3:-1}"
+}
+
+[[ -r "$CONFIG" ]] || fail "Carpheus config missing: $CONFIG" config 3
+
+set -a
+. "$CONFIG"
+set +a
+
+BASE="${CARPPHEUS_NAVIDROME_URL:-}"
+USER_NAME="${CARPPHEUS_NAVIDROME_USER:-}"
+PASSWORD="${CARPPHEUS_NAVIDROME_PASSWORD:-}"
+CACHE="${CARPPHEUS_ARTWORK_CACHE:-$HOME/.cache/carpheus/artwork}"
+
+[[ -n "$BASE" ]] || fail "CARPPHEUS_NAVIDROME_URL is not configured" config 3
+[[ -n "$USER_NAME" ]] || fail "CARPPHEUS_NAVIDROME_USER is not configured" config 3
+[[ -n "$PASSWORD" ]] || fail "CARPPHEUS_NAVIDROME_PASSWORD is not configured" config 3
+
+BASE="${BASE%/}"
+SALT="$(python3 -c 'import secrets; print(secrets.token_hex(8))')"
+TOKEN="$(printf '%s' "${PASSWORD}${SALT}" | python3 -c 'import hashlib,sys; print(hashlib.md5(sys.stdin.buffer.read()).hexdigest())')"
+
+request() {
+  local endpoint="$1"
+  shift
+  local cfg
+  printf -v cfg 'silent
+get
+location
+connect-timeout = 5
+max-time = 20
+url = "%s"
+data-urlencode = "u=%s"
+data-urlencode = "t=%s"
+data-urlencode = "s=%s"
+data-urlencode = "v=1.16.1"
+data-urlencode = "c=carpheus"
+data-urlencode = "f=json"
+' "$(esc "$BASE/rest/$endpoint")" "$(esc "$USER_NAME")" "$(esc "$TOKEN")" "$(esc "$SALT")"
+  local item
+  for item in "$@"; do
+    cfg+="data-urlencode = \"$(esc "$item")\""$'\n'
+  done
+  if [[ -n "${CURL_OUTPUT:-}" ]]; then
+    cfg+="output = \"$(esc "$CURL_OUTPUT")\""$'\n'
+  fi
+  curl --config - <<<"$cfg"
+}
+
+cmd="${1:-check}"
+case "$cmd" in
+  check)
+    ping="$(request ping)" || fail "Navidrome ping failed" connection 4
+    ext="$(request getOpenSubsonicExtensions 2>/dev/null || true)"
+    if ! jq -e . >/dev/null 2>&1 <<<"$ext"; then ext='{}'; fi
+    jq -nc --argjson p "$ping" --argjson e "$ext" '{ping:$p,extensions:$e}'
+    ;;
+  search)
+    request search3 "query=${2:-}" artistCount=20 albumCount=20 songCount=30 offset=0
+    ;;
+  album)
+    request getAlbum "id=${2:-}"
+    ;;
+  albums)
+    request getAlbumList2 type=recent "size=${2:-40}" offset=0
+    ;;
+  artist)
+    request getArtist "id=${2:-}"
+    ;;
+  random)
+    request getRandomSongs "size=${2:-20}"
+    ;;
+  queueget)
+    request getPlayQueue
+    ;;
+  queuesave)
+    current="${2:-}"
+    shift 2 || true
+    args=()
+    if [[ -n "$current" ]]; then args+=("current=$current"); fi
+    for id in "$@"; do args+=("id=$id"); done
+    request savePlayQueue "${args[@]}"
+    ;;
+  stream)
+    jq -nc --arg base "$BASE" --arg u "$USER_NAME" --arg t "$TOKEN" --arg s "$SALT" --arg id "${2:-}" \
+      '$base + "/rest/stream?u=" + ($u|@uri) + "&t=" + $t + "&s=" + $s + "&v=1.16.1&c=carpheus&id=" + ($id|@uri)'
+    ;;
+  streamurls)
+    ids=()
+    if [[ $# -ge 2 ]]; then ids=("${@:2}"); else mapfile -t ids; fi
+    jq -nc --arg base "$BASE" --arg u "$USER_NAME" --arg t "$TOKEN" --arg s "$SALT" \
+      '$ARGS.positional | map({key: ., value: ($base + "/rest/stream?u=" + ($u|@uri) + "&t=" + $t + "&s=" + $s + "&v=1.16.1&c=carpheus&id=" + (.|@uri))}) | from_entries' \
+      --args "${ids[@]+"${ids[@]}"}"
+    ;;
+  artwork)
+    id="${2:-}"
+    size="${3:-300}"
+    [[ -n "$id" ]] || fail "Artwork id is required" argument 2
+    safe="$(printf '%s' "$id" | tr -c 'A-Za-z0-9_-' '_')"
+    mkdir -p "$CACHE"
+    out="$CACHE/$safe-$size.jpg"
+    if [[ -s "$out" ]]; then
+      printf '%s\n' "$out"
+      exit 0
+    fi
+    tmp="$CACHE/.$safe-$size-$$.tmp"
+    CURL_OUTPUT="$tmp" request getCoverArt "id=$id" "size=$size" || {
+      rm -f "$tmp"
+      fail "Artwork request failed" artwork 5
+    }
+    if [[ ! -s "$tmp" ]]; then
+      rm -f "$tmp"
+      fail "Artwork response was empty" artwork 5
+    fi
+    mv -f "$tmp" "$out"
+    printf '%s\n' "$out"
+    ;;
+  scanstatus)
+    request getScanStatus
+    ;;
+  scanquick)
+    request startScan
+    ;;
+  song)
+    id="${2:-}"
+    [[ -n "$id" ]] || fail "Song id is required" argument 2
+    request getSong "id=$id"
+    ;;
+  lyrics)
+    request getLyrics "artist=${2:-}" "title=${3:-}"
+    ;;
+  star)
+    id="${2:-}"
+    [[ -n "$id" ]] || fail "Song id is required" argument 2
+    request star "id=$id"
+    ;;
+  unstar)
+    id="${2:-}"
+    [[ -n "$id" ]] || fail "Song id is required" argument 2
+    request unstar "id=$id"
+    ;;
+  lookup)
+    request search3 "query=${2:-}" artistCount=1 albumCount=1 songCount=1 offset=0
+    ;;
+  *)
+    fail "Unknown Carpheus API command: $cmd" argument 2
+    ;;
+esac

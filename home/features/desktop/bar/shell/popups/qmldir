@@ -1,0 +1,5 @@
+AudioPopup 1.0 AudioPopup.qml
+BrightnessPopup 1.0 BrightnessPopup.qml
+BluetoothPopup 1.0 BluetoothPopup.qml
+NetworkPopup 1.0 NetworkPopup.qml
+CalendarPopup 1.0 CalendarPopup.qml

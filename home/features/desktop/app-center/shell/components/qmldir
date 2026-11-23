@@ -1,0 +1,9 @@
+module qs.appcenter.components
+SearchField 1.0 SearchField.qml
+TabButton 1.0 TabButton.qml
+SectionHeader 1.0 SectionHeader.qml
+EmptyState 1.0 EmptyState.qml
+ResourceIndicator 1.0 ResourceIndicator.qml
+ContextMenu 1.0 ContextMenu.qml
+AppCard 1.0 AppCard.qml
+ProcessRow 1.0 ProcessRow.qml

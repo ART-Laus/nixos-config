@@ -4,7 +4,7 @@
   toRgba = hex: "rgba(${builtins.substring 1 2 hex}${builtins.substring 3 2 hex}${builtins.substring 5 2 hex}ff)";
 
   # hex → rgba с альфа (0.0–1.0 → 00–ff)
-  # toRgbaAlpha "#66FF99" 0.85 → "rgba(66FF9985...)" — упрощённо, для Waybar лучше прямо rgba()
+  # toRgbaAlpha "#66FF99" 0.85 → "rgba(66FF9985...)" — упрощённо, для панели лучше прямо rgba()
   toRgbaAlpha = hex: alpha:
     let
       a = builtins.substring 1 2 hex;

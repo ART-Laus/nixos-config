@@ -22,7 +22,13 @@ in
   wallpaper = pkgs.writeShellApplication {
     name = "wallpaper";
     text = readScript "wallpaper.sh";
-    runtimeInputs = with pkgs; [ hyprland hyprpaper ];
+    runtimeInputs = with pkgs; [ hyprland hyprpaper coreutils findutils libnotify jq ];
+  };
+
+  show-desktop = pkgs.writeShellApplication {
+    name = "show-desktop";
+    text = readScript "show-desktop.sh";
+    runtimeInputs = with pkgs; [ hyprland jq coreutils ];
   };
 
   rofi-image = pkgs.writeShellApplication {
@@ -75,6 +81,9 @@ in
     text = readScript "share";
     runtimeInputs = with pkgs; [ python3 ];
   };
+
+  # ── Заметки ──
+  new-note = import ./new-note.nix { inherit pkgs; };
 
   # ── Система ──
   doctor = pkgs.writeShellApplication {

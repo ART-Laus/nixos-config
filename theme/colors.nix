@@ -3,32 +3,43 @@
 # Палитра: Artlaus Neon (Green #66FF99 + Lavender #C4A0FF + AMOLED #001a0d)
 {
   # База
-  bg = "#001a0d";        # AMOLED тёмный
-  bgAlt = "#0D3322";     # панели / полупрозрачный
-  fg = "#C0FFC0";        # основной текст (мягкий бело-зелёный)
+  bg = "#001a0d"; # AMOLED тёмный
+  bgAlt = "#0D3322"; # панели / полупрозрачный
+  barSection = "#24212c";
+  barPill = "#000000"; # фон таблеток панели
+  barPillOpacity = 0.7;
+  barPillHoverOpacity = 0.85;
+  barPillActiveOpacity = 0.2;
+  barTooltipOpacity = 0.9;
+  fg = "#C0FFC0"; # основной текст (мягкий бело-зелёный)
 
   # Акценты
-  primary = "#66FF99";   # Neon Green — главный
+  primary = "#66FF99"; # Neon Green — главный
+  primaryDim = "#42A663"; # тот же оттенок, затемнённый для фона панели
   secondary = "#C4A0FF"; # Lavender — вторичный
-  accentBlue = "#58D6FF";# Electric Blue
-  cyan = "#88ddff";      # Cyan — функции, методы
-  pink = "#FF66CC";      # Pink — строки
+  accentBlue = "#58D6FF"; # Electric Blue
+  emerald = "#10b981"; # Emerald — акцент
+  emeraldBright = "#34d399"; # Светлый изумруд
+  emeraldTransparent = "rgba(16, 185, 129, 0.45)"; # Полупрозрачный фон панели
+  emeraldTransparentLow = "rgba(16, 185, 129, 0.2)"; # Фон блоков панели
+  cyan = "#88ddff"; # Cyan — функции, методы
+  pink = "#FF66CC"; # Pink — строки
   turquoise = "#009999"; # Turquoise — визуальное выделение
-  blue = "#3399FF";      # Blue — числа, булевы
+  blue = "#3399FF"; # Blue — числа, булевы
 
   # Семантика
   error = "#FF5566";
   warning = "#FFD966";
-  success = "#66FF99";   # = primary
+  success = "#66FF99"; # = primary
   info = "#7FD6FF";
-  diffAdd = "#00FF88";   # Diff add
+  diffAdd = "#00FF88"; # Diff add
 
   # Текст
-  muted = "#448866";     # вторичный / неактивный
-  comment = "#3D6655";   # комментарии
-  border = "#448866";    # inactive border
+  muted = "#448866"; # вторичный / неактивный
+  comment = "#3D6655"; # комментарии
+  border = "#448866"; # inactive border
   borderActive = "#66FF99";
-  lineNr = "#2FAA77";    # номера строк Neovim
+  lineNr = "#2FAA77"; # номера строк Neovim
 
   # Выделение
   selection = "rgba(102, 255, 153, 0.3)";
@@ -36,18 +47,18 @@
 
   # Нейтральные
   nearBlack = "#0A0A0F"; # почти чёрный (текст курсора)
-  darkGray = "#1E1E2E";  # тёмный серый (терминал black)
+  darkGray = "#1E1E2E"; # тёмный серый (терминал black)
   darkGrayBright = "#2E2E3E"; # светлый тёмный серый (терминал bright black)
-  gray = "#666666";      # серый (inactive)
-lightPink = "#FFBBDD"; # светлый pink
-    lightBlue = "#B0E8FF"; # светлый blue
-    lightLavender = "#D4B8FF"; # светлый lavender
-    lightGreen = "#99FFBB"; # Starship username
-    mint = "#66DDCC"; # Starship directory
-    brightGreen = "#55EE88"; # Starship git
-    seaGreen = "#55BBAA"; # Starship cmd_duration/time
+  gray = "#666666"; # серый (inactive)
+  lightPink = "#FFBBDD"; # светлый pink
+  lightBlue = "#B0E8FF"; # светлый blue
+  lightLavender = "#D4B8FF"; # светлый lavender
+  lightGreen = "#99FFBB"; # Starship username
+  mint = "#66DDCC"; # Starship directory
+  brightGreen = "#55EE88"; # Starship git
+  seaGreen = "#55BBAA"; # Starship cmd_duration/time
 
-  # Прозрачность (для Hyprland / Waybar)
+  # Прозрачность (для Hyprland / панели)
   shadow = "rgba(00000066)";
   bgTransparent = "rgba(0, 26, 13, 0.85)";
   bgAltTransparent = "rgba(13, 51, 34, 0.7)";
