@@ -957,6 +957,7 @@ Item {
                         required property var modelData
                         title: modelData.name || "Album"
                         subtitle: modelData.artist || ""
+                        tip: (modelData.name || "Album") + (modelData.artist ? " — " + modelData.artist : "")
                         cover: root.coverFor(modelData.coverArt)
                         onTriggered: MusicState.openAlbum(modelData.id)
                       }
@@ -1545,7 +1546,35 @@ Item {
     property string title: ""
     property string subtitle: ""
     property string cover: ""
+    property string tip: ""
+    property bool tipShown: false
     signal triggered()
+
+    Timer {
+      id: tileTipTimer
+      interval: 450
+      onTriggered: tile.tipShown = true
+    }
+    ToolTip {
+      id: tileTip
+      visible: tile.tipShown && tile.tip !== ""
+      text: tile.tip
+      delay: 450
+      timeout: 2200
+      contentItem: Text {
+        text: tileTip.text
+        color: root.text
+        font.family: root.textFont
+        font.pixelSize: MusicTheme.caption
+        wrapMode: Text.NoWrap
+      }
+      background: Rectangle {
+        radius: MusicTheme.radiusControl
+        color: Qt.rgba(MusicTheme.surfaceAlt.r, MusicTheme.surfaceAlt.g, MusicTheme.surfaceAlt.b, 1)
+        border.width: 1
+        border.color: Qt.rgba(MusicTheme.border.r, MusicTheme.border.g, MusicTheme.border.b, 1)
+      }
+    }
     width: MusicTheme.tileWidth
     height: MusicTheme.tileHeight
     radius: MusicTheme.radiusCard
@@ -1581,10 +1610,6 @@ Item {
         font.pixelSize: MusicTheme.body
         font.weight: Font.DemiBold
         elide: Text.ElideRight
-        ToolTip.text: tile.title + (tile.subtitle ? " — " + tile.subtitle : "")
-        ToolTip.visible: tileHit.containsMouse
-        ToolTip.delay: 450
-        ToolTip.timeout: 2200
       }
       FadeText {
         width: parent.width
@@ -1600,7 +1625,9 @@ Item {
       anchors.fill: parent
       hoverEnabled: true
       cursorShape: Qt.PointingHandCursor
-      onClicked: tile.triggered()
+      onEntered: if (tile.tip !== "") tileTipTimer.restart()
+      onExited: { tileTipTimer.stop(); tile.tipShown = false; }
+      onClicked: { tile.tipShown = false; tile.triggered(); }
     }
   }
 

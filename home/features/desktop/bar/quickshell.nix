@@ -127,7 +127,7 @@ let
         readonly property color pill: Qt.rgba(pillBase.r, pillBase.g, pillBase.b, 0.88)
         readonly property color pillHover: Qt.rgba(${rgbFloats v.hover}, 0.94)
         readonly property color pillActive: Qt.rgba(primary.r, primary.g, primary.b, 0.2)
-        readonly property color tooltip: Qt.rgba(pillBase.r, pillBase.g, pillBase.b, 0.92)
+        readonly property color tooltip: Qt.rgba(pillBase.r, pillBase.g, pillBase.b, 1)
 
         // Слоистые поверхности App Center (вместо чёрного #000000).
         readonly property color panel: Qt.rgba(${rgbFloats v.main}, 0.94)
