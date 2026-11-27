@@ -386,13 +386,14 @@ Item {
 
       Row {
         spacing: 4
-        IconButton { icon: "󰒮"; onTriggered: root.mediaAction("previous") }
+        IconButton { icon: "󰒮"; tip: "Предыдущий трек"; onTriggered: root.mediaAction("previous") }
         IconButton {
           icon: root.mediaStatus === "Playing" ? "󰏤" : "󰐊"
+          tip: root.mediaStatus === "Playing" ? "Пауза" : "Воспроизвести"
           primary: true
           onTriggered: root.mediaAction("play-pause")
         }
-        IconButton { icon: "󰒭"; onTriggered: root.mediaAction("next") }
+        IconButton { icon: "󰒭"; tip: "Следующий трек"; onTriggered: root.mediaAction("next") }
       }
     }
 
@@ -475,9 +476,14 @@ Item {
             font.pixelSize: MusicTheme.caption
             font.letterSpacing: 0.8
           }
-          IconButton { icon: "󰋺"; label: "Library"; onTriggered: root.openLibrary() }
-          IconButton { icon: root.showLyrics ? "󰨖" : "󰎻"; lit: root.showLyrics; onTriggered: root.showLyrics = !root.showLyrics }
-          IconButton { icon: "󰅖"; danger: true; onTriggered: root.closeSurfaces() }
+          IconButton { icon: "󰋺"; label: "Library"; tip: "Открыть библиотеку"; onTriggered: root.openLibrary() }
+          IconButton {
+            icon: root.showLyrics ? "󰨖" : "󰎻"
+            lit: root.showLyrics
+            tip: root.showLyrics ? "Скрыть текст песни" : "Показать текст песни"
+            onTriggered: root.showLyrics = !root.showLyrics
+          }
+          IconButton { icon: "󰅖"; danger: true; tip: "Закрыть плеер"; onTriggered: root.closeSurfaces() }
         }
 
         RowLayout {
@@ -618,29 +624,38 @@ Item {
           Layout.alignment: Qt.AlignHCenter
           Layout.fillWidth: true
           spacing: 8
-          IconButton { icon: MusicState.shuffle ? "󰒝" : "󰒞"; lit: MusicState.shuffle; onTriggered: root.mediaAction("shuffle") }
-          IconButton { icon: "󰒮"; onTriggered: root.mediaAction("previous") }
+          IconButton {
+            icon: MusicState.shuffle ? "󰒝" : "󰒞"
+            lit: MusicState.shuffle
+            tip: MusicState.shuffle ? "Выключить перемешивание" : "Перемешать треки"
+            onTriggered: root.mediaAction("shuffle")
+          }
+          IconButton { icon: "󰒮"; tip: "Предыдущий трек"; onTriggered: root.mediaAction("previous") }
           IconButton {
             icon: root.mediaStatus === "Playing" ? "󰏤" : "󰐊"
+            tip: root.mediaStatus === "Playing" ? "Пауза" : "Воспроизвести"
             primary: true
             large: true
             onTriggered: root.mediaAction("play-pause")
           }
-          IconButton { icon: "󰒭"; onTriggered: root.mediaAction("next") }
+          IconButton { icon: "󰒭"; tip: "Следующий трек"; onTriggered: root.mediaAction("next") }
           IconButton {
             icon: MusicState.repeat === 2 ? "󰑘" : "󰑖"
             lit: MusicState.repeat !== 0
+            tip: MusicState.repeat === 2 ? "Повтор очереди" : (MusicState.repeat === 1 ? "Повтор трека" : "Без повтора")
             onTriggered: root.mediaAction("loop")
           }
           IconButton {
             icon: MusicState.favorite ? "󰋑" : "󰋕"
             lit: MusicState.favorite
             favorite: true
+            tip: MusicState.favorite ? "Убрать из избранного" : "Добавить в избранное"
             onTriggered: root.mediaAction("favorite")
           }
           IconButton {
             icon: MusicState.mute ? "󰝱" : "󰝰"
             lit: MusicState.mute
+            tip: MusicState.mute ? "Включить звук" : "Выключить звук"
             onTriggered: root.mediaAction("mute")
           }
         }
@@ -701,8 +716,8 @@ Item {
             RowLayout {
               Layout.fillWidth: true
               SectionLabel { text: "QUEUE"; count: root.queueModel.length; Layout.fillWidth: true }
-              IconButton { icon: "󰒝"; onTriggered: MusicState.shuffleQueue() }
-              IconButton { icon: "󰀼"; onTriggered: MusicState.queueClear() }
+              IconButton { icon: "󰒝"; tip: "Перемешать очередь"; onTriggered: MusicState.shuffleQueue() }
+              IconButton { icon: "󰀼"; tip: "Очистить очередь"; onTriggered: MusicState.queueClear() }
             }
             ListView {
               Layout.fillWidth: true
@@ -1319,11 +1334,53 @@ Item {
     property bool favorite: false
     property bool danger: false
     property bool large: false
+    property string tip: ""
+    property bool tipAbove: false
+    property bool tipShown: false
     signal triggered()
+
+    Timer {
+      id: tipTimer
+      interval: 450
+      onTriggered: button.tipShown = true
+    }
+    onTipChanged: {
+      button.tipShown = false;
+      if (buttonHit.containsMouse) tipTimer.restart();
+    }
+
+    Rectangle {
+      id: tipBox
+      visible: button.tipShown && button.tip !== ""
+      z: 20
+      width: Math.min(300, tipText.implicitWidth + 20)
+      height: 32
+      radius: MusicTheme.radiusControl
+      color: MusicTheme.surfaceAlt
+      border.width: 1
+      border.color: MusicTheme.borderStrong
+      anchors.horizontalCenter: parent.horizontalCenter
+      anchors.top: button.tipAbove ? undefined : parent.bottom
+      anchors.topMargin: button.tipAbove ? 0 : 6
+      anchors.bottom: button.tipAbove ? parent.top : undefined
+      anchors.bottomMargin: button.tipAbove ? 6 : 0
+      Text {
+        id: tipText
+        anchors.centerIn: parent
+        width: tipBox.width - 20
+        text: button.tip
+        color: root.text
+        font.family: root.textFont
+        font.pixelSize: MusicTheme.caption
+        horizontalAlignment: Text.AlignHCenter
+        elide: Text.ElideRight
+      }
+    }
     implicitWidth: button.label !== ""
       ? Math.max(MusicTheme.buttonSize, buttonLabel.implicitWidth + 22)
       : (button.large ? MusicTheme.buttonLarge : MusicTheme.buttonSize)
     implicitHeight: button.large ? MusicTheme.buttonLarge : MusicTheme.buttonSize
+    z: button.tipShown ? 20 : 0
     radius: MusicTheme.radiusControl
     color: button.primary ? root.accent
       : (button.lit ? root.chipHover
@@ -1363,7 +1420,9 @@ Item {
       anchors.margins: -2
       hoverEnabled: true
       cursorShape: Qt.PointingHandCursor
-      onClicked: button.triggered()
+      onEntered: if (button.tip !== "") tipTimer.restart()
+      onExited: { tipTimer.stop(); button.tipShown = false; }
+      onClicked: { button.tipShown = false; button.triggered(); }
     }
   }
 
@@ -1522,6 +1581,8 @@ Item {
         elide: Text.ElideRight
         ToolTip.text: tile.title + (tile.subtitle ? " — " + tile.subtitle : "")
         ToolTip.visible: tileHit.containsMouse
+        ToolTip.delay: 450
+        ToolTip.timeout: 2200
       }
       FadeText {
         width: parent.width
@@ -1703,9 +1764,9 @@ Item {
         font.family: root.textFont
         font.pixelSize: MusicTheme.micro
       }
-      IconButton { icon: "󰒮"; onTriggered: queueRow.moveUp() }
-      IconButton { icon: "󰒭"; onTriggered: queueRow.moveDown() }
-      IconButton { icon: "󰀼"; onTriggered: queueRow.remove() }
+      IconButton { icon: "󰒮"; tip: "Переместить выше"; tipAbove: true; onTriggered: queueRow.moveUp() }
+      IconButton { icon: "󰒭"; tip: "Переместить ниже"; tipAbove: true; onTriggered: queueRow.moveDown() }
+      IconButton { icon: "󰀼"; tip: "Убрать из очереди"; tipAbove: true; onTriggered: queueRow.remove() }
     }
     Menu {
       id: queueMenu
