@@ -1190,10 +1190,10 @@ Item {
               model: (MusicState.albumData && MusicState.albumData.song) || []
               onPlayAll: MusicState.playAlbum()
               onBack: MusicState.back()
-              onPlay: MusicState.playTrack(modelData)
-              onAdd: MusicState.queueAdd([modelData], false)
-              onNext: MusicState.queueAdd([modelData], true)
-              onFavorite: MusicState.setFavorite(modelData.id, !modelData.starred)
+              onPlay: function (modelData) { MusicState.playTrack(modelData) }
+              onAdd: function (modelData) { MusicState.queueAdd([modelData], false) }
+              onNext: function (modelData) { MusicState.queueAdd([modelData], true) }
+              onFavorite: function (modelData) { MusicState.setFavorite(modelData.id, !modelData.starred) }
             }
 
             // Artist detail
@@ -1205,10 +1205,10 @@ Item {
               model: (MusicState.artistData && MusicState.artistData.album) || []
               onPlayAll: {}
               onBack: MusicState.back()
-              onPlay: MusicState.openAlbum(modelData.id)
-              onAdd: {}
-              onNext: {}
-              onFavorite: {}
+              onPlay: function (modelData) { MusicState.openAlbum(modelData.id) }
+              onAdd: function (modelData) {}
+              onNext: function (modelData) {}
+              onFavorite: function (modelData) {}
             }
 
             // Playlist detail
@@ -1220,10 +1220,10 @@ Item {
               model: (MusicState.playlistData && MusicState.playlistData.song) || []
               onPlayAll: MusicState.playPlaylist()
               onBack: MusicState.back()
-              onPlay: MusicState.playTrack(modelData)
-              onAdd: MusicState.queueAdd([modelData], false)
-              onNext: MusicState.queueAdd([modelData], true)
-              onFavorite: MusicState.setFavorite(modelData.id, !modelData.starred)
+              onPlay: function (modelData) { MusicState.playTrack(modelData) }
+              onAdd: function (modelData) { MusicState.queueAdd([modelData], false) }
+              onNext: function (modelData) { MusicState.queueAdd([modelData], true) }
+              onFavorite: function (modelData) { MusicState.setFavorite(modelData.id, !modelData.starred) }
             }
 
             // Genre detail
@@ -1235,10 +1235,10 @@ Item {
               model: MusicState.libraryItems || []
               onPlayAll: MusicState.playQueue(MusicState.libraryItems, 0)
               onBack: MusicState.back()
-              onPlay: MusicState.playTrack(modelData)
-              onAdd: MusicState.queueAdd([modelData], false)
-              onNext: MusicState.queueAdd([modelData], true)
-              onFavorite: MusicState.setFavorite(modelData.id, !modelData.starred)
+              onPlay: function (modelData) { MusicState.playTrack(modelData) }
+              onAdd: function (modelData) { MusicState.queueAdd([modelData], false) }
+              onNext: function (modelData) { MusicState.queueAdd([modelData], true) }
+              onFavorite: function (modelData) { MusicState.setFavorite(modelData.id, !modelData.starred) }
             }
           }
         }
@@ -1356,9 +1356,9 @@ Item {
       width: Math.min(300, tipText.implicitWidth + 20)
       height: 32
       radius: MusicTheme.radiusControl
-      color: MusicTheme.surfaceAlt
+      color: Qt.rgba(MusicTheme.surfaceAlt.r, MusicTheme.surfaceAlt.g, MusicTheme.surfaceAlt.b, 1)
       border.width: 1
-      border.color: MusicTheme.borderStrong
+      border.color: Qt.rgba(MusicTheme.border.r, MusicTheme.border.g, MusicTheme.border.b, 1)
       anchors.horizontalCenter: parent.horizontalCenter
       anchors.top: button.tipAbove ? undefined : parent.bottom
       anchors.topMargin: button.tipAbove ? 0 : 6
@@ -1883,6 +1883,7 @@ Item {
 
   component DetailView: ColumnLayout {
     id: detail
+    anchors.fill: parent
     property string heading: ""
     property string subheading: ""
     property string cover: ""
