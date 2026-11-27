@@ -667,6 +667,8 @@ Item {
           Text { text: "VOL"; color: root.muted; font.family: root.textFont; font.pixelSize: MusicTheme.caption }
           Slider {
             Layout.fillWidth: true
+            Layout.fillHeight: true
+            Layout.preferredHeight: 26
             from: 0
             to: 1
             value: MusicState.volume
