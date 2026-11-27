@@ -49,6 +49,18 @@ in
     runtimeInputs = with pkgs; [ rofi ffmpeg_7 libnotify fd ];
   };
 
+  screenshot-save = pkgs.writeShellApplication {
+    name = "screenshot-save";
+    text = readScript "screenshot-save";
+    runtimeInputs = with pkgs; [ flameshot coreutils ];
+  };
+
+  camera-mirror = pkgs.writeShellApplication {
+    name = "camera-mirror";
+    text = readScript "media/camera-mirror.sh";
+    runtimeInputs = with pkgs; [ mpv libnotify coreutils ];
+  };
+
   # ── Архивы ──
   extract = pkgs.writeShellApplication {
     name = "extract";

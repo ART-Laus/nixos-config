@@ -1,14 +1,15 @@
 import QtQuick
 import qs.config
+import qs.music
 
 Item {
   id: root
   property string textValue: ""
-  property color textColor: Theme.text
-  property int fontSize: Theme.fontSize
+  property color textColor: MusicTheme.text
+  property int fontSize: MusicTheme.body
   property bool animate: true
   implicitWidth: 300
-  implicitHeight: 20
+  implicitHeight: 24
   property int travel: Math.max(0, label.implicitWidth - root.width + 12)
   clip: true
 

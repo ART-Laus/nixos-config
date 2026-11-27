@@ -1,6 +1,20 @@
 # home/features/media/default.nix — медиа, музыка, OBS, дизайн, продуктивность
 { config, pkgs, ... }:
 {
+  xdg.configFile."flameshot/flameshot.ini".text = ''
+    [General]
+    savePath=${config.home.homeDirectory}/Documents/Лайтшот/Скрины
+    savePathFixed=false
+    disabledTrayIcon=false
+    showStartupLaunchMessage=false
+    # Wayland (Hyprland): DBus-бэкенд зависает, используем grim-адаптер
+    useGrimAdapter=true
+    disabledGrimWarning=true
+    # Явно задаём расширение: иначе flameshot берёт суффикс из пути
+    # (папка вида 25.11.2026 давала пустой файл .2026)
+    saveAsFileExtension=.png
+  '';
+
   home.packages = with pkgs; [
     # ── Видео / аудио / просмотр (было в system/packages.legacy) ──
     vlc
@@ -34,10 +48,9 @@
     qalculate-gtk
 
     # ── Скриншоты / запись ──
-    ksnip
+    flameshot
     grim
     slurp
-    swappy
     screenkey
 
     # ── Торренты ──

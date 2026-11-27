@@ -37,6 +37,7 @@ docs/devlog.md
 # Temp
 /tmp/
 *.recovered
+/home/features/desktop/orpheus/data/
 
 # Wallpapers (binary images, not in git)
 /wallpapers/

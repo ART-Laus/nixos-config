@@ -2,6 +2,7 @@ import QtQuick
 import qs.components
 import qs.config
 import qs.scripthub
+import qs.notifications
 
 Pill {
     id: root
@@ -13,7 +14,7 @@ Pill {
 
     Text {
         anchors.verticalCenter: parent.verticalCenter
-        color: root.active ? Theme.primary : Theme.text
+        color: root.active ? NotificationTokens.mint : Theme.text
         font.family: Theme.fontFamily
         font.pixelSize: Theme.fontSize
         text: "󰘲"
@@ -21,7 +22,7 @@ Pill {
 
     Text {
         anchors.verticalCenter: parent.verticalCenter
-        color: root.active ? Theme.primary : Theme.text
+        color: root.active ? NotificationTokens.text : Theme.text
         font.family: Theme.fontFamily
         font.pixelSize: Theme.fontSize - 1
         text: "Scripts"
@@ -35,7 +36,7 @@ Pill {
         width: 6
         height: 6
         radius: 3
-        color: Theme.secondary
+        color: NotificationTokens.mint
         visible: root.activeTasks > 0
     }
 

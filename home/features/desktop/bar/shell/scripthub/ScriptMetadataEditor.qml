@@ -1,6 +1,7 @@
 import QtQuick
 import qs.config
 import qs.scripthub
+import qs.notifications
 
 Rectangle {
     id: root
@@ -13,10 +14,10 @@ Rectangle {
 
     readonly property var argumentTypes: ["text", "number", "boolean", "select", "multiselect", "file", "files", "directory", "password"]
 
-    color: Qt.rgba(0, 0, 0, 0.34)
-    radius: 10
+    color: NotificationTokens.alpha(NotificationTokens.canvas, 0.94)
+    radius: NotificationTokens.radiusPanel
     border.width: 1
-    border.color: Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.25)
+    border.color: NotificationTokens.alpha(NotificationTokens.mint, 0.32)
 
     function normalizeId(value) {
         return String(value || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
@@ -124,17 +125,29 @@ Rectangle {
             width: parent.width
             spacing: 7
 
-            Text {
-                color: Theme.primary
-                font.family: Theme.fontFamily
-                font.pixelSize: Theme.fontSize - 2
-                font.bold: true
-                text: root.isNew ? "ADD SCRIPT" : "EDIT METADATA"
+            Row {
+                width: parent.width
+                spacing: 7
+
+                Rectangle {
+                    width: 3
+                    height: parent.implicitHeight
+                    radius: 2
+                    color: NotificationTokens.mint
+                }
+
+                Text {
+                    color: NotificationTokens.text
+                    font.family: Theme.fontFamily
+                    font.pixelSize: Theme.fontSize - 1
+                    font.bold: true
+                    text: root.isNew ? "ADD SCRIPT" : "EDIT METADATA"
+                }
             }
 
             Text {
                 width: parent.width
-                color: Theme.textDim
+                color: NotificationTokens.text2
                 font.family: Theme.fontFamily
                 font.pixelSize: Theme.fontSize - 5
                 wrapMode: Text.Wrap
@@ -204,9 +217,10 @@ Rectangle {
             }
 
             Text {
-                color: Theme.textDim
+                color: NotificationTokens.lavenderSoft
                 font.family: Theme.fontFamily
-                font.pixelSize: Theme.fontSize - 4
+                font.pixelSize: Theme.fontSize - 5
+                font.bold: true
                 text: "EXECUTION"
             }
 
@@ -264,9 +278,10 @@ Rectangle {
 
                 Text {
                     anchors.verticalCenter: parent.verticalCenter
-                    color: Theme.textDim
+                    color: NotificationTokens.lavenderSoft
                     font.family: Theme.fontFamily
-                    font.pixelSize: Theme.fontSize - 3
+                    font.pixelSize: Theme.fontSize - 5
+                    font.bold: true
                     text: "ARGUMENTS"
                 }
 
@@ -287,8 +302,10 @@ Rectangle {
                     required property int index
                     width: parent.width
                     implicitHeight: argColumn.implicitHeight + 10
-                    radius: 8
-                    color: Qt.rgba(0, 0, 0, 0.18)
+                    radius: NotificationTokens.radiusControl
+                    color: NotificationTokens.alpha(NotificationTokens.canvas, 0.28)
+                    border.width: 1
+                    border.color: NotificationTokens.divider
 
                     Column {
                         id: argColumn

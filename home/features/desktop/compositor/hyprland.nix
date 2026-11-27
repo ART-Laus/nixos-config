@@ -1,8 +1,14 @@
 # home/features/desktop/compositor/hyprland.nix — Hyprland (Home Manager)
-{ theme, ... }:
+{ theme, pkgs, ... }:
 let
   toRgba = hex: "rgba(${builtins.substring 1 2 hex}${builtins.substring 3 2 hex}${builtins.substring 5 2 hex}ff)";
   c = theme.colors;
+  hyprexpo = pkgs.callPackage "${pkgs.fetchFromGitHub {
+    owner = "sandwichfarm";
+    repo = "hyprexpo";
+    rev = "v0.55.4";
+    hash = "sha256-sERoTu9NcGD0RA3jAdHc4GOPkRbgqMrgDT8f7+Jv9fc=";
+  }}/default.nix" { };
 in
 {
   wayland.windowManager.hyprland = {
@@ -15,6 +21,8 @@ in
     };
 
     extraConfig = ''
+      plugin = ${hyprexpo}/lib/libhyprexpo.so
+
       # -----------------------------------------------------
       # Monitors
       # -----------------------------------------------------
@@ -87,10 +95,25 @@ in
           disable_splash_rendering = true
       }
 
-      # Полупрозрачность Dolphin (blur включён выше в decoration)
-      windowrule = opacity 0.65 0.5, match:class ^(dolphin|org\.kde\.dolphin)$
+      # Dolphin: без наложения прозрачности Hyprland — проверяем, уберёт ли серый текст
+      windowrule = opacity 1 1, match:class ^(dolphin|org\.kde\.dolphin)$
+      # Firefox - прозрачность как в системе (active 0.9 / inactive 0.8)
+      windowrule = opacity 0.9 0.8, match:class ^(firefox)$
 
       $mainMod = SUPER
+
+      plugin {
+          hyprexpo {
+              columns = 3
+              gaps_in = 5
+              gaps_out = 0
+              bg_col = rgb(111111)
+              workspace_method = center current
+              gesture_distance = 200
+              cancel_key = escape
+          }
+      }
+      bind = $mainMod ALT, Shift_L, hyprexpo:expo, toggle
       bind = SHIFT, Tab, exec, hyprctl switchxkblayout current next
       bind = $mainMod, Space, exec, quickshell ipc -c bar call appCenter toggle
       bind = $mainMod, Return, exec, alacritty
@@ -112,8 +135,8 @@ in
       bind = $mainMod, code:57, exec, io.github.alainm23.planify
       bind = $mainMod, code:53, exec, qalculate-gtk
       bind = $mainMod, code:29, exec, alacritty -e yazi
-      bind = , Print, execr, grim -g "$(slurp)" - | swappy -f -
-      bind = SHIFT, Print, execr, grim - | swappy -f -
+      bind = , Print, exec, screenshot-save gui
+      bind = SHIFT, Print, exec, screenshot-save full
       bind = $mainMod, code:43, movefocus, l
       bind = $mainMod, code:44, movefocus, d
       bind = $mainMod, code:45, movefocus, u

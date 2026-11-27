@@ -1,6 +1,7 @@
 import QtQuick
 import qs.config
 import qs.scripthub
+import qs.notifications
 
 Item {
     id: root
@@ -12,10 +13,10 @@ Item {
     implicitHeight: column.implicitHeight
 
     function colorFor(status) {
-        if (status === "success" || status === "detached") return Theme.primary;
-        if (status === "failed" || status === "timeout") return Theme.secondary;
-        if (status === "running" || status === "starting" || status === "stopping") return Theme.secondary;
-        return Theme.textDim;
+        if (status === "success" || status === "detached") return NotificationTokens.emerald;
+        if (status === "failed" || status === "timeout") return NotificationTokens.danger;
+        if (status === "running" || status === "starting" || status === "stopping") return NotificationTokens.mint;
+        return NotificationTokens.muted;
     }
 
     function tail(text) {
@@ -26,16 +27,22 @@ Item {
     Column {
         id: column
         width: parent.width
-        spacing: 6
+        spacing: 7
+
+        Rectangle {
+            width: parent.width
+            height: 1
+            color: NotificationTokens.divider
+        }
 
         Row {
             width: parent.width
 
             Text {
                 anchors.verticalCenter: parent.verticalCenter
-                color: Theme.primary
+                color: NotificationTokens.text
                 font.family: Theme.fontFamily
-                font.pixelSize: Theme.fontSize - 3
+                font.pixelSize: Theme.fontSize - 5
                 font.bold: true
                 text: "RUNNING TASKS (" + root.tasks.length + ")"
             }
@@ -52,7 +59,7 @@ Item {
 
         Text {
             width: parent.width
-            color: Theme.textDim
+            color: NotificationTokens.muted
             font.family: Theme.fontFamily
             font.pixelSize: Theme.fontSize - 5
             text: "No active tasks"
@@ -66,15 +73,28 @@ Item {
                 required property var modelData
                 width: parent.width
                 implicitHeight: taskColumn.implicitHeight + 12
-                radius: 8
-                color: Qt.rgba(0, 0, 0, 0.18)
+                radius: NotificationTokens.radiusControl
+                color: NotificationTokens.alpha(NotificationTokens.canvas, 0.26)
                 border.width: 1
-                border.color: Qt.rgba(Theme.text.r, Theme.text.g, Theme.text.b, 0.07)
+                border.color: NotificationTokens.divider
+
+                Rectangle {
+                    anchors.left: parent.left
+                    anchors.leftMargin: 1
+                    anchors.top: parent.top
+                    anchors.topMargin: 8
+                    anchors.bottom: parent.bottom
+                    anchors.bottomMargin: 8
+                    width: 2
+                    radius: 1
+                    color: root.colorFor(modelData.status)
+                }
 
                 Column {
                     id: taskColumn
                     anchors.fill: parent
-                    anchors.margins: 6
+                    anchors.margins: 7
+                    anchors.leftMargin: 11
                     spacing: 3
 
                     Row {
@@ -101,7 +121,7 @@ Item {
 
                     Text {
                         width: parent.width
-                        color: Theme.textDim
+                        color: NotificationTokens.text2
                         font.family: Theme.fontFamily
                         font.pixelSize: Theme.fontSize - 6
                         elide: Text.ElideRight
@@ -111,7 +131,7 @@ Item {
                     Text {
                         width: parent.width
                         visible: root.expanded && (modelData.status === "failed" || modelData.status === "timeout" || modelData.stdoutText.length > 0 || modelData.stderrText.length > 0)
-                        color: modelData.stderrText.length > 0 ? Theme.secondary : Theme.textDim
+                        color: modelData.stderrText.length > 0 ? NotificationTokens.danger : NotificationTokens.text2
                         font.family: Theme.fontFamily
                         font.pixelSize: Theme.fontSize - 6
                         wrapMode: Text.WrapAnywhere

@@ -9,7 +9,7 @@ Item {
   property string coverId: ""
   signal clicked()
 
-  height: 54
+  height: MusicTheme.rowHeight
 
   onCoverIdChanged: {
     if (root.coverId) MusicState.artworkCache.request(root.coverId, 80);
@@ -17,7 +17,7 @@ Item {
 
   Rectangle {
     anchors.fill: parent
-    radius: 9
+    radius: MusicTheme.radiusControl
     color: area.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.10) : "transparent"
   }
 
@@ -25,9 +25,9 @@ Item {
     id: art
     anchors.left: parent.left
     anchors.verticalCenter: parent.verticalCenter
-    width: 40
-    height: 40
-    radiusValue: 7
+    width: 44
+    height: 44
+    radiusValue: MusicTheme.radiusThumb
     imageSource: MusicState.artworkCache.path(root.coverId, 80)
     label: root.title
   }
@@ -46,7 +46,7 @@ Item {
       text: root.title
       color: Theme.text
       font.family: Theme.fontFamily
-      font.pixelSize: Theme.fontSize - 1
+      font.pixelSize: MusicTheme.body
     }
 
     Text {
@@ -56,7 +56,7 @@ Item {
       color: Theme.textDim
       opacity: 0.72
       font.family: Theme.fontFamily
-      font.pixelSize: 10
+      font.pixelSize: MusicTheme.caption
     }
   }
 
@@ -69,7 +69,7 @@ Item {
     color: Theme.primary
     opacity: area.containsMouse ? 0.9 : 0.35
     font.family: Theme.fontFamily
-    font.pixelSize: 18
+    font.pixelSize: MusicTheme.icon
   }
 
   MouseArea {

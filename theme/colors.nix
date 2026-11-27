@@ -73,4 +73,25 @@
   errorTransparentHigh = "rgba(255, 85, 102, 0.8)";
   successTransparent = "rgba(102, 255, 153, 0.6)";
   successTransparentHigh = "rgba(102, 255, 153, 0.7)";
+
+  # Verdant / Living Terminal — канонические токены для Qt/KDE и Quickshell.
+  # Единый источник: home/gtk-qt.nix и Dolphin-тема потребивают отсюда.
+  verdant = {
+    deep = "#07110D";       # внешний canvas, тени текста
+    forest = "#001a0d";     # Deep Forest — фон встроенного терминала
+    main = "#0C1B14";       # основная поверхность / view
+    elevated = "#12251B";   # панели, заголовки, кнопки
+    hover = "#193325";      # hover-поверхность
+    border = "#1D3A2A";     # тонкие границы и разделители
+    selection = "#224334";  # мягкая заливка выделения
+    text = "#E2F5E9";
+    text2 = "#A0B9A9";
+    muted = "#728F7E";      # скорректировано с #698675 для контраста 5.0:1
+    mint = "#66FF99";       # только фокус/активные состояния
+    emerald = "#36C98B";    # выделение и success
+    sage = "#A5E6B8";       # папки и places
+    lavender = "#C4A0FF";   # вторичный акцент, visited
+    warning = "#F2C15B";
+    danger = "#FF7A90";
+  };
 }

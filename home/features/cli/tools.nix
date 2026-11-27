@@ -1,4 +1,4 @@
-# home/features/cli/tools.nix — CLI утилиты (eza, bat, ripgrep, fd, fzf, btop...)
+# home/features/cli/tools.nix — CLI утилиты (lsd, bat, ripgrep, fd, fzf, zoxide, btop...)
 { config, pkgs, lib, flakePkgs, ... }:
 let
   c = config.lib.theme.colors or { };
@@ -13,14 +13,15 @@ in
     dockerCompat
     dockerComposeCompat
   ] ++ (with pkgs; [
-    # Modern replacements (было: exa → eza)
-    eza
+    # Modern replacements
+    lsd
     bat
     ripgrep
     fd
     fzf
     zoxide
     btop
+    dysk
     jq
     yq
     ncdu
@@ -138,12 +139,35 @@ in
     zoxide = {
       enable = true;
       enableZshIntegration = true;
+      # Replace cd with zoxide's smarter jump; falls back to normal cd for real paths.
+      options = [ "--cmd" "cd" ];
     };
     fzf = {
       enable = true;
       enableZshIntegration = true;
+      defaultCommand = "fd --hidden --strip-cwd-prefix --exclude .git";
+      fileWidgetCommand = "fd --hidden --strip-cwd-prefix --exclude .git";
+      changeDirWidgetCommand = "fd --type=d --hidden --strip-cwd-prefix --exclude .git";
+      defaultOptions = [
+        "--height=40%"
+        "--layout=reverse"
+        "--border"
+        "--info=inline"
+        "--cycle"
+      ];
+      fileWidgetOptions = [
+        "--preview 'bat --style=numbers --color=always --line-range=:200 {}'"
+      ];
+      changeDirWidgetOptions = [
+        "--preview 'lsd --tree --depth=2 --color=always {} | head -200'"
+      ];
     };
-    bat.enable = true;
+    bat = {
+      enable = true;
+      config = {
+        pager = "less -FR";
+      };
+    };
     direnv = {
       enable = true;
       enableZshIntegration = true;

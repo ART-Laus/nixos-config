@@ -82,7 +82,7 @@ Rectangle {
             Text {
                 anchors.centerIn: parent
                 text: "Confirm"
-                color: "#0A0A0F"
+                color: Theme.inverse
                 font.pixelSize: Theme.fontSize - 1
                 font.bold: true
                 font.family: Theme.fontFamily

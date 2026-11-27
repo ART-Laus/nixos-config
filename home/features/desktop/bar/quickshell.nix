@@ -1,6 +1,27 @@
 { config, lib, pkgs, theme, ... }:
 let
   c = theme.colors;
+  v = theme.colors.verdant;
+
+  # hex → "r, g, b" в диапазоне 0..1 для Qt.rgba() в QML.
+  # builtins в этой версии Nix нет fromHex/stringToCharacters — считаем вручную.
+  rgbFloats = hex:
+    let
+      charIndex = needle: haystack:
+        let
+          len = builtins.stringLength haystack;
+          go = i:
+            if i >= len then null
+            else if builtins.substring i 1 haystack == needle then i
+            else go (i + 1);
+        in go 0;
+      parts = builtins.split "" (builtins.substring 1 6 hex);
+      digitVal = c:
+        let i = charIndex c "0123456789abcdefABCDEF";
+        in if i == null then 0 else if i < 10 then i else i - 6;
+      byte = i: digitVal (builtins.elemAt parts (4 * i + 2)) * 16
+        + digitVal (builtins.elemAt parts (4 * i + 4));
+    in "${toString (byte 0 / 255.0)}, ${toString (byte 1 / 255.0)}, ${toString (byte 2 / 255.0)}";
 
   appCenterPython = pkgs.python3.withPackages (p: [ p.psutil ]);
   appCenterBackend = pkgs.writeShellScriptBin "appcenter-process-monitor" ''
@@ -15,6 +36,7 @@ let
     "rofi-image"
     "rofi-video"
     "rofi-audio"
+    "camera-mirror"
     "extract"
     "archive"
     "fileinfo"
@@ -35,8 +57,6 @@ let
     "new-note"
     "docker"
     "docker-compose"
-    "carpheus-api"
-    "carpheus-mpv-ipc"
   ];
 
   scriptHubDiscover = pkgs.writeShellApplication {
@@ -58,12 +78,6 @@ let
       {
         path = "${./scripts}";
         label = "Bar scripts";
-        recursive = false;
-        maxDepth = 0;
-      }
-      {
-        path = "${./../carpheus/scripts}";
-        label = "Carpheus scripts";
         recursive = false;
         maxDepth = 0;
       }
@@ -91,29 +105,38 @@ let
   });
 
   scriptHubDataRoot = "${config.xdg.dataHome}/quickshell/script-hub";
+  notificationDataRoot = "${config.xdg.dataHome}/quickshell/notifications";
 
   themeQml = pkgs.writeText "Theme.qml" ''
     pragma Singleton
     import QtQuick
 
     QtObject {
-        readonly property color primary: "${c.primary}"
-        readonly property color primaryDim: "${c.primaryDim}"
-        readonly property color secondary: "${c.secondary}"
-        readonly property color error: "${c.error}"
-        readonly property color warning: "${c.warning}"
-        readonly property color info: "${c.info}"
+        // Verdant / Living Terminal — общие токены для бара и App Center.
+        readonly property color primary: "${v.mint}"
+        readonly property color primaryDim: "${v.emerald}"
+        readonly property color secondary: "${v.lavender}"
+        readonly property color error: "${v.danger}"
+        readonly property color warning: "${v.warning}"
+        readonly property color info: "${v.sage}"
+        readonly property color inverse: "${v.deep}"
 
-        readonly property color section: "${c.barSection}"
+        readonly property color section: "${v.elevated}"
 
-        readonly property color pillBase: "${c.barPill}"
-        readonly property color pill: Qt.rgba(pillBase.r, pillBase.g, pillBase.b, ${toString c.barPillOpacity})
-        readonly property color pillHover: Qt.rgba(pillBase.r, pillBase.g, pillBase.b, ${toString c.barPillHoverOpacity})
-        readonly property color pillActive: Qt.rgba(primary.r, primary.g, primary.b, ${toString c.barPillActiveOpacity})
-        readonly property color tooltip: Qt.rgba(pillBase.r, pillBase.g, pillBase.b, ${toString c.barTooltipOpacity})
+        readonly property color pillBase: "${v.elevated}"
+        readonly property color pill: Qt.rgba(pillBase.r, pillBase.g, pillBase.b, 0.88)
+        readonly property color pillHover: Qt.rgba(${rgbFloats v.hover}, 0.94)
+        readonly property color pillActive: Qt.rgba(primary.r, primary.g, primary.b, 0.2)
+        readonly property color tooltip: Qt.rgba(pillBase.r, pillBase.g, pillBase.b, 0.92)
 
-        readonly property color text: "${c.primary}"
-        readonly property color textDim: Qt.rgba(primary.r, primary.g, primary.b, 0.9)
+        // Слоистые поверхности App Center (вместо чёрного #000000).
+        readonly property color panel: Qt.rgba(${rgbFloats v.main}, 0.94)
+        readonly property color panelAlt: Qt.rgba(${rgbFloats v.elevated}, 0.94)
+        readonly property color border: Qt.rgba(${rgbFloats v.border}, 0.85)
+
+        readonly property color text: "${v.text}"
+        readonly property color textDim: "${v.text2}"
+        readonly property color muted: "${v.muted}"
 
         readonly property string fontFamily: "${theme.fonts.ui.name}"
         readonly property int fontSize: ${toString (theme.fonts.ui.size + 1)}
@@ -130,6 +153,12 @@ let
         readonly property string scriptHubHistoryPath: scriptHubDataRoot + "/history.json"
         readonly property string scriptHubMkdir: "${pkgs.coreutils}/bin/mkdir"
         readonly property string scriptHubCp: "${pkgs.coreutils}/bin/cp"
+
+        readonly property string notificationDataRoot: "${notificationDataRoot}"
+        readonly property string notificationHistoryPath: notificationDataRoot + "/history.json"
+        readonly property string notificationStatePath: notificationDataRoot + "/state.json"
+        readonly property string notificationRulesPath: notificationDataRoot + "/rules.json"
+        readonly property string notificationMkdir: "${pkgs.coreutils}/bin/mkdir"
     }
   '';
 
@@ -171,5 +200,17 @@ lib.mkIf config.artlaus.desktop.bar.enable {
     [ -f "${scriptHubDataRoot}/state.json" ] || printf '%s\n' '{"favorites":[],"recent":[],"usage":{}}' > "${scriptHubDataRoot}/state.json"
     [ -f "${scriptHubDataRoot}/history.json" ] || printf '%s\n' '[]' > "${scriptHubDataRoot}/history.json"
     [ -f "${config.xdg.configHome}/quickshell/script-hub/config.local.json" ] || printf '%s\n' '{}' > "${config.xdg.configHome}/quickshell/script-hub/config.local.json"
+  '';
+
+  home.activation.notificationData = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    mkdir -p "${notificationDataRoot}"
+    [ -f "${notificationDataRoot}/history.json" ] || printf '%s\n' '{"version":1,"entries":[]}' > "${notificationDataRoot}/history.json"
+    [ -f "${notificationDataRoot}/state.json" ] || printf '%s\n' '{"version":1,"expandedGroups":{},"view":{"category":"all","status":"inbox"}}' > "${notificationDataRoot}/state.json"
+    [ -f "${notificationDataRoot}/rules.json" ] || printf '%s\n' '{"version":1,"overrides":{}}' > "${notificationDataRoot}/rules.json"
+  '';
+
+  # QML is loaded once at startup, so a switch leaves the running bar on old code.
+  home.activation.restartQuickshell = lib.hm.dag.entryAfter [ "linkGeneration" "installPackages" ] ''
+    ${pkgs.systemd}/bin/systemctl --user try-restart quickshell.service || true
   '';
 }

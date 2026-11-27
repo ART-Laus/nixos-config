@@ -49,8 +49,6 @@ with pkgs.vimPlugins;
       vim.api.nvim_set_hl(0, "NormalNC", { fg = "${c.primary}", bg = "none" })
       vim.api.nvim_set_hl(0, "TabLineFill", { bg = "none" })
       vim.api.nvim_set_hl(0, "BufferLineFill", { bg = "none" })
-      vim.api.nvim_set_hl(0, "StatusLine", { fg = "${c.primary}", bg = "none" })
-      vim.api.nvim_set_hl(0, "StatusLineNC", { fg = "${c.comment}", bg = "none" })
     '';
   }
 ]

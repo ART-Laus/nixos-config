@@ -6,11 +6,12 @@
     ./bar/default.nix
     ./carpheus/default.nix
     ./launcher/rofi.nix
-    ./notifications/dunst.nix
+    # Quickshell owns org.freedesktop.Notifications; dunst must not run too.
     ./udiskie.nix
     ./browsers.nix
     ./firefox/default.nix
     ./apps.nix
+    ./dolphin.nix
     ./orpheus/default.nix
   ];
 }

@@ -6,6 +6,7 @@ import qs.appcenter
 import qs.components
 import qs.config
 import qs.music
+import qs.notifications
 import qs.popups
 import qs.scripthub
 import qs.widgets
@@ -49,6 +50,7 @@ ShellRoot {
             Workspaces {}
             Battery {}
             ScriptHubPill { id: scriptHubPill }
+            NotificationPill { id: notificationPill }
         }
 
         Row {
@@ -66,6 +68,7 @@ ShellRoot {
             spacing: Settings.sectionSpacing
 
             Tray {}
+            Camera {}
             Brightness { id: brightnessPill }
             Audio { id: audioPill }
             Bluetooth { id: bluetoothPill }
@@ -238,6 +241,30 @@ ShellRoot {
             ScriptHubPopup {
                 id: scriptHubContent
                 anchors.fill: parent
+            }
+        }
+
+        PopupWindow {
+            id: notificationPopup
+            implicitWidth: 520
+            implicitHeight: 620
+            color: "transparent"
+            grabFocus: true
+            surfaceFormat.opaque: false
+            visible: UIState.activePopup === "notificationCenter"
+            anchor.item: notificationPill
+            anchor.edges: Edges.Top | Edges.Left
+            anchor.gravity: Edges.Bottom | Edges.Left
+            anchor.adjustment: PopupAdjustment.SlideX | PopupAdjustment.FlipY
+            anchor.margins.top: 8
+            mask: Region { item: notificationContent; radius: Settings.popupRadius }
+            BackgroundEffect.blurRegion: Region { item: notificationContent; radius: Settings.popupRadius }
+            onClosed: UIState.close("notificationCenter")
+
+            NotificationCenterPopup {
+                id: notificationContent
+                anchors.fill: parent
+                onRequestClose: UIState.close("notificationCenter")
             }
         }
 

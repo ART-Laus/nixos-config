@@ -1,10 +1,11 @@
 import QtQuick
 import qs.config
+import qs.music
 
 Item {
   id: root
   property string label: ""
-  height: 22
+  height: 26
 
   Text {
     id: labelText
@@ -12,11 +13,11 @@ Item {
     anchors.leftMargin: 2
     anchors.verticalCenter: parent.verticalCenter
     text: root.label.toUpperCase()
-    color: Theme.primary
-    opacity: 0.6
+    color: MusicTheme.accent
+    opacity: 1
     font.family: Theme.fontFamily
-    font.pixelSize: 10
-    font.letterSpacing: 1.2
+    font.pixelSize: MusicTheme.section
+    font.letterSpacing: 0.6
   }
 
   Rectangle {

@@ -26,7 +26,7 @@ Pill {
     implicitWidth: 240
     textValue: root.label
     textColor: Theme.text
-    fontSize: Theme.fontSize - 2
+    fontSize: MusicTheme.body
     animate: true
   }
 }

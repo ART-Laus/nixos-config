@@ -4,6 +4,7 @@ Cpu 1.0 Cpu.qml
 NowPlaying 1.0 NowPlaying.qml
 Battery 1.0 Battery.qml
 Tray 1.0 Tray.qml
+Camera 1.0 Camera.qml
 Brightness 1.0 Brightness.qml
 Audio 1.0 Audio.qml
 Bluetooth 1.0 Bluetooth.qml

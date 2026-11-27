@@ -1,5 +1,7 @@
 import QtQuick
 import qs.config
+import qs.scripthub
+import qs.notifications
 
 Item {
     id: root
@@ -23,7 +25,7 @@ Item {
 
         Text {
             id: labelText
-            color: Theme.textDim
+            color: root.required ? NotificationTokens.text : NotificationTokens.text2
             font.family: Theme.fontFamily
             font.pixelSize: Theme.fontSize - 4
             text: root.label + (root.required ? " *" : "")
@@ -41,7 +43,7 @@ Item {
 
         Text {
             width: parent.width
-            color: Theme.textDim
+            color: NotificationTokens.muted
             font.family: Theme.fontFamily
             font.pixelSize: Theme.fontSize - 5
             wrapMode: Text.Wrap

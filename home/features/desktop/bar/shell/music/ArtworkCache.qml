@@ -1,12 +1,14 @@
 import QtQuick
 
+// Small per-surface cache. Every download is a daemon IPC call to getCoverArt;
+// the daemon owns the real cache on disk and never fetches all images at once.
 QtObject {
   id: root
   property var client: null
   property var paths: ({})
   property var pending: ({})
 
-  function key(id, size) { return String(id || "") + "@" + size; }
+  function key(id, size) { return String(id || "") + "@" + Number(size || 0); }
 
   function path(id, size) {
     if (!id) return "";
@@ -17,8 +19,24 @@ QtObject {
     if (!id || !root.client) return;
     var k = root.key(id, size);
     if (root.paths[k] || root.pending[k]) return;
-    root.pending[k] = Date.now();
-    root.client.artwork(id, size);
+    var waiting = Object.assign({}, root.pending);
+    waiting[k] = Date.now();
+    root.pending = waiting;
+    root.client.getCoverArt(String(id), Number(size) || 300, function (result) {
+      var localPath = result && result.path ? String(result.path) : "";
+      if (localPath) {
+        var next = Object.assign({}, root.paths);
+        next[k] = "file://" + localPath;
+        root.paths = next;
+      }
+      var done = Object.assign({}, root.pending);
+      delete done[k];
+      root.pending = done;
+    }, function () {
+      var failed = Object.assign({}, root.pending);
+      delete failed[k];
+      root.pending = failed;
+    });
   }
 
   property Timer staleTimer: Timer {
@@ -35,22 +53,6 @@ QtObject {
         }
       }
       if (changed) root.pending = next;
-    }
-  }
-
-  property Connections clientConnection: Connections {
-    target: root.client
-    function onArtworkFinished(id, size, path) {
-      if (!id) return;
-      var k = root.key(id, size);
-      if (path) {
-        var next = Object.assign({}, root.paths);
-        next[k] = "file://" + path;
-        root.paths = next;
-      }
-      var waiting = Object.assign({}, root.pending);
-      delete waiting[k];
-      root.pending = waiting;
     }
   }
 }

@@ -33,14 +33,20 @@
       # Theme — единственный источник (утверждено: theme/ в корне)
       theme = import ./theme;
 
+      opencodeOverlay = final: prev: {
+        opencode = final.callPackage ./pkgs/opencode-2.4.1.nix { };
+      };
+
       # pkgs с allowUnfree + overlays (если нужны)
       pkgs = import nixpkgs {
         inherit system;
         config.allowUnfree = true;
+        overlays = [ opencodeOverlay ];
       };
       pkgs-unstable = import nixpkgs-unstable {
         inherit system;
         config.allowUnfree = true;
+        overlays = [ opencodeOverlay ];
       };
 
       # Внешние flake-пакеты
@@ -66,6 +72,7 @@
       nixosConfigurations = {
         "newbox" = nixpkgs.lib.nixosSystem {
           inherit system;
+          inherit pkgs;
           specialArgs = specialArgs;
           modules = [
             ./hosts/newbox/default.nix

@@ -8,6 +8,8 @@ in
   programs.tmux = {
     enable = true;
 
+    keyMode = "vi";
+
     # Определяем плагины tmux
     plugins = with pkgs.tmuxPlugins; [
       sensible
@@ -90,6 +92,11 @@ bind-key -r Left  resize-pane -L 5
 bind-key -r Right resize-pane -R 5
 bind-key -r Down  resize-pane -D 5
 bind-key -r Up    resize-pane -U 5
+
+bind-key -T prefix Escape copy-mode
+
+bind-key -T copy-mode-vi v send-keys -X begin-selection
+bind-key -T copy-mode-vi C-v send-keys -X rectangle-toggle
     '';
   };
 }

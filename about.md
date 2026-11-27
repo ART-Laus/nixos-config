@@ -141,7 +141,10 @@ flake.nix
 ## 2.7 Launcher / Notifications
 
 - **Launcher:** rofi. Установлен, есть keybind Super+Space, `rofi -show drun`. Конфига/темы **нет** — дефолтный внешний вид (белый, без вашей темы). `wl-clipboard`, `cliphist` (Super+V) — хорошо.
-- **Notifications:** dunst. **Никакой конфигурации/темы нет** — дефолтные белые всплывашки. Жёлтый.
+- **Notifications:** собственный Notification Center в Quickshell. `NotificationServer` владеет `org.freedesktop.Notifications`, dunst отключён; слева компактная пилюля с unread-count, рядом панель с Personal/System и полным текстом карточек. История хранится в `~/.local/share/quickshell/notifications/{history,state,rules}.json`, статусы `unread/read/archived/dismissed` раздельны, автоматического удаления нет. Зелёный.
+  - Модуль: `home/features/desktop/bar/shell/notifications/` (`NotificationStore.qml`, `NotificationModel.js`, `NotificationText.js`, `NotificationCard.qml`, `NotificationGroup.qml`, `NotificationCenterPopup.qml`, `NotificationPill.qml`).
+  - IPC: `quickshell ipc -c bar call notificationCenter <count|list|all|groups|open|close|toggle|setView|markRead|archive|dismiss|remove|archiveInbox|clearHistory|toggleGroup|setCategory> [args]`.
+  - Запись атомарная; нечитаемый `history.json` не перезаписывается до явного `clearHistory`.
 
 ## 2.8 GTK / Qt
 
@@ -270,7 +273,7 @@ flake.nix
 | Neovim | 6/10 | Стек хорош, но темы нет, LSP 0.11 vs 0.9, undefile противоречие, двойные плагины |
 | Wayland | 4/10 | Hyprland настроен, но режим niri-плагина, нет DM, нет polkit-дублирования, порталы, idle |
 | Launcher | 4/10 | Rofi без темы |
-| Notifications | 3/10 | dunst без конфига |
+| Notifications | 9/10 | Quickshell center: постоянная история, unread-only pill, категории; dunst отключён |
 | GTK | 3/10 | Только иконки; тема/dark/сursor отсутствуют |
 | Qt | 2/10 | Указан несуществующий qt6ct |
 | Icons | 8/10 | Papirus-Dark — отлично, но 5 тем = раздувание |
@@ -285,7 +288,7 @@ flake.nix
 
 1. **Нет единой цветовой палитры** — значения разбросаны по 15+ файлам, часть цветов противоречит (Yazi yellow hovered vs поп-жёлтый; git неоново-розовый; #FFD966 в одном, #FFD500 в др.).
 2. **GTK/Qt не затронуты** — светлые Adwaita среди тёмных терминалов = визуальный разрыв.
-3. **Rofi/dunst — дефолтные темы** — весь контур (launcher/notify) выпадает из дизайна.
+3. **Rofi без темы** — launcher по-прежнему выпадает из дизайна; notify уже переведён в палитру Quickshell center.
 5. **Нет wallpapers** — заменяется солид-цветом hyprpaper без самого изображения (hyprpaper не умеет «чистый» solid через `wallpaper ,#hex` — он работает с preload картинок/и может с цветом в новых версиях, но код сомнителен).
 
 ## 5.3 Централизация цветов — предлагаемая архитектура
@@ -454,7 +457,7 @@ xdg-open .                                       # файл-пикер чере�
 ```
 Design Score             4/10   (задумка 9/10, реализация разбросана)
 UX Score                 4/10
-Consistency Score        3/10   (не достроены GTK/Qt/launcher/notify/lock)
+Consistency Score        5/10   (notify переведён в палитру; не достроены GTK/Qt/launcher/lock)
 Nix Integration Score    2/10   (не собирается: pkgs2/spkgs/inputs/двойной импорт)
 Performance Score        4/10   (нет GC, раздутый профиль)
 Open Source Score        8/10   (почти всё FOSS; убрать Last.fm/pin2-supermaven)

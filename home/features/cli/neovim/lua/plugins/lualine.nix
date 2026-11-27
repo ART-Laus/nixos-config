@@ -9,6 +9,7 @@ with pkgs.vimPlugins;
     type = "lua";
     plugin = lualine-nvim;
     config = ''
+      -- Opaque background only for lualine/statusline; rest of nvim stays transparent.
       local black = "${c.bg}"
 
       require("lualine").setup({
@@ -55,6 +56,9 @@ with pkgs.vimPlugins;
         },
       })
 
+      -- Override global StatusLine transparency for lualine only.
+      vim.api.nvim_set_hl(0, "StatusLine", { fg = "${c.fg}", bg = black })
+      vim.api.nvim_set_hl(0, "StatusLineNC", { fg = "${c.comment}", bg = black })
       vim.api.nvim_set_hl(0, "lualine_a_separator", { fg = black, bg = black })
       vim.api.nvim_set_hl(0, "lualine_b_separator", { fg = black, bg = black })
       vim.api.nvim_set_hl(0, "lualine_c_separator", { fg = black, bg = black })

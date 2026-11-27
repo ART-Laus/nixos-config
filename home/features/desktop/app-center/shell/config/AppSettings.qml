@@ -9,7 +9,8 @@ QtObject {
     readonly property int cardPadding: 12
     readonly property int rowHeight: 34
     readonly property real hoverScale: 1.03
-    readonly property real panelOpacity: 0.72
+    // На случай внешних потребителей; сама панель использует Theme.panel.
+    readonly property real panelOpacity: 0.94
 
     readonly property int transitionFast: reducedMotion ? 0 : 120
     readonly property int transitionNormal: reducedMotion ? 0 : 220

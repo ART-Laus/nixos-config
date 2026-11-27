@@ -32,7 +32,12 @@
   services.udisks2.enable = true;
   environment.etc."udisks2/mount_options.conf".text = ''
     [defaults]
-    ntfs_drivers=ntfs,ntfs3
+    ntfs_drivers=ntfs3,ntfs
+    defaults=rw
+    ntfs:ntfs3_defaults=uid=$UID,gid=$GID,umask=000,iocharset=utf8,force
+    ntfs:ntfs3_allow=uid=$UID,gid=$GID,umask,dmask,fmask,iocharset,discard,nodiscard,sparse,nosparse,hidden,nohidden,sys_immutable,nosys_immutable,showmeta,noshowmeta,prealloc,noprealloc,hide_dot_files,nohide_dot_files,windows_names,nocase,case,force
+    ntfs:ntfs_defaults=uid=$UID,gid=$GID,umask=000,force
+    ntfs:ntfs_allow=uid=$UID,gid=$GID,umask,dmask,fmask,locale,norecover,ignore_case,windows_names,compression,nocompression,big_writes,force
   '';
   services.gvfs.enable = true;
   services.tumbler.enable = true;

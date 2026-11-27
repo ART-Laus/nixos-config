@@ -1,5 +1,7 @@
 import QtQuick
 import qs.config
+import qs.scripthub
+import qs.notifications
 
 Rectangle {
     id: root
@@ -13,16 +15,22 @@ Rectangle {
     signal clicked()
 
     implicitWidth: (icon.length > 0 ? iconText.implicitWidth + 6 : 0) + labelText.implicitWidth + (compact ? 14 : 22)
-    implicitHeight: compact ? 24 : 30
-    radius: 8
-    color: area.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.16)
-        : active ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12)
-        : destructive ? Qt.rgba(Theme.secondary.r, Theme.secondary.g, Theme.secondary.b, 0.08)
-        : Qt.rgba(Theme.text.r, Theme.text.g, Theme.text.b, 0.04)
+    implicitHeight: compact ? 25 : 31
+    radius: NotificationTokens.radiusControl
+
+    readonly property color accentColor: root.destructive ? NotificationTokens.danger
+        : root.active || root.accent ? NotificationTokens.mint : NotificationTokens.text2
+
+    color: area.containsMouse ? NotificationTokens.alpha(accentColor, 0.14)
+        : root.active ? NotificationTokens.alpha(NotificationTokens.mint, 0.11)
+        : root.accent ? NotificationTokens.alpha(NotificationTokens.mint, 0.08)
+        : root.destructive ? NotificationTokens.alpha(NotificationTokens.danger, 0.07)
+        : NotificationTokens.alpha(NotificationTokens.text, 0.035)
     border.width: 1
-    border.color: active || accent ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.45)
-        : destructive ? Qt.rgba(Theme.secondary.r, Theme.secondary.g, Theme.secondary.b, 0.32)
-        : Qt.rgba(Theme.text.r, Theme.text.g, Theme.text.b, 0.10)
+    border.color: area.containsMouse || root.active || root.accent
+        ? NotificationTokens.alpha(accentColor, 0.42)
+        : root.destructive ? NotificationTokens.alpha(NotificationTokens.danger, 0.28)
+        : NotificationTokens.divider
 
     Row {
         id: row
@@ -33,7 +41,7 @@ Rectangle {
             id: iconText
             visible: text.length > 0
             anchors.verticalCenter: parent.verticalCenter
-            color: root.destructive ? Theme.secondary : Theme.primary
+            color: root.accentColor
             font.family: Theme.fontFamily
             font.pixelSize: Theme.fontSize - 3
             text: root.icon
@@ -42,9 +50,10 @@ Rectangle {
         Text {
             id: labelText
             anchors.verticalCenter: parent.verticalCenter
-            color: root.destructive ? Theme.secondary : root.accent || root.active ? Theme.primary : Theme.text
+            color: root.active || root.accent || root.destructive ? root.accentColor : NotificationTokens.text
             font.family: Theme.fontFamily
             font.pixelSize: Theme.fontSize - (root.compact ? 4 : 3)
+            font.weight: root.active || root.accent ? Font.Medium : Font.Normal
             text: root.label
         }
     }
@@ -56,5 +65,6 @@ Rectangle {
         onClicked: root.clicked()
     }
 
-    Behavior on color { ColorAnimation { duration: Settings.animationDuration } }
+    Behavior on color { ColorAnimation { duration: NotificationTokens.motionFast } }
+    Behavior on border.color { ColorAnimation { duration: NotificationTokens.motionFast } }
 }

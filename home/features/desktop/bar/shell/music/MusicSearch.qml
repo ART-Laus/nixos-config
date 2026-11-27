@@ -11,11 +11,11 @@ Item {
     anchors.left: parent.left
     anchors.right: parent.right
     anchors.top: parent.top
-    height: 38
-    radius: 10
-    color: Qt.rgba(0, 0, 0, 0.35)
+    height: MusicTheme.controlHeight
+    radius: MusicTheme.radiusControl
+    color: MusicTheme.surface
     border.width: 1
-    border.color: Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.16)
+    border.color: Theme.border
 
     Text {
       anchors.left: parent.left
@@ -25,7 +25,7 @@ Item {
       color: Theme.primary
       opacity: 0.75
       font.family: Theme.fontFamily
-      font.pixelSize: 18
+      font.pixelSize: MusicTheme.icon
     }
 
     TextInput {
@@ -38,7 +38,7 @@ Item {
       focus: true
       color: Theme.text
       font.family: Theme.fontFamily
-      font.pixelSize: Theme.fontSize - 1
+      font.pixelSize: MusicTheme.body
       text: MusicState.query
       onTextChanged: MusicState.search(text)
     }
@@ -51,7 +51,7 @@ Item {
       color: Theme.textDim
       opacity: 0.55
       font.family: Theme.fontFamily
-      font.pixelSize: Theme.fontSize - 1
+      font.pixelSize: MusicTheme.body
     }
 
     IconButton {
@@ -59,8 +59,8 @@ Item {
       anchors.right: parent.right
       anchors.rightMargin: 5
       anchors.verticalCenter: parent.verticalCenter
-      width: 28
-      height: 26
+      width: MusicTheme.buttonSize
+      height: MusicTheme.controlHeight
       glyph: "󰅖"
       onClicked: {
         input.text = "";
@@ -83,7 +83,7 @@ Item {
     color: MusicState.connectionStatus === "error" ? Theme.error : Theme.textDim
     opacity: 0.75
     font.family: Theme.fontFamily
-    font.pixelSize: 10
+    font.pixelSize: MusicTheme.caption
   }
 
   Flickable {
@@ -154,7 +154,7 @@ Item {
         color: Theme.textDim
         opacity: 0.7
         font.family: Theme.fontFamily
-        font.pixelSize: Theme.fontSize - 2
+        font.pixelSize: MusicTheme.bodyMinor
       }
 
       Text {
@@ -165,7 +165,7 @@ Item {
         color: Theme.textDim
         opacity: 0.55
         font.family: Theme.fontFamily
-        font.pixelSize: Theme.fontSize - 2
+        font.pixelSize: MusicTheme.bodyMinor
       }
     }
   }

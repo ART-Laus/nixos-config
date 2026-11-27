@@ -1,5 +1,6 @@
 import QtQuick
 import qs.config
+import qs.music
 
 Rectangle {
   id: root
@@ -7,12 +8,12 @@ Rectangle {
   property bool active: false
   property bool emphasized: false
   property bool disabledButton: false
-  property color accentColor: Theme.primary
+  property color accentColor: MusicTheme.accent
   signal clicked()
 
-  width: 36
-  height: 34
-  radius: 11
+  width: MusicTheme.buttonSize + 4
+  height: MusicTheme.buttonSize
+  radius: MusicTheme.radiusControl
   opacity: root.disabledButton ? 0.32 : 1
   color: root.active ? Qt.rgba(root.accentColor.r, root.accentColor.g, root.accentColor.b, 0.16)
     : area.containsMouse && !root.disabledButton ? Qt.rgba(root.accentColor.r, root.accentColor.g, root.accentColor.b, 0.09)
@@ -23,10 +24,10 @@ Rectangle {
   Text {
     anchors.centerIn: parent
     text: root.glyph
-    color: root.active || root.emphasized ? root.accentColor : Theme.textDim
-    opacity: root.active || root.emphasized ? 1 : 0.78
+    color: root.active || root.emphasized ? root.accentColor : MusicTheme.text2
+    opacity: 1
     font.family: Theme.fontFamily
-    font.pixelSize: Theme.fontSize
+    font.pixelSize: MusicTheme.icon
   }
 
   MouseArea {

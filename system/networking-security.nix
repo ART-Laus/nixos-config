@@ -7,6 +7,7 @@
 
   # Firewall — закрыт по умолчанию, точечные открытия — в других модулях
   networking.firewall.enable = true;
+  networking.firewall.trustedInterfaces = [ "tailscale0" ];
 
   # Time & locale — из старого system/configuration.nix
   time.timeZone = "Asia/Yekaterinburg";
@@ -20,6 +21,7 @@
     isNormalUser = true;
     description = "artlaus";
     extraGroups = [ "networkmanager" "wheel" "video" "audio" "render" ];
+    linger = true;
     shell = pkgs.zsh;
   };
   programs.zsh.enable = true;

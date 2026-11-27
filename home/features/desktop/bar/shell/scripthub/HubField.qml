@@ -1,5 +1,7 @@
 import QtQuick
 import qs.config
+import qs.scripthub
+import qs.notifications
 
 Rectangle {
     id: root
@@ -14,12 +16,11 @@ Rectangle {
     signal textEdited(string value)
 
     implicitWidth: Math.max(minimumWidth, 160)
-    implicitHeight: 30
-    radius: 8
-    color: Qt.rgba(0, 0, 0, 0.28)
+    implicitHeight: 31
+    radius: NotificationTokens.radiusControl
+    color: NotificationTokens.canvas
     border.width: 1
-    border.color: input.activeFocus ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.5)
-        : Qt.rgba(Theme.text.r, Theme.text.g, Theme.text.b, 0.10)
+    border.color: input.activeFocus ? NotificationTokens.alpha(NotificationTokens.mint, 0.52) : NotificationTokens.divider
 
     TextInput {
         id: input
@@ -27,7 +28,7 @@ Rectangle {
         anchors.leftMargin: 9
         anchors.rightMargin: 9
         verticalAlignment: TextInput.AlignVCenter
-        color: Theme.text
+        color: NotificationTokens.text
         font.family: Theme.fontFamily
         font.pixelSize: Theme.fontSize - 3
         echoMode: root.password ? TextInput.Password : TextInput.Normal
@@ -47,10 +48,12 @@ Rectangle {
         anchors.left: parent.left
         anchors.leftMargin: 9
         anchors.verticalCenter: parent.verticalCenter
-        color: Theme.textDim
+        color: NotificationTokens.muted
         font.family: Theme.fontFamily
         font.pixelSize: Theme.fontSize - 3
         text: root.placeholder
         visible: input.text.length === 0 && !input.activeFocus
     }
+
+    Behavior on border.color { ColorAnimation { duration: NotificationTokens.motionFast } }
 }

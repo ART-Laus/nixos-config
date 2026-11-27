@@ -245,8 +245,8 @@ PanelWindow {
         id: content
         anchors.fill: parent
         radius: AppSettings.surfaceRadius
-        color: Qt.rgba(0, 0, 0, AppSettings.panelOpacity)
-        border.color: Qt.rgba(1, 1, 1, 0.08)
+        color: Theme.panel
+        border.color: Theme.border
         border.width: 1
         opacity: root.progress
         enabled: root.active && root.progress > 0.35

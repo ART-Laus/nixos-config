@@ -7,8 +7,8 @@
       global = {
         width = 300;
         height = 300;
-        offset = "30x50";
-        origin = "top-right";
+        offset = "10x30";
+        origin = "top-left";
         transparency = 10;
         frame_color = theme.colors.primary;
         font = "${theme.fonts.ui.name} 10";

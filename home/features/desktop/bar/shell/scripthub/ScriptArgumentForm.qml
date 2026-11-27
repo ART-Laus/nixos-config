@@ -1,5 +1,7 @@
 import QtQuick
 import qs.config
+import qs.scripthub
+import qs.notifications
 
 Item {
     id: root
@@ -16,11 +18,17 @@ Item {
         width: parent.width
         spacing: 8
 
+        Rectangle {
+            width: parent.width
+            height: 1
+            color: NotificationTokens.divider
+        }
+
         Text {
             width: parent.width
-            color: Theme.primary
+            color: NotificationTokens.mint
             font.family: Theme.fontFamily
-            font.pixelSize: Theme.fontSize - 3
+            font.pixelSize: Theme.fontSize - 5
             font.bold: true
             text: "ARGUMENTS"
             visible: root.hasArguments
@@ -40,9 +48,9 @@ Item {
 
         Text {
             width: parent.width
-            color: Theme.textDim
+            color: NotificationTokens.muted
             font.family: Theme.fontFamily
-            font.pixelSize: Theme.fontSize - 4
+            font.pixelSize: Theme.fontSize - 5
             text: "No arguments required"
             visible: !root.hasArguments
         }

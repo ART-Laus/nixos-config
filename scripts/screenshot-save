@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+mode="${1:-gui}"
+base="$HOME/Documents/Лайтшот/Скрины"
+dir="$base/$(date +%d.%m.%Y)"
+mkdir -p "$dir"
+
+case "$mode" in
+  gui)
+    exec flameshot gui -p "$dir"
+    ;;
+  full)
+    exec flameshot full -p "$dir"
+    ;;
+  *)
+    echo "Usage: screenshot-save [gui|full]" >&2
+    exit 1
+    ;;
+esac

@@ -1,17 +1,34 @@
 pragma Singleton
 import QtQuick
 import Quickshell
-import Quickshell.Io
-import Quickshell.Services.Mpris
 import qs.music
 
+// The only UI state facade. Playback, library, artwork, lyrics, playlists,
+// favorites and ratings all come from the Orpheus daemon over IPC.
 QtObject {
   id: root
-  property string configPath: (Quickshell.env("XDG_CONFIG_HOME") || (Quickshell.env("HOME") + "/.config")) + "/carpheus/navidrome.env"
-  property string connectionStatus: "idle"
-  property string connectionText: "Not connected"
+
+  property OrpheusClient client: OrpheusClient {
+    id: client
+    onSnapshotChanged: function (data) { root.applyDaemonState(data); }
+    onCallFailed: function (method, message) {
+      root.lastError = String(message || "");
+      root.libraryLoading = false;
+    }
+  }
+
+  property ArtworkCache artworkCache: ArtworkCache {
+    id: artworkCache
+    client: root.client
+  }
+
+  readonly property var daemonState: client.state || {}
+  readonly property bool ipcConnected: client.connected
+  property string connectionStatus: "connecting"
+  property string connectionText: "Connecting to Orpheus…"
   property string backend: "unavailable"
-  property string backendText: "—"
+  property string backendText: "Orpheus offline"
+
   property string title: "Carpheus Music"
   property string artist: ""
   property string album: ""
@@ -20,28 +37,34 @@ QtObject {
   property string currentSongId: ""
   property var currentTrack: null
   property bool favorite: false
-  property var scanStatus: ({})
-  property bool scanning: false
-  property string status: "idle"
+  property bool mute: false
+  property bool buffering: false
+  property real volume: 1
+  property string status: "stopped"
   property real timePos: 0
   property real duration: 0
-  property bool seeking: false
-  property bool paused: true
   property bool shuffle: false
   property int repeat: 0
-  property string view: "search"
-  property string browserArtKey: ""
-  property string browserCover: ""
-  property string browserAlbum: ""
-  property string browserYear: ""
-  property var pendingBrowserPlay: null
-  property int browserLookupAttempts: 0
+  property string lastError: ""
+
+  property string view: "home"
   property string query: ""
-  property string pendingQuery: ""
   property var searchResults: ({ artist: [], album: [], song: [] })
   property var albumData: null
   property var artistData: null
-  property string lastError: ""
+  property var playlistData: null
+  property string librarySection: "home"
+  property var libraryData: ({})
+  property var libraryItems: []
+  property int libraryOffset: 0
+  property bool libraryHasMore: false
+  property bool libraryLoading: false
+  property var genres: []
+  property var playlists: []
+  property var favorites: ({})
+  property var scanStatus: ({})
+  property bool scanning: false
+
   property string lyricsText: ""
   property var lyricsLines: []
   property bool lyricsSynced: false
@@ -50,117 +73,44 @@ QtObject {
   property string lyricCurrent: "Lyrics unavailable"
   property string lyricNext: ""
   property int lyricIndex: 0
-  property int searchDebounce: 300
-  property string preferredMode: "auto"
-  property string mprisPreference: "firefox,firefox-esr,chromium,google-chrome,brave-browser"
 
-  property NavidromeClient navidrome: NavidromeClient {
-    id: navidrome
-    onCheckFinished: root.updateBackend()
-    onSearchFinished: function(q, data) { root.applySearch(q, data); }
-    onRandomFinished: function(data) { root.applyRandom(data); }
-    onAlbumFinished: function(id, data) { root.albumData = data; }
-    onArtistFinished: function(id, data) { root.artistData = data; }
-    onRequestFailed: function(kind, message) {
-      root.lastError = message;
-      if (kind === "check") {
-        root.connectionStatus = "error";
-        root.connectionText = message;
+  property int searchRequest: 0
+  property int libraryRequest: 0
+  property int lyricsRequest: 0
+
+  onTimePosChanged: root.updateLyrics()
+
+  function asArray(value) {
+    if (Array.isArray(value)) return value;
+    if (!value) return [];
+    return [value];
+  }
+
+  function withCovers(value) {
+    var items = asArray(value);
+    for (var i = 0; i < items.length; i++) {
+      var item = items[i];
+      if (item && !item.coverArt && typeof item === "object") {
+        var cover = item.albumId || item.parent || item.id;
+        if (cover) item.coverArt = String(cover);
       }
-      root.updateMetadata();
     }
-    onLookupFinished: function(key, data) {
-      if (key !== root.browserArtKey) return;
-      var result = (data && (data.searchResult3 || data.song)) || {};
-      var songs = result.song || (data && data.song) || [];
-      var song = songs.length ? songs[0] : null;
-      root.currentSongId = song && song.id ? String(song.id) : "";
-      root.currentTrack = song || null;
-      root.browserLookupAttempts = song ? 0 : root.browserLookupAttempts;
-      root.favorite = root.isStarred(song);
-      root.browserAlbum = song && song.album ? String(song.album) : "";
-      root.browserYear = song && song.year ? String(song.year) : "";
-      if (song && song.coverArt) {
-        root.browserCover = String(song.coverArt);
-        artworkCache.request(root.browserCover, 300);
+    return items;
+  }
+
+  function normalizeGenres(values) {
+    var source = asArray(values);
+    var result = [];
+    for (var i = 0; i < source.length; i++) {
+      var item = source[i];
+      if (!item) continue;
+      if (typeof item === "string") result.push({ name: item, value: item });
+      else {
+        var name = String(item.name || item.value || "");
+        result.push(Object.assign({}, item, { name: name, value: name }));
       }
-      root.updateMetadata();
     }
-    onSongFinished: function(id, song) {
-      if (String(id || "") !== String(root.currentSongId || "")) return;
-      if (song) root.currentTrack = song;
-      root.favorite = root.isStarred(song);
-      if (song && song.year) root.year = String(song.year);
-    }
-    onFavoriteChanged: function(id, value) {
-      if (String(id || "") === String(root.currentSongId || "")) root.favorite = !!value;
-    }
-    onScanStatusFinished: function(status) { root.applyScanStatus(status); }
-    onQuickScanFinished: function(status) {
-      root.scanning = true;
-      navidrome.scanStatus();
-    }
-    onUrlsFinished: function(ids, map) { root.handleBrowserUrls(ids, map); }
-    onLyricsFinished: function(key, data) { root.applyLyrics(key, data); }
-    onArtworkFinished: function(id, size, path) {
-      if (size === 300) root.artworkRefreshTimer.restart();
-    }
-  }
-
-  property ArtworkCache artworkCache: ArtworkCache {
-    id: artworkCache
-    client: navidrome
-  }
-
-  property MprisController mpris: MprisController {
-    id: mpris
-    client: navidrome
-    preference: root.mprisPreference
-    onActivePlayerChanged: root.updateBackend()
-  }
-
-  property PlaybackController player: PlaybackController {
-    id: player
-    client: navidrome
-    onStateChanged: root.updateMetadata()
-  }
-
-  property FileView configView: FileView {
-    path: root.configPath
-    watchChanges: true
-    printErrors: false
-    onLoaded: root.parseConfig(configView.text())
-    onTextChanged: root.parseConfig(configView.text())
-  }
-
-  property Timer searchTimer: Timer {
-    interval: root.searchDebounce
-    onTriggered: navidrome.search(root.pendingQuery)
-  }
-
-  property Timer artworkRefreshTimer: Timer {
-    interval: 1
-    onTriggered: root.updateMetadata()
-  }
-
-  property Timer progressTimer: Timer {
-    interval: 1000
-    repeat: true
-    running: root.status === "playing" && root.duration > 0 && !root.seeking
-    onTriggered: {
-      if (root.timePos < root.duration) root.timePos = Math.min(root.duration, root.timePos + 1);
-      root.updateLyrics();
-    }
-  }
-
-  property Timer browserLookupRetry: Timer {
-    interval: 2000
-    repeat: true
-    running: root.backend === "browser" && root.title !== "Nothing playing" && !!root.browserArtKey && !root.currentSongId && root.browserLookupAttempts < 6
-    onTriggered: {
-      root.browserLookupAttempts++;
-      navidrome.lookup(root.browserArtKey, root.title + (root.artist ? " " + root.artist : ""));
-    }
+    return result;
   }
 
   function isStarred(track) {
@@ -170,7 +120,49 @@ QtObject {
 
   function applyScanStatus(status) {
     root.scanStatus = status || ({});
-    root.scanning = !!(root.scanStatus && (root.scanStatus.scanning === true || root.scanStatus.scanning === "true"));
+    root.scanning = !!(root.scanStatus && (
+      root.scanStatus.scanning === true || root.scanStatus.scanning === "true"
+    ));
+  }
+
+  function updateBackend() {
+    if (!root.ipcConnected) {
+      root.connectionStatus = "connecting";
+      root.connectionText = "Connecting to Orpheus…";
+      root.backend = "unavailable";
+      root.backendText = "Orpheus offline";
+      return;
+    }
+    root.connectionStatus = String(root.daemonState.connectionStatus || "connected");
+    root.connectionText = String(root.daemonState.connectionText || "Orpheus connected");
+    root.backend = "standalone";
+    root.backendText = "Orpheus · mpv";
+  }
+
+  function applyDaemonState(data) {
+    var state = data || {};
+    root.updateBackend();
+    var track = state.track || null;
+    root.title = track ? String(track.title || "Untitled") : "Carpheus Music";
+    root.artist = track ? String(track.artist || "") : "";
+    root.album = track ? String(track.album || "") : "";
+    root.year = track && track.year ? String(track.year) : "";
+    root.currentSongId = track && track.id ? String(track.id) : "";
+    root.currentTrack = track;
+    root.favorite = !!(state.favorite || (track && root.isStarred(track)));
+    root.status = String(state.status || "stopped");
+    root.timePos = Number(state.position) || 0;
+    root.duration = Number(state.duration) || 0;
+    root.shuffle = !!state.shuffle;
+    root.repeat = Number(state.repeat) || 0;
+    root.volume = Number(state.volume) || 0;
+    root.mute = !!state.mute;
+    root.buffering = !!state.buffering;
+    root.lastError = String(state.lastError || client.lastError || "");
+    var cover = track ? (track.coverArt || track.albumId || track.id) : "";
+    root.artwork = cover ? artworkCache.path(cover, 300) : "";
+    if (cover && !root.artwork) artworkCache.request(cover, 300);
+    root.syncLyrics();
   }
 
   function lyricLineText(line) {
@@ -193,7 +185,9 @@ QtObject {
         else break;
       }
     } else {
-      index = Math.min(lines.length - 1, Math.floor((root.timePos / Math.max(1, root.duration)) * lines.length));
+      index = Math.min(lines.length - 1, Math.floor(
+        (root.timePos / Math.max(1, root.duration)) * lines.length
+      ));
     }
     index = Math.max(0, Math.min(lines.length - 1, index));
     root.lyricIndex = index;
@@ -204,9 +198,25 @@ QtObject {
 
   function applyLyrics(key, data) {
     if (key !== root.lyricsKey) return;
-    var value = String((data && (data.value || data.lyrics)) || "");
+    var value = "";
+    if (data) {
+      if (typeof data === "string") value = data;
+      else if (data.lyrics) value = String(data.lyrics);
+      else if (data.text) value = String(data.text);
+      else if (data.value) value = String(data.value);
+      else if (data.structuredLyrics && data.structuredLyrics.length) {
+        var first = data.structuredLyrics[0];
+        var lines = first && first.line ? first.line : [];
+        value = lines.map(function (line) {
+          var stamp = line.start ? Number(line.start) / 1000 : 0;
+          var minutes = Math.floor(stamp / 60);
+          var seconds = (stamp % 60).toFixed(2);
+          return "[" + minutes + ":" + (seconds < 10 ? "0" : "") + seconds + "]" + (line.value || "");
+        }).join("\n");
+      }
+    }
     var raw = value.split(/\r?\n/);
-    var lines = [];
+    var parsed = [];
     var synced = false;
     var stamp = /^\[(\d{1,2}):(\d{2}(?:\.\d+)?)\](.*)$/;
     for (var i = 0; i < raw.length; i++) {
@@ -216,21 +226,20 @@ QtObject {
       if (match) {
         synced = true;
         var text = String(match[3] || "").trim();
-        if (text) lines.push({ time: Number(match[1]) * 60 + Number(match[2]), text: text });
+        if (text) parsed.push({ time: Number(match[1]) * 60 + Number(match[2]), text: text });
       } else if (line.charAt(0) !== "[") {
-        lines.push({ time: 0, text: line });
+        parsed.push({ time: 0, text: line });
       }
     }
-    if (synced) lines.sort(function (a, b) { return a.time - b.time; });
+    if (synced) parsed.sort(function (a, b) { return a.time - b.time; });
     root.lyricsText = value;
-    root.lyricsLines = lines;
+    root.lyricsLines = parsed;
     root.lyricsSynced = synced;
     root.updateLyrics();
   }
 
   function syncLyrics() {
-    var key = String(root.title || "") + "|" + String(root.artist || "");
-    if (!root.title || root.title === "Nothing playing" || root.title === "Carpheus Music") {
+    if (!root.currentSongId || root.status === "stopped") {
       root.lyricsKey = "";
       root.lyricsText = "";
       root.lyricsLines = [];
@@ -238,308 +247,299 @@ QtObject {
       root.updateLyrics();
       return;
     }
+    var key = root.currentSongId;
     if (root.lyricsKey === key) return;
     root.lyricsKey = key;
     root.lyricsText = "";
     root.lyricsLines = [];
     root.lyricsSynced = false;
     root.updateLyrics();
-    navidrome.lyrics(key, root.title, root.artist);
-  }
-
-  function parseConfig(text) {
-    var cfg = {};
-    var lines = String(text || "").split("\n");
-    for (var i = 0; i < lines.length; i++) {
-      var line = lines[i].trim();
-      if (!line || line.charAt(0) === "#" || line.indexOf("=") < 0) continue;
-      var pos = line.indexOf("=");
-      cfg[line.slice(0, pos).trim()] = line.slice(pos + 1).trim();
-    }
-    var url = cfg.CARPPHEUS_NAVIDROME_URL || "";
-    navidrome.host = String(url).replace(/^https?:\/\//, "").split("/")[0];
-    root.preferredMode = cfg.CARPPHEUS_PLAYBACK_MODE || "auto";
-    root.mprisPreference = cfg.CARPPHEUS_MPRIS_PREFERENCE || root.mprisPreference;
-    root.searchDebounce = Number(cfg.CARPPHEUS_SEARCH_DEBOUNCE_MS || 300);
-    root.lastError = "";
-    navidrome.check();
-    navidrome.scanStatus();
+    var token = ++root.lyricsRequest;
+    root.client.getLyrics(
+      { id: key, title: root.title, artist: root.artist },
+      function (result) {
+        if (token !== root.lyricsRequest) return;
+        root.applyLyrics(key, result);
+      }
+    );
   }
 
   function applySearch(query, data) {
-    if (!data) return;
-    data = data.searchResult3 || data;
-    var key = String(query || "").trim().toLowerCase();
-    if (key) {
-      var cache = Object.assign({}, navidrome.searchCache);
-      cache[key] = { at: Date.now(), data: data };
-      navidrome.searchCache = cache;
-    }
-    function matches(value) {
-      return !key || String(value || "").toLowerCase().indexOf(key) >= 0;
-    }
+    var source = (data && data.searchResult3) || data || {};
     root.searchResults = {
-      album: (data.album || []).filter(function(item) { return matches(item.name); }),
-      artist: (data.artist || []).filter(function(item) { return matches(item.name); }),
-      song: (data.song || []).filter(function(item) { return matches(item.title); })
+      artist: withCovers(source.artist),
+      album: withCovers(source.album),
+      song: withCovers(source.song)
     };
   }
 
-  function applyRandom(data) {
-    var songs = (data && data.song) || [];
-    var current = root.backend === "standalone" && player.currentTrack ? String(player.currentTrack.id) : "";
-    var filtered = songs.filter(function(s) { return String(s.id) !== current; });
-    root.playQueue(filtered.length ? filtered : songs, 0);
-  }
-
-  function updateBackend() {
-    var browserReady = mpris.mode === "browser" && mpris.player;
-    var standaloneActive = player.currentTrack || player.queue.length > 0;
-    if (root.preferredMode === "browser" && browserReady) root.backend = "browser";
-    else if (root.preferredMode === "standalone") root.backend = "standalone";
-    else if (browserReady && !standaloneActive && (mpris.player.isPlaying || mpris.player.trackTitle)) root.backend = "browser";
-    else root.backend = player.available ? "standalone" : "unavailable";
-
-    root.backendText = root.backend === "browser" ? (mpris.player ? mpris.player.identity : "Browser")
-      : root.backend === "standalone" ? "MPV"
-      : "Unavailable";
-    root.updateMetadata();
-  }
-
-  function updateMetadata() {
-    if (root.backend === "browser" && mpris.player) {
-      var p = mpris.player;
-      var metadata = p.metadata || {};
-      var created = String(metadata["xesam:contentCreated"] || "");
-      var yearMatch = created.match(/\d{4}/);
-      var rawTitle = String(p.trackTitle || "Nothing playing");
-      var rawKey = rawTitle.trim().toLowerCase();
-      var pending = root.pendingBrowserPlay;
-      var override = pending ? pending.track : null;
-      var expectedKey = override && override.title ? String(override.title).trim().toLowerCase() : "";
-      var previousKey = pending ? String(pending.previousKey || "") : "";
-      if (override && expectedKey && (rawKey === expectedKey || rawKey.indexOf(expectedKey) === 0)) {
-        root.pendingBrowserPlay = null;
-        pending = null;
-        override = null;
-      } else if (override && pending.opened && rawKey !== "stream" && rawKey !== "nothing playing" && rawKey !== previousKey && rawKey.indexOf(expectedKey) < 0) {
-        root.pendingBrowserPlay = null;
-        pending = null;
-        override = null;
-      }
-      root.title = override ? String(override.title || rawTitle) : rawTitle;
-      root.artist = override ? String(override.artist || "") : String(p.trackArtist || "");
-      root.album = override ? String(override.album || root.browserAlbum || "") : (root.browserAlbum || String(p.trackAlbum || ""));
-      root.year = override ? String(override.year || root.browserYear || "") : (root.browserYear || (yearMatch ? yearMatch[0] : ""));
-      var browserArt = String(p.trackArtUrl || "");
-      if (!browserArt && root.browserCover) browserArt = artworkCache.path(root.browserCover, 300);
-      root.artwork = browserArt;
-      root.paused = p.playbackState !== MprisPlaybackState.Playing;
-      root.timePos = Number(p.position) || 0;
-      root.duration = Number(p.length) || 0;
-      root.shuffle = !!p.shuffle;
-      root.repeat = p.loopState === MprisLoopState.Track ? 2 : p.loopState === MprisLoopState.Playlist ? 1 : 0;
-      root.status = p.playbackState === MprisPlaybackState.Playing ? "playing"
-        : p.playbackState === MprisPlaybackState.Paused ? "paused" : "idle";
-      if (root.title === "Nothing playing") {
-        root.currentSongId = "";
-        root.currentTrack = null;
-        root.favorite = false;
-        root.browserArtKey = "";
-        root.browserAlbum = "";
-        root.browserYear = "";
-      } else {
-        var artKey = (root.title + "|" + root.artist).toLowerCase();
-        if (root.browserArtKey !== artKey) {
-          root.browserArtKey = artKey;
-          root.browserCover = override && override.coverArt ? String(override.coverArt) : "";
-          root.browserAlbum = override ? String(override.album || "") : "";
-          root.browserYear = override ? String(override.year || "") : "";
-          if (override) {
-            root.browserLookupAttempts = 0;
-            root.currentSongId = String(override.id || "");
-            root.currentTrack = override;
-            root.favorite = root.isStarred(override);
-            if (root.browserCover) artworkCache.request(root.browserCover, 300);
-          } else {
-            root.browserLookupAttempts = 0;
-            root.currentSongId = "";
-            root.currentTrack = null;
-            root.favorite = false;
-          }
-          navidrome.lookup(artKey, root.title + (root.artist ? " " + root.artist : ""));
-        }
-      }
-      root.syncLyrics();
-      return;
-    }
-
-    var track = player.currentTrack;
-    root.title = track ? String(track.title || "Untitled") : "Carpheus Music";
-    root.artist = track ? String(track.artist || "") : "";
-    root.album = track ? String(track.album || "") : "";
-    root.year = track && track.year ? String(track.year) : "";
-    root.currentSongId = track && track.id ? String(track.id) : "";
-    root.currentTrack = track || null;
-    root.favorite = root.isStarred(track);
-    root.artwork = track && track.coverArt ? artworkCache.path(track.coverArt, 300) : "";
-    if (track && track.coverArt && !root.artwork) artworkCache.request(track.coverArt, 300);
-    root.paused = player.paused;
-    root.timePos = player.timePos;
-    root.duration = player.duration;
-    root.shuffle = player.shuffle;
-    root.repeat = player.repeat;
-    root.status = track ? (player.paused ? "paused" : "playing")
-      : root.connectionStatus === "error" ? "error"
-      : root.connectionStatus === "connecting" ? "connecting"
-      : "idle";
-    root.syncLyrics();
-  }
-
   function search(text) {
-    root.query = text;
-    root.pendingQuery = text;
-    if (!String(text).trim()) {
+    root.query = String(text || "");
+    var token = ++root.searchRequest;
+    if (!root.query.trim()) {
       root.searchResults = { artist: [], album: [], song: [] };
-      searchTimer.stop();
       return;
     }
-    searchTimer.restart();
+    root.client.search({ query: root.query }, function (result) {
+      if (token !== root.searchRequest) return;
+      root.lastError = "";
+      root.applySearch(root.query, result);
+    });
+  }
+
+  function setSection(section, params) {
+    root.librarySection = String(section || "home");
+    root.libraryOffset = Number(params && params.offset) || 0;
+    root.view = root.librarySection;
+    return loadSection(root.librarySection, root.libraryOffset, false);
+  }
+
+  function loadSection(section, offset, append) {
+    var name = String(section || root.librarySection || "home");
+    var at = Math.max(0, Number(offset) || 0);
+    var token = ++root.libraryRequest;
+    root.libraryLoading = true;
+    root.librarySection = name;
+    root.libraryOffset = at;
+
+    function done(data, hasMore) {
+      if (token !== root.libraryRequest) return;
+      root.lastError = "";
+      root.libraryLoading = false;
+      root.libraryHasMore = !!hasMore;
+      if (name === "home") {
+        root.libraryData = data || {};
+        root.libraryItems = [];
+      } else {
+        var incoming = withCovers(data);
+        root.libraryItems = append ? root.libraryItems.concat(incoming) : incoming;
+        root.libraryData = { items: root.libraryItems };
+      }
+    }
+
+    if (name === "home") {
+      var home = { recentAlbums: [], randomSongs: [], genres: [], favorites: [] };
+      var pending = 4;
+      function finishHome() {
+        if (--pending === 0) done(home, false);
+      }
+      root.client.getAlbumList2({ type: "newest", size: 12, offset: 0 }, function (result) {
+        home.recentAlbums = withCovers(result && result.album);
+        finishHome();
+      }, finishHome);
+      root.client.getRandom(8, function (result) {
+        home.randomSongs = withCovers((result && result.song) || (result && result.entry));
+        finishHome();
+      }, finishHome);
+      root.client.getGenres(function (result) {
+        root.genres = normalizeGenres((result && result.genre) || result);
+        home.genres = root.genres;
+        finishHome();
+      }, finishHome);
+      root.client.getStarred2({ songCount: 24 }, function (result) {
+        var starred = result || {};
+        home.favorites = withCovers(starred.song);
+        root.favorites = {
+          songs: home.favorites,
+          albums: withCovers(starred.album),
+          artists: withCovers(starred.artist)
+        };
+        finishHome();
+      }, finishHome);
+      return token;
+    }
+    if (name === "artists") {
+      root.client.getArtists({}, function (result) {
+        var groups = (result && result.index) || [];
+        var artists = [];
+        for (var i = 0; i < groups.length; i++) {
+          var group = groups[i];
+          var children = asArray(group && group.artist);
+          for (var j = 0; j < children.length; j++) artists.push(children[j]);
+        }
+        done(artists, false);
+      });
+      return token;
+    }
+    if (name === "albums") {
+      var size = 60;
+      root.client.getAlbumList2({
+        type: "alphabeticalByName", size: size, offset: at
+      }, function (result) {
+        var albums = withCovers(result && result.album);
+        done(albums, albums.length >= size);
+      });
+      return token;
+    }
+    if (name === "tracks") {
+      var trackSize = 80;
+      root.client.search({
+        query: "", artistCount: 0, albumCount: 0,
+        songCount: trackSize, songOffset: at
+      }, function (result) {
+        var songs = withCovers(result && result.song);
+        done(songs, songs.length >= trackSize);
+      });
+      return token;
+    }
+    if (name === "genres") {
+      root.client.getGenres(function (result) {
+        var values = normalizeGenres((result && result.genre) || result);
+        root.genres = values;
+        done(values, false);
+      });
+      return token;
+    }
+    if (name === "playlists") {
+      root.client.getPlaylists(function (result) {
+        var values = withCovers((result && result.playlist) || result);
+        root.playlists = values;
+        done(values, false);
+      });
+      return token;
+    }
+    if (name === "favorites") {
+      root.client.getStarred2({}, function (result) {
+        var starred = result || {};
+        root.favorites = {
+          songs: withCovers(starred.song),
+          albums: withCovers(starred.album),
+          artists: withCovers(starred.artist)
+        };
+        done(root.favorites.songs, false);
+      });
+      return token;
+    }
+    done([], false);
+    return token;
+  }
+
+  function loadMore() {
+    if (!root.libraryHasMore || root.libraryLoading) return;
+    loadSection(root.librarySection, root.libraryOffset + root.libraryItems.length, true);
   }
 
   function openAlbum(id) {
     root.view = "album";
     root.albumData = null;
-    navidrome.album(id);
+    root.client.getAlbum(String(id), function (result) { root.albumData = result || null; });
   }
 
   function openArtist(id) {
     root.view = "artist";
     root.artistData = null;
-    navidrome.artist(id);
+    root.client.getArtist(String(id), function (result) { root.artistData = result || null; });
+  }
+
+  function openPlaylist(id) {
+    root.view = "playlist";
+    root.playlistData = null;
+    root.client.getPlaylist(String(id), function (result) { root.playlistData = result || null; });
+  }
+
+  function openGenre(name) {
+    root.view = "genre";
+    root.libraryLoading = true;
+    root.client.getSongsByGenre({ genre: String(name), count: 100, offset: 0 }, function (result) {
+      var songs = withCovers((result && result.song) || result);
+      root.libraryItems = songs;
+      root.libraryData = { genre: String(name), items: songs };
+      root.libraryLoading = false;
+      root.libraryHasMore = false;
+    }, function () {
+      root.libraryLoading = false;
+    });
+  }
+
+  function createPlaylist(name) {
+    root.client.createPlaylist(String(name), function (result) {
+      root.client.getPlaylists(function (playlists) {
+        root.playlists = withCovers((playlists && playlists.playlist) || playlists);
+      });
+    });
+  }
+
+  function deletePlaylist(id) {
+    root.client.deletePlaylist(String(id), function () {
+      root.playlistData = null;
+      root.client.getPlaylists(function (playlists) {
+        root.playlists = withCovers((playlists && playlists.playlist) || playlists);
+      });
+    });
   }
 
   function back() {
-    root.view = "search";
+    root.view = root.librarySection || "home";
     root.albumData = null;
     root.artistData = null;
-  }
-
-  function shouldUseBrowser() {
-    return root.backend === "browser" || root.preferredMode === "browser";
-  }
-
-  function handleBrowserUrls(ids, map) {
-    var pending = root.pendingBrowserPlay;
-    if (!pending) return;
-    var id = String(pending.track && pending.track.id ? pending.track.id : "");
-    var url = map[id];
-    if (!url) return;
-    pending.opened = true;
-    if (mpris.player && mpris.caps.canControl) mpris.player.pause();
-    Qt.openUrlExternally(url);
-    if (mpris.player && mpris.caps.canControl) mpris.player.raise();
-  }
-
-  function playInBrowser(track) {
-    if (!track || !track.id) return;
-    player.stop();
-    root.pendingBrowserPlay = {
-      track: track,
-      opened: false,
-      previousKey: String(root.title || "").trim().toLowerCase()
-    };
-    root.backend = "browser";
-    root.browserAlbum = String(track.album || "");
-    root.browserYear = String(track.year || "");
-    root.browserCover = String(track.coverArt || "");
-    root.currentSongId = String(track.id);
-    root.currentTrack = track;
-    root.favorite = root.isStarred(track);
-    navidrome.streamUrls([String(track.id)]);
-    root.updateMetadata();
+    root.playlistData = null;
   }
 
   function playTrack(track) {
-    if (!track) return;
-    if (root.shouldUseBrowser()) root.playInBrowser(track);
-    else {
-      root.backend = "standalone";
-      root.currentTrack = track;
-      player.playTrack(track);
-      root.updateBackend();
-    }
+    if (!track || !track.id) return;
+    root.client.playTrack(String(track.id));
   }
 
   function playQueue(tracks, startIndex) {
-    if (!tracks || tracks.length === 0) return;
-    var index = Math.max(0, startIndex || 0);
-    if (root.shouldUseBrowser()) root.playInBrowser(tracks[index]);
-    else {
-      root.backend = "standalone";
-      player.playQueue(tracks, index);
-      root.updateBackend();
+    var ids = [];
+    var items = asArray(tracks);
+    for (var i = 0; i < items.length; i++) {
+      if (items[i] && items[i].id) ids.push(String(items[i].id));
     }
+    if (ids.length) root.client.playQueue(ids, Math.max(0, Number(startIndex) || 0));
   }
 
   function playAlbum() {
-    if (root.albumData && root.albumData.song) root.playQueue(root.albumData.song, 0);
+    if (root.albumData && root.albumData.id) root.client.playAlbum(String(root.albumData.id));
+    else if (root.albumData && root.albumData.song) root.playQueue(root.albumData.song, 0);
   }
+
+  function playPlaylist() {
+    if (root.playlistData && root.playlistData.id) root.client.playPlaylist(String(root.playlistData.id));
+    else if (root.playlistData && root.playlistData.song) root.playQueue(root.playlistData.song, 0);
+  }
+
+  function queueAdd(tracks, next) {
+    var ids = [];
+    var items = asArray(tracks);
+    for (var i = 0; i < items.length; i++) {
+      if (items[i] && items[i].id) ids.push(String(items[i].id));
+    }
+    if (ids.length) root.client.queueAdd(ids, !!next);
+  }
+
+  function queueRemove(index) { root.client.queueRemove(Number(index)); }
+  function queueMove(from, to) { root.client.queueMove(Number(from), Number(to)); }
+  function queueClear() { root.client.queueClear(); }
+  function shuffleQueue() { root.client.queueShuffle(); }
 
   function random() {
-    navidrome.random(12);
+    root.client.getRandom(12, function (result) {
+      var songs = (result && result.song) || (result && result.entry) || [];
+      if (songs.length) root.playQueue(songs, 0);
+    });
   }
 
-  function togglePlay() {
-    if (root.backend === "browser" && mpris.caps.canControl) mpris.togglePlaying();
-    else player.togglePlaying();
-    root.updateMetadata();
-  }
-
-  function next() {
-    if (root.backend === "browser" && mpris.caps.canGoNext) mpris.next();
-    else player.next();
-  }
-
-  function previous() {
-    if (root.backend === "browser" && mpris.caps.canGoPrevious) mpris.previous();
-    else player.previous();
-  }
-
-  function setShuffle(enabled) {
-    if (root.backend === "browser" && mpris.caps.shuffleSupported) mpris.setShuffle(enabled);
-    else player.setShuffle(enabled);
-    root.updateMetadata();
-  }
-
-  function cycleRepeat() {
-    if (root.backend === "browser" && mpris.caps.loopSupported) {
-      var nextState = root.repeat === 0 ? MprisLoopState.Playlist : root.repeat === 1 ? MprisLoopState.Track : MprisLoopState.None;
-      mpris.setLoop(nextState);
-      root.repeat = nextState === MprisLoopState.Track ? 2 : nextState === MprisLoopState.Playlist ? 1 : 0;
-    } else {
-      player.cycleRepeat();
-    }
-    root.updateMetadata();
-  }
-
-  function seek(seconds) {
-    if (root.backend === "browser" && mpris.caps.canSeek && mpris.player) mpris.player.seek(seconds);
-    else player.seek(seconds);
-  }
-
-  function toggleFavorite() {
-    var id = String(root.currentSongId || "");
-    if (!id) return;
-    var value = !root.favorite;
-    root.favorite = value;
-    if (value) navidrome.star(id);
-    else navidrome.unstar(id);
-  }
+  function togglePlay() { root.client.togglePlay(); }
+  function next() { root.client.next(); }
+  function previous() { root.client.previous(); }
+  function setShuffle(enabled) { root.client.setShuffle(!!enabled); }
+  function cycleRepeat() { root.client.setRepeat((root.repeat + 1) % 3); }
+  function seekBy(seconds) { root.client.seek(Number(seconds) || 0); }
+  function seekTo(seconds) { root.client.seekAbsolute(Math.max(0, Number(seconds) || 0)); }
+  function setVolume(value) { root.client.setVolume(value); }
+  function toggleMute() { root.client.setMute(!root.mute); }
+  function toggleFavorite() { root.client.toggleFavorite(); }
+  function setFavorite(id, value) { root.client.setFavorite(String(id), !!value); }
+  function setRating(id, value) { root.client.setRating(String(id), Number(value) || 0); }
 
   function quickScan() {
     if (root.scanning) return;
     root.scanning = true;
-    navidrome.quickScan();
+    root.client.quickScan(function () {
+      root.client.getScanStatus(function (status) { root.applyScanStatus(status); });
+    }, function () {
+      root.applyScanStatus({ scanning: false });
+    });
   }
 }

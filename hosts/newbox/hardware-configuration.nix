@@ -10,7 +10,7 @@
 
   boot.initrd.availableKernelModules = [ "nvme" "xhci_pci" "usb_storage" "sd_mod" "rtsx_usb_sdmmc" ];
   boot.initrd.kernelModules = [ ];
-  boot.kernelModules = [ "kvm-amd" ];
+  boot.kernelModules = [ "kvm-amd" "uvcvideo" ];
   boot.extraModulePackages = [ ];
 
   fileSystems."/" =
@@ -22,6 +22,22 @@
     { device = "/dev/disk/by-uuid/D0B7-B78E";
       fsType = "vfat";
       options = [ "fmask=0077" "dmask=0077" ];
+    };
+
+  # Внешний диск (NTFS): монтируется в /mnt/Юркин-1ТА при загрузке.
+  # nofail + device-timeout — чтобы отсутствующий диск не блокировал загрузку.
+  fileSystems."/mnt/Юркин-1ТА" =
+    { device = "/dev/disk/by-uuid/585444B7544499A0";
+      fsType = "ntfs3";
+      options = [
+        "uid=1001"
+        "gid=100"
+        "umask=000"
+        "iocharset=utf8"
+        "force"
+        "nofail"
+        "x-systemd.device-timeout=10"
+      ];
     };
 
   swapDevices =

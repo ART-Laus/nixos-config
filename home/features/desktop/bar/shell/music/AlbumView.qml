@@ -31,10 +31,10 @@ Item {
     Text {
       anchors.verticalCenter: parent.verticalCenter
       text: "Album"
-      color: Theme.primary
-      opacity: 0.75
-      font.family: Theme.fontFamily
-      font.pixelSize: Theme.fontSize - 2
+      color: MusicTheme.accent
+      opacity: 1
+      font.family: MusicTheme.textFont
+      font.pixelSize: MusicTheme.bodyMinor
     }
   }
 
@@ -65,16 +65,16 @@ Item {
       text: MusicState.albumData ? MusicState.albumData.name : "Loading album…"
       color: Theme.text
       font.family: Theme.fontFamily
-      font.pixelSize: Theme.fontSize + 1
+      font.pixelSize: MusicTheme.title
     }
 
     Text {
       width: parent.width
       elide: Text.ElideRight
       text: MusicState.albumData ? (MusicState.albumData.artist || "Unknown artist") : ""
-      color: Theme.textDim
-      font.family: Theme.fontFamily
-      font.pixelSize: Theme.fontSize - 2
+      color: MusicTheme.text2
+      font.family: MusicTheme.textFont
+      font.pixelSize: MusicTheme.body
     }
 
     Text {
@@ -83,13 +83,13 @@ Item {
       text: MusicState.albumData ? ((MusicState.albumData.year || "") + "  ·  " + ((MusicState.albumData.song || []).length) + " tracks") : ""
       color: Qt.rgba(Theme.secondary.r, Theme.secondary.g, Theme.secondary.b, 0.8)
       font.family: Theme.fontFamily
-      font.pixelSize: 10
+      font.pixelSize: MusicTheme.caption
     }
 
     Rectangle {
-      width: 108
-      height: 28
-      radius: 9
+      width: 160
+      height: MusicTheme.controlHeight
+      radius: MusicTheme.radiusControl
       color: Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.16)
       border.width: 1
       border.color: Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.35)
@@ -99,7 +99,7 @@ Item {
         text: "󰐊  Слушать альбом"
         color: Theme.primary
         font.family: Theme.fontFamily
-        font.pixelSize: Theme.fontSize - 3
+        font.pixelSize: MusicTheme.caption
       }
 
       MouseArea {
@@ -130,7 +130,7 @@ Item {
 
         delegate: Item {
           width: tracks.width
-          height: 42
+          height: MusicTheme.rowHeight
 
           Rectangle {
             anchors.fill: parent
@@ -142,12 +142,12 @@ Item {
             anchors.left: parent.left
             anchors.leftMargin: 14
             anchors.verticalCenter: parent.verticalCenter
-            width: 28
+            width: 34
             text: String(index + 1).padStart(2, "0")
             color: Theme.textDim
             opacity: 0.55
             font.family: Theme.fontFamily
-            font.pixelSize: 10
+            font.pixelSize: MusicTheme.caption
           }
 
           Text {
@@ -160,7 +160,7 @@ Item {
             text: modelData.title
             color: Theme.text
             font.family: Theme.fontFamily
-            font.pixelSize: Theme.fontSize - 2
+            font.pixelSize: MusicTheme.body
           }
 
           Text {
@@ -175,7 +175,7 @@ Item {
             color: Theme.textDim
             opacity: 0.7
             font.family: Theme.fontFamily
-            font.pixelSize: 10
+            font.pixelSize: MusicTheme.caption
           }
 
           MouseArea {

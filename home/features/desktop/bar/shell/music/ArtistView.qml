@@ -35,7 +35,7 @@ Item {
       color: Theme.primary
       opacity: 0.75
       font.family: Theme.fontFamily
-      font.pixelSize: Theme.fontSize - 2
+      font.pixelSize: MusicTheme.bodyMinor
     }
   }
 
@@ -48,7 +48,7 @@ Item {
     text: MusicState.artistData ? MusicState.artistData.name : "Loading artist…"
     color: Theme.text
     font.family: Theme.fontFamily
-    font.pixelSize: Theme.fontSize + 2
+    font.pixelSize: MusicTheme.title
   }
 
   Flickable {
@@ -71,7 +71,7 @@ Item {
 
         delegate: Item {
           width: albums.width
-          height: 62
+          height: MusicTheme.rowHeight + 8
 
           Component.onCompleted: {
             if (modelData.coverArt) MusicState.artworkCache.request(modelData.coverArt, 100);
@@ -87,8 +87,8 @@ Item {
             anchors.left: parent.left
             anchors.leftMargin: 14
             anchors.verticalCenter: parent.verticalCenter
-            width: 46
-            height: 46
+            width: 52
+            height: 52
             radiusValue: 8
             imageSource: modelData.coverArt ? MusicState.artworkCache.path(modelData.coverArt, 100) : ""
             label: modelData.name
@@ -96,7 +96,7 @@ Item {
 
           Column {
             anchors.left: parent.left
-            anchors.leftMargin: 72
+            anchors.leftMargin: 78
             anchors.right: parent.right
             anchors.rightMargin: 14
             anchors.verticalCenter: parent.verticalCenter
@@ -108,7 +108,7 @@ Item {
               text: modelData.name
               color: Theme.text
               font.family: Theme.fontFamily
-              font.pixelSize: Theme.fontSize - 1
+              font.pixelSize: MusicTheme.body
             }
 
             Text {
@@ -118,7 +118,7 @@ Item {
               color: Theme.textDim
               opacity: 0.7
               font.family: Theme.fontFamily
-              font.pixelSize: 10
+              font.pixelSize: MusicTheme.caption
             }
           }
 

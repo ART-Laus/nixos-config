@@ -27,7 +27,8 @@
     optimise.automatic = true;
   };
 
-  nixpkgs.config.allowUnfree = true;
+  # allowUnfree задаётся при создании pkgs в flake.nix — дублировать здесь
+  # нельзя: NixOS запрещает nixpkgs.config при внешне созданном pkgs.
 
   # Для совместимости с `nix flake check` на старых системах
   system.stateVersion = "26.05";

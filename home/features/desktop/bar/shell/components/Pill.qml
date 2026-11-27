@@ -17,6 +17,7 @@ Rectangle {
     signal wheeled(var delta)
 
     default property alias content: contentRow.data
+    property alias overlay: overlayLayer.data
 
     implicitWidth: contentRow.implicitWidth + padding * 2
     implicitHeight: Settings.pillHeight
@@ -31,6 +32,12 @@ Rectangle {
         id: contentRow
         anchors.centerIn: parent
         spacing: root.spacing
+    }
+
+    Item {
+        id: overlayLayer
+        anchors.fill: parent
+        z: 2
     }
 
     MouseArea {

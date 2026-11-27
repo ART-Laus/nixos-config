@@ -253,23 +253,6 @@ DEFAULT_METADATA = {
         "tags": ["podman", "compat"],
         "hidden": True
     },
-    "carpheus-api": {
-        "name": "Carpheus API",
-        "description": "Internal Navidrome API helper for the music panel",
-        "category": "Development",
-        "icon": "󰘲",
-        "tags": ["internal", "music"],
-        "hidden": True
-    },
-    "carpheus-mpv-ipc": {
-        "name": "Carpheus MPV IPC",
-        "description": "Internal mpv IPC helper for the music panel",
-        "category": "Development",
-        "icon": "󰘲",
-        "tags": ["internal", "music"],
-        "hidden": True,
-        "execution": {"mode": "long", "allowMultipleInstances": False}
-    },
     "now": {
         "name": "Last.fm Now Playing",
         "description": "Legacy Last.fm now-playing helper with placeholder credentials",

@@ -1,0 +1,1957 @@
+#!/usr/bin/env python3
+"""Orpheus coordinator daemon.
+
+Owns the single mpv engine, the Navidrome session, local state and the
+Unix IPC used by Quickshell.
+
+No credentials are logged. All network calls use short-lived Subsonic
+tokens derived from the local config file (mode 0600).
+"""
+from __future__ import annotations
+
+import asyncio
+import hashlib
+import json
+import os
+import random
+import re
+import secrets
+import signal
+import socket
+import subprocess
+import sqlite3
+import struct
+import sys
+import time
+import urllib.error
+import urllib.parse
+import urllib.request
+from pathlib import Path
+from typing import Any
+
+try:
+    from dbus_fast import Variant
+    from dbus_fast.aio import MessageBus
+    from dbus_fast.constants import PropertyAccess
+    from dbus_fast.service import (
+        ServiceInterface,
+        dbus_method,
+        dbus_property,
+        dbus_signal,
+    )
+
+    DBUS_AVAILABLE = True
+except ImportError:  # local test runs without the Nix wrapper
+    Variant = None  # type: ignore[assignment]
+    MessageBus = None  # type: ignore[assignment]
+    DBUS_AVAILABLE = False
+
+CONFIG_PATH = Path(
+    os.environ.get("CARPPHEUS_CONFIG", "~/.config/carpheus/navidrome.env")
+).expanduser()
+RUNTIME_DIR = Path(os.environ.get("XDG_RUNTIME_DIR", f"/run/user/{os.getuid()}"))
+STATE_DIR = Path(os.environ.get("XDG_STATE_HOME", "~/.local/state")).expanduser()
+SOCKET_DIR = RUNTIME_DIR / "orpheus"
+SOCKET_PATH = SOCKET_DIR / "coordinator.sock"
+MPV_SOCKET = SOCKET_DIR / "mpv.sock"
+DB_PATH = STATE_DIR / "orpheus" / "state.sqlite"
+PLAYER_NAME = "orpheus"
+VERSION = "0.2.0"
+VALID_METHODS = {
+    "ping", "getState", "search", "getArtists", "getAlbumList2", "getGenres",
+    "getSongsByGenre", "getStarred2", "getAlbum", "getArtist", "getSong",
+    "getRandom", "getScanStatus", "getLyrics", "getCoverArt", "getPlaylists",
+    "getPlaylist", "createPlaylist", "updatePlaylist", "deletePlaylist",
+    "setFavorite", "setRating", "quickScan", "playTrack", "playQueue",
+    "playAlbum", "playPlaylist", "queueAdd", "playNext", "queueRemove",
+    "queueMove", "queueClear", "queueShuffle", "play", "pause", "togglePlay",
+    "stop", "next", "previous", "seek", "seekAbsolute", "setShuffle",
+    "setRepeat", "setVolume", "setMute", "toggleFavorite",
+}
+ARTWORK_DIR = (
+    Path(os.environ.get("XDG_CACHE_HOME", "~/.cache")).expanduser()
+    / "carpheus"
+    / "artwork"
+)
+
+
+def is_webp(data: bytes) -> bool:
+    return len(data) >= 12 and data[:4] == b"RIFF" and data[8:12] == b"WEBP"
+
+
+def normalize_artwork(data: bytes, size: int) -> bytes:
+    """Convert WebP art to PNG; the shell Qt build has no WebP image plugin."""
+    if not is_webp(data):
+        return data
+    try:
+        result = subprocess.run(
+            [
+                "magick", "webp:-", "-resize", f"{int(size)}x{int(size)}>", "png:-",
+            ],
+            input=data,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=True,
+        )
+    except (OSError, subprocess.CalledProcessError) as exc:
+        log(f"artwork convert: {type(exc).__name__}", "warn")
+        return data
+    return result.stdout
+
+
+def redact_command(command: list[Any]) -> list[Any]:
+    """Remove signed stream URLs from diagnostic logs."""
+    result: list[Any] = []
+    for item in command:
+        text = str(item)
+        if "://" in text:
+            text = text.split("?", 1)[0] + "?<redacted>"
+        result.append(text)
+    return result
+
+
+def clamp_int(value: Any, low: int, high: int, default: int = 0) -> int:
+    try:
+        return max(low, min(high, int(value)))
+    except (TypeError, ValueError):
+        return default
+
+
+def id_list(value: Any, limit: int = 500) -> list[str]:
+    if isinstance(value, str):
+        value = [value]
+    if not isinstance(value, list):
+        return []
+    return [str(item) for item in value[:limit] if str(item)]
+
+
+def normalize_media(value: Any) -> Any:
+    """Fill the cover id Navidrome omits from some OpenSubsonic responses."""
+    if isinstance(value, list):
+        for item in value:
+            normalize_media(item)
+    elif isinstance(value, dict):
+        cover = value.get("coverArt")
+        if not cover:
+            if "albumId" in value or "title" in value:
+                cover = value.get("albumId") or value.get("parent") or value.get("id")
+            elif "songCount" in value and "name" in value:
+                cover = value.get("id")
+        if cover:
+            value["coverArt"] = str(cover)
+        for item in value.values():
+            normalize_media(item)
+    return value
+
+
+def normalize_playlist(value: Any) -> Any:
+    """Expose Subsonic playlist entries under the same key as album songs."""
+    if isinstance(value, dict):
+        entries = value.get("entry")
+        if entries is not None and "song" not in value:
+            value["song"] = entries
+        return normalize_media(value)
+    return value
+
+
+def validate_request(method: str, params: Any) -> dict[str, Any]:
+    """Strictly bound local IPC input; the socket is never network-exposed."""
+    if method not in VALID_METHODS:
+        raise RuntimeError(f"unknown method: {method}")
+    if not isinstance(params, dict):
+        raise RuntimeError("params must be an object")
+    if len(params) > 64:
+        raise RuntimeError("too many parameters")
+    for key, value in params.items():
+        if len(str(key)) > 64:
+            raise RuntimeError("parameter name too long")
+        if isinstance(value, str) and len(value) > 4096:
+            raise RuntimeError("parameter value too long")
+        if isinstance(value, list) and len(value) > 500:
+            raise RuntimeError("parameter list too long")
+    if len(json.dumps(params, ensure_ascii=False)) > 65536:
+        raise RuntimeError("request too large")
+    return params
+
+
+def log(message: str, level: str = "info") -> None:
+    """Structured log with no credentials or full stream URLs."""
+    print(
+        json.dumps(
+            {"ts": round(time.time(), 3), "level": level, "msg": message},
+            ensure_ascii=False,
+        ),
+        flush=True,
+    )
+
+
+def read_config() -> dict[str, str]:
+    cfg: dict[str, str] = {}
+    with CONFIG_PATH.open("r", encoding="utf-8") as handle:
+        for raw in handle:
+            line = raw.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, value = line.split("=", 1)
+            cfg[key.strip()] = value.strip()
+    missing = [
+        key
+        for key in (
+            "CARPPHEUS_NAVIDROME_URL",
+            "CARPPHEUS_NAVIDROME_USER",
+            "CARPPHEUS_NAVIDROME_PASSWORD",
+        )
+        if not cfg.get(key)
+    ]
+    if missing:
+        raise RuntimeError(f"missing config keys: {', '.join(missing)}")
+    return cfg
+
+
+CFG = read_config()
+BASE = CFG["CARPPHEUS_NAVIDROME_URL"].rstrip("/")
+USER = CFG["CARPPHEUS_NAVIDROME_USER"]
+PASSWORD = CFG["CARPPHEUS_NAVIDROME_PASSWORD"]
+PARSED = urllib.parse.urlparse(BASE)
+HOST = PARSED.hostname or "127.0.0.1"
+PORT = PARSED.port or (443 if PARSED.scheme == "https" else 80)
+SCHEME = PARSED.scheme or "http"
+
+
+def default_state() -> dict[str, Any]:
+    return {
+        "revision": 0,
+        "source": "local",
+        "status": "stopped",
+        "track": None,
+        "queue": [],
+        "queueIndex": -1,
+        "history": [],
+        "position": 0.0,
+        "duration": 0.0,
+        "shuffle": False,
+        "repeat": 0,
+        "volume": 1.0,
+        "favorite": False,
+        "mute": False,
+        "buffering": False,
+        "connectionStatus": "connecting",
+        "connectionText": "Connecting to Navidrome…",
+        "backend": "mpv",
+        "lastError": "",
+        "version": VERSION,
+    }
+
+
+if DBUS_AVAILABLE:
+    class MprisRoot(ServiceInterface):
+        def __init__(self) -> None:
+            super().__init__("org.mpris.MediaPlayer2")
+
+        @dbus_method(name="Raise")
+        def raise_window(self):
+            # The coordinator is headless; there is nothing to raise.
+            return None
+
+        @dbus_method(name="Quit")
+        def quit(self):
+            # Quitting is deliberately not exposed to MPRIS clients.
+            return None
+
+        @dbus_property(name="Identity", access=PropertyAccess.READ)
+        def identity(self) -> "s":
+            return "Orpheus"
+
+        @dbus_property(name="DesktopEntry", access=PropertyAccess.READ)
+        def desktop_entry(self) -> "s":
+            return "orpheus"
+
+        @dbus_property(name="SupportedUriSchemes", access=PropertyAccess.READ)
+        def supported_uri_schemes(self) -> "as":
+            return ["http", "https"]
+
+        @dbus_property(name="SupportedMimeTypes", access=PropertyAccess.READ)
+        def supported_mime_types(self) -> "as":
+            return ["audio/mpeg", "audio/flac", "audio/ogg", "audio/x-wav"]
+
+        @dbus_property(name="CanQuit", access=PropertyAccess.READ)
+        def can_quit(self) -> "b":
+            return False
+
+        @dbus_property(name="CanRaise", access=PropertyAccess.READ)
+        def can_raise(self) -> "b":
+            return False
+
+        @dbus_property(name="HasTrackList", access=PropertyAccess.READ)
+        def has_track_list(self) -> "b":
+            return False
+
+    class MprisPlayer(ServiceInterface):
+        def __init__(self, daemon: "Daemon") -> None:
+            super().__init__("org.mpris.MediaPlayer2.Player")
+            self.daemon = daemon
+
+        def _state(self) -> dict[str, Any]:
+            return self.daemon.state
+
+        def _track(self) -> dict[str, Any]:
+            value = self._state().get("track")
+            return value if isinstance(value, dict) else {}
+
+        def _status(self) -> str:
+            status = str(self._state().get("status") or "stopped")
+            return status if status in ("playing", "paused") else "stopped"
+
+        def _track_id(self) -> str:
+            song_id = re.sub(r"[^A-Za-z0-9_]", "_", str(self._track().get("id") or "idle"))
+            return f"/org/artlaus/orpheus/track/{song_id}"
+
+        @dbus_method(name="Play")
+        async def play(self):
+            if self._status() != "playing":
+                await self.daemon.dispatch("togglePlay")
+
+        @dbus_method(name="Pause")
+        async def pause(self):
+            if self._status() == "playing":
+                await self.daemon.dispatch("togglePlay")
+
+        @dbus_method(name="PlayPause")
+        async def play_pause(self):
+            await self.daemon.dispatch("togglePlay")
+
+        @dbus_method(name="Stop")
+        async def stop(self):
+            await self.daemon.dispatch("stop")
+
+        @dbus_method(name="Next")
+        async def next(self):
+            await self.daemon.dispatch("next")
+
+        @dbus_method(name="Previous")
+        async def previous(self):
+            await self.daemon.dispatch("previous")
+
+        @dbus_method(name="Seek")
+        async def seek(self, offset: "x"):
+            # dispatch() emits Seeked once with the resolved target position.
+            await self.daemon.dispatch("seek", {"seconds": float(offset) / 1_000_000})
+
+        @dbus_method(name="SetPosition")
+        async def set_position(self, track_id: "o", position: "x"):
+            if track_id != self._track_id():
+                return
+            # dispatch() emits Seeked once with the resolved target position.
+            await self.daemon.dispatch(
+                "seekAbsolute", {"seconds": float(position) / 1_000_000}
+            )
+
+        @dbus_signal(name="Seeked")
+        def seeked_signal(self, position: "x") -> "x":
+            return position
+
+        @dbus_property(name="PlaybackStatus", access=PropertyAccess.READ)
+        def playback_status(self) -> "s":
+            return {"playing": "Playing", "paused": "Paused"}.get(
+                self._status(), "Stopped"
+            )
+
+        @dbus_property(name="LoopStatus")
+        def loop_status(self) -> "s":
+            return {0: "None", 1: "Playlist", 2: "Track"}.get(
+                int(self._state().get("repeat", 0)), "None"
+            )
+
+        @loop_status.setter
+        def loop_status(self, value: "s"):
+            repeat = {"Playlist": 1, "Track": 2}.get(str(value), 0)
+            asyncio.create_task(self.daemon.dispatch("setRepeat", {"value": repeat}))
+
+        @dbus_property(name="Shuffle")
+        def shuffle(self) -> "b":
+            return bool(self._state().get("shuffle"))
+
+        @shuffle.setter
+        def shuffle(self, value: "b"):
+            asyncio.create_task(
+                self.daemon.dispatch("setShuffle", {"value": bool(value)})
+            )
+
+        @dbus_property(name="Metadata", access=PropertyAccess.READ)
+        def metadata(self) -> "a{sv}":
+            track = self._track()
+            if not track:
+                return {"mpris:trackid": Variant("o", self._track_id())}
+            artists = track.get("artist") or track.get("albumArtist") or ""
+            if not isinstance(artists, list):
+                artists = [str(artists)] if artists else []
+            metadata: dict[str, Any] = {
+                "mpris:trackid": Variant("o", self._track_id()),
+                "mpris:length": Variant(
+                    "x", int(float(track.get("duration") or 0) * 1_000_000)
+                ),
+                "xesam:title": Variant("s", str(track.get("title") or "Untitled")),
+                "xesam:artist": Variant("as", [str(value) for value in artists]),
+                "xesam:album": Variant("s", str(track.get("album") or "")),
+            }
+            year = track.get("year")
+            if year:
+                metadata["xesam:contentCreated"] = Variant("s", str(year))
+            cover_id = str(track.get("coverArt") or "")
+            if cover_id:
+                key = hashlib.sha256(f"{cover_id}:300".encode()).hexdigest()[:24]
+                cover_path = ARTWORK_DIR / f"{key}.img"
+                if cover_path.exists():
+                    metadata["mpris:artUrl"] = Variant("s", cover_path.as_uri())
+            song_id = str(track.get("id") or "")
+            if song_id:
+                metadata["xesam:url"] = Variant(
+                    "s",
+                    f"{BASE}/app/#/song/{urllib.parse.quote(song_id, safe='')}",
+                )
+            return metadata
+
+        @dbus_property(name="Position", access=PropertyAccess.READ)
+        def position(self) -> "x":
+            return int(float(self._state().get("position", 0)) * 1_000_000)
+
+        @dbus_property(name="Volume")
+        def volume(self) -> "d":
+            return max(0.0, min(1.0, float(self._state().get("volume", 1))))
+
+        @volume.setter
+        def volume(self, value: "d"):
+            asyncio.create_task(
+                self.daemon.dispatch("setVolume", {"value": max(0.0, min(1.0, float(value)))})
+            )
+
+        @dbus_property(name="Rate", access=PropertyAccess.READ)
+        def rate(self) -> "d":
+            return 1.0
+
+        @dbus_property(name="MinimumRate", access=PropertyAccess.READ)
+        def minimum_rate(self) -> "d":
+            return 1.0
+
+        @dbus_property(name="MaximumRate", access=PropertyAccess.READ)
+        def maximum_rate(self) -> "d":
+            return 1.0
+
+        @dbus_property(name="CanControl", access=PropertyAccess.READ)
+        def can_control(self) -> "b":
+            return True
+
+        @dbus_property(name="CanPlay", access=PropertyAccess.READ)
+        def can_play(self) -> "b":
+            # MPRIS clients (notably playerctl) use this to decide whether
+            # metadata can be printed. A loaded track is always playable.
+            return bool(self._track())
+
+        @dbus_property(name="CanPause", access=PropertyAccess.READ)
+        def can_pause(self) -> "b":
+            return self._status() == "playing"
+
+        @dbus_property(name="CanSeek", access=PropertyAccess.READ)
+        def can_seek(self) -> "b":
+            return bool(self._track())
+
+        @dbus_property(name="CanGoNext", access=PropertyAccess.READ)
+        def can_go_next(self) -> "b":
+            return bool(self._track())
+
+        @dbus_property(name="CanGoPrevious", access=PropertyAccess.READ)
+        def can_go_previous(self) -> "b":
+            return bool(self._track())
+
+    class MprisBridge:
+        def __init__(self, bus: Any, root: MprisRoot, player: MprisPlayer) -> None:
+            self.bus = bus
+            self.root = root
+            self.player = player
+
+        def notify(self, changes: dict[str, Any]) -> None:
+            props: dict[str, Any] = {}
+            if "status" in changes:
+                props["PlaybackStatus"] = self.player.playback_status
+                props["CanPlay"] = self.player.can_play
+                props["CanPause"] = self.player.can_pause
+            if "shuffle" in changes:
+                props["Shuffle"] = self.player.shuffle
+            if "repeat" in changes:
+                props["LoopStatus"] = self.player.loop_status
+            if "volume" in changes:
+                props["Volume"] = self.player.volume
+            # Position changes are announced via the Seeked signal, not by
+            # repeatedly rebuilding Metadata on every 1 Hz tick.
+            if any(key in changes for key in ("track", "queueIndex", "duration")):
+                props["Metadata"] = self.player.metadata
+                props["CanSeek"] = self.player.can_seek
+                props["CanPlay"] = self.player.can_play
+                props["CanGoNext"] = self.player.can_go_next
+                props["CanGoPrevious"] = self.player.can_go_previous
+            if props:
+                self.player.emit_properties_changed(props)
+
+        def seeked(self, position: float) -> None:
+            self.player.seeked_signal(int(position * 1_000_000))
+
+
+class Store:
+    def __init__(self, path: Path) -> None:
+        path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+        self.conn = sqlite3.connect(str(path))
+        self.conn.execute(
+            "CREATE TABLE IF NOT EXISTS state "
+            "(id INTEGER PRIMARY KEY CHECK (id = 1), data TEXT NOT NULL)"
+        )
+        self.conn.commit()
+        row = self.conn.execute("SELECT data FROM state WHERE id = 1").fetchone()
+        if row:
+            try:
+                saved = json.loads(row[0])
+                if not isinstance(saved, dict):
+                    raise ValueError("saved state is not an object")
+                self.data = default_state()
+                self.data.update(saved)
+                self.data["version"] = VERSION
+            except (ValueError, TypeError):
+                self.data = default_state()
+        else:
+            self.data = default_state()
+            self.save()
+        # Old generations could persist Web UI state; the native client never
+        # consumes it and must not expose it to the UI.
+        self.data.pop("browserTrack", None)
+        self.data["source"] = "local"
+
+    def save(self) -> None:
+        payload = json.dumps(self.data, ensure_ascii=False)
+        self.conn.execute(
+            "INSERT INTO state (id, data) VALUES (1, ?) "
+            "ON CONFLICT(id) DO UPDATE SET data = excluded.data",
+            (payload,),
+        )
+        self.conn.commit()
+
+
+class NavidromeError(RuntimeError):
+    """Transient or unknown Navidrome failure."""
+
+
+class NavidromePermanentError(NavidromeError):
+    """A request the server explicitly rejected; retrying cannot help."""
+
+
+class Navidrome:
+    def __init__(self, on_status: Any = None) -> None:
+        self._jwt = ""
+        self._jwt_at = 0.0
+        self._status = "connecting"
+        self.on_status = on_status
+
+    def _set_status(self, status: str, text: str) -> None:
+        if status == self._status and (status == "connected" or not text):
+            return
+        self._status = status
+        if self.on_status is not None:
+            self.on_status(status, text)
+
+    def _url(self, endpoint: str, **params: Any) -> str:
+        salt = secrets.token_hex(8)
+        token = hashlib.md5((PASSWORD + salt).encode()).hexdigest()
+        query = {
+            "u": USER,
+            "t": token,
+            "s": salt,
+            "v": "1.16.1",
+            "c": PLAYER_NAME,
+            "f": "json",
+        }
+        query.update({k: v for k, v in params.items() if v is not None})
+        return f"{BASE}/rest/{endpoint}?" + urllib.parse.urlencode(query, doseq=True)
+
+    @staticmethod
+    def _read_json(url: str, timeout: int = 20) -> Any:
+        request = urllib.request.Request(
+            url,
+            headers={"Accept": "application/json", "User-Agent": "orpheus/0.2"},
+        )
+        with urllib.request.urlopen(request, timeout=timeout) as response:
+            return json.loads(response.read().decode("utf-8"))
+
+    @staticmethod
+    def _read_bytes(url: str, timeout: int = 20) -> tuple[bytes, str]:
+        request = urllib.request.Request(
+            url,
+            headers={"Accept": "image/*", "User-Agent": "orpheus/0.2"},
+        )
+        with urllib.request.urlopen(request, timeout=timeout) as response:
+            return response.read(), str(response.headers.get("Content-Type") or "")
+
+    @staticmethod
+    def _write_atomic(path: Path, data: bytes) -> None:
+        path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+        temporary = path.with_name(f".{path.name}.{secrets.token_hex(4)}")
+        try:
+            temporary.write_bytes(data)
+            temporary.replace(path)
+        finally:
+            try:
+                temporary.unlink()
+            except FileNotFoundError:
+                pass
+
+    @staticmethod
+    def _permanent(exc: Exception) -> bool:
+        if isinstance(exc, NavidromePermanentError):
+            return True
+        if isinstance(exc, urllib.error.HTTPError):
+            return 400 <= exc.code < 500 and exc.code != 429
+        return False
+
+    async def _retry(self, operation: Any, endpoint: str) -> Any:
+        last_error: Exception | None = None
+        for attempt in range(3):
+            try:
+                value = await asyncio.wait_for(
+                    asyncio.to_thread(operation), timeout=25
+                )
+                self._set_status("connected", "")
+                return value
+            except asyncio.CancelledError:
+                raise
+            except Exception as exc:  # noqa: BLE001 - normalised below
+                if self._permanent(exc):
+                    self._set_status("degraded", "Navidrome rejected a request")
+                    raise NavidromePermanentError(
+                        f"navidrome {endpoint}: {type(exc).__name__}"
+                    ) from exc
+                last_error = exc
+                if attempt < 2:
+                    await asyncio.sleep(0.4 * (2 ** attempt))
+        self._set_status("offline", "Navidrome is unavailable")
+        raise NavidromeError(
+            f"navidrome {endpoint} failed: {type(last_error).__name__}"
+        ) from last_error
+
+    async def api(self, endpoint: str, **params: Any) -> dict[str, Any]:
+        url = self._url(endpoint, **params)
+        payload = await self._retry(lambda: self._read_json(url), endpoint)
+        inner = payload.get("subsonic-response", payload) if isinstance(payload, dict) else {}
+        if not isinstance(inner, dict):
+            raise NavidromeError(f"navidrome {endpoint}: malformed response")
+        if inner.get("status") == "failed":
+            message = (inner.get("error") or {}).get("message", "request failed")
+            self._set_status("degraded", "Navidrome rejected a request")
+            raise NavidromePermanentError(f"navidrome {endpoint}: {message}")
+        return normalize_media(inner)
+
+    def stream_url(self, song_id: str) -> str:
+        """Fresh short-lived URL; never logged."""
+        return self._url("stream", id=song_id)
+
+    async def report(self, song_id: str, position_ms: int, state: str) -> None:
+        await self.api(
+            "reportPlayback",
+            mediaId=song_id,
+            mediaType="song",
+            positionMs=max(0, int(position_ms)),
+            state=state,
+        )
+
+    async def scrobble(self, song_id: str, position_ms: int) -> None:
+        await self.api(
+            "scrobble",
+            id=song_id,
+            time=int(time.time() * 1000) - max(0, int(position_ms)),
+            submission="true",
+        )
+
+    async def song(self, song_id: str) -> dict[str, Any] | None:
+        data = await self.api("getSong", id=song_id)
+        value = data.get("song")
+        return value if isinstance(value, dict) else None
+
+    async def cover_art(self, song_id: str, size: int = 300) -> str:
+        """Download one requested cover into the local cache; never fan out."""
+        key = hashlib.sha256(f"{song_id}:{int(size)}".encode()).hexdigest()[:24]
+        target = ARTWORK_DIR / f"{key}.img"
+        if target.exists() and target.stat().st_size > 0:
+            cached = target.read_bytes()
+            if not is_webp(cached):
+                return str(target)
+            data = await asyncio.to_thread(normalize_artwork, cached, int(size))
+        else:
+            url = self._url("getCoverArt", id=song_id, size=int(size))
+            raw, content_type = await self._retry(
+                lambda: self._read_bytes(url), "getCoverArt"
+            )
+            if "json" in content_type.lower():
+                raise NavidromePermanentError("getCoverArt: server returned an error")
+            data = await asyncio.to_thread(normalize_artwork, bytes(raw), int(size))
+        await asyncio.to_thread(self._write_atomic, target, data)
+        return str(target)
+
+    async def lyrics(
+        self, song_id: str = "", title: str = "", artist: str = ""
+    ) -> dict[str, Any]:
+        if song_id:
+            return await self.api("getLyricsBySongId", id=song_id)
+        return await self.api("getLyrics", title=title, artist=artist)
+
+    def _login_request(self) -> str:
+        body = json.dumps(
+            {"username": USER, "password": PASSWORD}, ensure_ascii=False
+        ).encode()
+        request = urllib.request.Request(
+            f"{BASE}/auth/login",
+            data=body,
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        with urllib.request.urlopen(request, timeout=15) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+        token = str(payload.get("token") or "")
+        if not token:
+            raise RuntimeError("login returned no token")
+        return token
+
+    async def login(self) -> str:
+        if self._jwt and time.monotonic() - self._jwt_at < 1800:
+            return self._jwt
+        self._jwt = await self._retry(self._login_request, "auth/login")
+        self._jwt_at = time.monotonic()
+        return self._jwt
+
+    async def events(self) -> None:
+        """Keep a Navidrome event stream open for liveness; never fatal."""
+        while True:
+            try:
+                jwt = await self.login()
+                request = (
+                    f"GET /api/events?jwt={urllib.parse.quote(jwt)} HTTP/1.1\r\n"
+                    f"Host: {HOST}:{PORT}\r\n"
+                    "Accept: text/event-stream\r\n"
+                    "Connection: keep-alive\r\n\r\n"
+                )
+                reader, writer = await asyncio.open_connection(
+                    HOST, PORT, ssl=True if SCHEME == "https" else None
+                )
+                writer.write(request.encode())
+                await writer.drain()
+                self._set_status("connected", "")
+                while True:
+                    header = await reader.readline()
+                    if not header:
+                        break
+                    if header in (b"\r\n", b"\n"):
+                        break
+                    while True:
+                        if not await reader.readline():
+                            break
+            except asyncio.CancelledError:
+                raise
+            except Exception as exc:  # noqa: BLE001 - keep daemon alive
+                self._set_status("offline", "Navidrome stream unavailable")
+                log(f"SSE reconnect: {type(exc).__name__}", "warn")
+                await asyncio.sleep(5)
+
+
+class Mpv:
+    def __init__(self, socket_path: Path, on_event: Any) -> None:
+        self.path = socket_path
+        self.on_event = on_event
+        self.proc: asyncio.subprocess.Process | None = None
+        self.reader: asyncio.StreamReader | None = None
+        self.writer: asyncio.StreamWriter | None = None
+        self.pending: dict[int, asyncio.Future[Any]] = {}
+        self.explicit: dict[str, tuple[float, Any]] = {}
+        self.next_id = 1
+        self.available = False
+
+    async def start(self) -> None:
+        self.path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+        try:
+            self.path.unlink()
+        except FileNotFoundError:
+            pass
+        self.proc = await asyncio.create_subprocess_exec(
+            "mpv",
+            "--idle=yes",
+            "--no-video",
+            "--no-config",
+            "--no-terminal",
+            "--audio-display=no",
+            "--force-window=no",
+            "--replaygain=track",
+            "--msg-level=all=error",
+            f"--input-ipc-server={self.path}",
+            stdout=asyncio.subprocess.DEVNULL,
+            stderr=asyncio.subprocess.DEVNULL,
+        )
+        for _ in range(60):
+            if self.proc.returncode is not None:
+                raise RuntimeError("mpv exited during startup")
+            try:
+                self.reader, self.writer = await asyncio.open_unix_connection(str(self.path))
+                break
+            except (OSError, ConnectionError):
+                await asyncio.sleep(0.1)
+        else:
+            raise RuntimeError("mpv IPC did not come up")
+        self.available = True
+        asyncio.create_task(self._read_loop())
+        observed = (
+            "time-pos", "duration", "pause", "playlist-pos", "path", "shuffle",
+            "loop-file", "loop-playlist", "volume", "mute", "paused-for-cache",
+        )
+        for index, prop in enumerate(observed, 1):
+            try:
+                await self.send(["observe_property", index, prop])
+            except RuntimeError:
+                # Older mpv builds may not expose every optional property.
+                log(f"mpv property unavailable: {prop}", "warn")
+        log("mpv ready")
+
+    async def _read_loop(self) -> None:
+        assert self.reader is not None
+        while True:
+            try:
+                raw = await self.reader.readline()
+            except (OSError, ConnectionError):
+                break
+            if not raw:
+                break
+            try:
+                message = json.loads(raw)
+            except ValueError:
+                continue
+            request_id = message.get("request_id")
+            if isinstance(request_id, int) and request_id in self.pending:
+                future = self.pending.pop(request_id)
+                if not future.done():
+                    future.set_result(message)
+                continue
+            await self.on_event(message)
+
+    async def send(self, command: list[Any]) -> Any:
+        if not self.writer:
+            raise RuntimeError("mpv IPC unavailable")
+        request_id = self.next_id
+        self.next_id += 1
+        future: asyncio.Future[Any] = asyncio.get_running_loop().create_future()
+        self.pending[request_id] = future
+        payload = json.dumps({"command": command, "request_id": request_id}) + "\n"
+        self.writer.write(payload.encode())
+        await self.writer.drain()
+        try:
+            response = await asyncio.wait_for(future, timeout=5)
+        except TimeoutError:
+            self.pending.pop(request_id, None)
+            raise
+        error = response.get("error")
+        if error and error != "success":
+            log(f"mpv command failed: {redact_command(command)}: {error}", "warn")
+            raise RuntimeError(f"mpv command failed: {error}")
+        return response
+
+    def expect(self, name: str, value: Any) -> None:
+        """Remember the value we intend, so transient mpv echoes are ignored."""
+        self.explicit[name] = (time.monotonic(), value)
+
+    async def property(self, name: str) -> Any:
+        """Read a property; transient unavailability is not an error."""
+        try:
+            result = await self.send(["get_property", name])
+        except RuntimeError as exc:
+            if "property unavailable" in str(exc):
+                return None
+            raise
+        return result.get("data")
+
+    async def set_property(self, name: str, value: Any) -> None:
+        self.expect(name, value)
+        await self.send(["set_property", name, value])
+
+    async def wait_seekable(self, timeout: float = 5.0) -> bool:
+        """Wait until the newly loaded stream can actually be seeked."""
+        deadline = time.monotonic() + timeout
+        while time.monotonic() < deadline:
+            try:
+                result = await self.send(["get_property", "seekable"])
+                if result.get("data") is True:
+                    return True
+            except RuntimeError:
+                pass
+            await asyncio.sleep(0.1)
+        return False
+
+    async def seek(self, seconds: float, relative: bool = False) -> None:
+        """Seek with retries; mpv rejects seeks while a new file is loading."""
+        if not relative:
+            await self.wait_seekable()
+        for attempt in range(12):
+            try:
+                await self.send([
+                    "seek",
+                    float(seconds),
+                    "relative" if relative else "absolute",
+                    "exact",
+                ])
+                return
+            except RuntimeError:
+                if attempt == 11:
+                    raise
+                await asyncio.sleep(0.15)
+
+    def stale(self, name: str, value: Any) -> bool:
+        """Ignore property-change echoes from just before an explicit set."""
+        entry = self.explicit.get(name)
+        if not entry:
+            return False
+        at, expected = entry
+        if time.monotonic() - at > 1.5:
+            return False
+        if isinstance(expected, (int, float)) and isinstance(value, (int, float)):
+            return abs(float(expected) - float(value)) > 0.01
+        return str(expected) != str(value)
+
+    async def load_queue(
+        self, urls: list[str], start_index: int, resume: bool = True
+    ) -> None:
+        # Loading several files at once makes mpv emit transient playlist/path
+        # changes. Pin the intended values so they cannot overwrite state.
+        self.expect("playlist-pos", -1)
+        self.expect("path", "")
+        await self.send(["stop"])
+        await self.send(["playlist-clear"])
+        index = max(0, start_index)
+        if urls:
+            # Load the first file as the current playlist entry, then append
+            # the rest. This keeps playlist-pos valid without a late set that
+            # can race with mpv finishing its first network stream.
+            await self.send(["loadfile", urls[0], "replace"])
+            for url in urls[1:]:
+                await self.send(["loadfile", url, "append"])
+            if index:
+                await self.set_property("playlist-pos", index)
+        self.expect("path", urls[index] if urls else "")
+        target = index if urls else -1
+        ready = False
+        actual: Any = None
+        for _ in range(40):
+            actual = await self.property("playlist-pos")
+            path = await self.property("path")
+            count = await self.property("playlist-count")
+            if (
+                actual == target
+                and int(count or 0) > index
+                and (not urls or bool(path))
+            ):
+                ready = True
+                break
+            await asyncio.sleep(0.1)
+        log(f"playlist ready={ready} target={target} actual={actual}")
+        if index and ready:
+            for attempt in range(5):
+                try:
+                    await self.set_property("playlist-pos", index)
+                    break
+                except RuntimeError:
+                    if attempt == 4:
+                        raise
+                    await asyncio.sleep(0.1)
+        await self.set_property("pause", not resume)
+
+    async def stop(self) -> None:
+        self.expect("playlist-pos", -1)
+        self.expect("path", "")
+        await self.send(["stop"])
+        await self.send(["playlist-clear"])
+
+
+class Daemon:
+    def __init__(self) -> None:
+        self.store = Store(DB_PATH)
+        self.state = self.store.data
+        self.navidrome = Navidrome(self.connection_status)
+        self.mpv = Mpv(MPV_SOCKET, self.on_mpv_event)
+        self.scrobbled: set[tuple[str, int]] = set()
+        self.last_connect_check = 0.0
+        self.eof_handling = False
+        self.clients: set[asyncio.StreamWriter] = set()
+        self.last_report = 0.0
+        self.last_report_state = ""
+        self.mpris: Any = None
+        self.tasks: list[asyncio.Task[Any]] = []
+
+    # ---- state helpers -------------------------------------------------
+    def bump(self, **changes: Any) -> None:
+        self.state.update(changes)
+        self.state["revision"] = int(self.state.get("revision", 0)) + 1
+        self.store.save()
+        self.broadcast({"event": "stateChanged", "data": self.snapshot()})
+        if self.mpris:
+            try:
+                self.mpris.notify(changes)
+            except Exception as exc:  # noqa: BLE001 - D-Bus must never break audio
+                log(f"mpris notify: {type(exc).__name__}", "warn")
+
+    def snapshot(self) -> dict[str, Any]:
+        result = dict(self.state)
+        result["track"] = dict(self.state["track"]) if self.state.get("track") else None
+        result["queue"] = [
+            dict(item) if isinstance(item, dict) else item
+            for item in (self.state.get("queue") or [])
+        ]
+        return result
+
+    def broadcast(self, message: dict[str, Any]) -> None:
+        payload = (json.dumps(message, ensure_ascii=False) + "\n").encode()
+        for writer in list(self.clients):
+            try:
+                writer.write(payload)
+            except (OSError, RuntimeError):
+                self.clients.discard(writer)
+
+    def connection_status(self, status: str, text: str) -> None:
+        """Translate API/SSE state into a user-visible, non-sticky status."""
+        if (
+            self.state.get("connectionStatus") == status
+            and self.state.get("connectionText") == text
+        ):
+            return
+        self.bump(
+            connectionStatus=status,
+            connectionText=text,
+            lastError="" if status == "connected" else text,
+        )
+
+    async def sync_server_queue(self) -> None:
+        queue = self.state.get("queue") or []
+        if not queue:
+            return
+        track = self.state.get("track") or {}
+        try:
+            await self.navidrome.api(
+                "savePlayQueue",
+                current=str(track.get("id") or ""),
+                **{"id": [str(item.get("id", "")) for item in queue]},
+            )
+        except Exception as exc:  # noqa: BLE001 - local playback is authoritative
+            log(f"saveQueue failed: {type(exc).__name__}", "warn")
+
+    async def scrobble_track(
+        self, track: dict[str, Any], index: int, position: float, completed: bool
+    ) -> None:
+        song_id = str(track.get("id") or "")
+        if not song_id:
+            return
+        duration = float(track.get("duration") or 0)
+        threshold = max(1.0, min(240.0, duration * 0.5)) if duration else 30.0
+        if not completed and position < threshold:
+            return
+        key = (song_id, int(index))
+        if key in self.scrobbled:
+            return
+        self.scrobbled.add(key)
+        try:
+            await self.navidrome.report(
+                song_id, int(position * 1000), "stopped"
+            )
+            if completed:
+                await self.navidrome.scrobble(song_id, int(position * 1000))
+            self.bump(lastError="")
+        except Exception as exc:  # noqa: BLE001 - scrobbling must never stop audio
+            self.scrobbled.discard(key)
+            log(f"scrobble failed: {type(exc).__name__}", "warn")
+
+    async def reload_queue(
+        self,
+        queue: list[dict[str, Any]],
+        index: int,
+        resume: bool,
+        position: float = 0.0,
+    ) -> None:
+        """Rebuild the single mpv playlist from coordinator-owned state."""
+        if not queue:
+            await self.stop_playback()
+            return
+        index = max(0, min(len(queue) - 1, int(index)))
+        urls = [self.navidrome.stream_url(str(item.get("id", ""))) for item in queue]
+        await self.mpv.load_queue(urls, index, resume=resume)
+        track = queue[index]
+        self.mpv.expect("time-pos", position)
+        if position > 0:
+            try:
+                await self.mpv.seek(position)
+            except RuntimeError as exc:
+                log(f"restore seek skipped: {str(exc)[:120]}", "warn")
+        self.mpv.expect("playlist-pos", index)
+        self.mpv.expect("duration", float(track.get("duration") or 0))
+        self.bump(
+            queue=queue,
+            queueIndex=index,
+            track=track,
+            duration=float(track.get("duration") or 0),
+            position=position,
+            status="playing" if resume else "paused",
+            favorite=bool(track.get("starred")),
+            lastError="",
+        )
+        await self.sync_server_queue()
+
+    async def stop_playback(self) -> None:
+        track = self.state.get("track")
+        index = int(self.state.get("queueIndex", -1))
+        position = float(self.state.get("position", 0))
+        if isinstance(track, dict) and track:
+            await self.scrobble_track(track, index, position, completed=False)
+            try:
+                await self.navidrome.report(
+                    str(track.get("id")), int(position * 1000), "stopped"
+                )
+            except Exception:  # noqa: BLE001
+                pass
+        await self.mpv.stop()
+        self.bump(
+            source="local",
+            status="stopped",
+            position=0.0,
+            track=None,
+            queue=[],
+            queueIndex=-1,
+            favorite=False,
+            lastError="",
+        )
+
+    async def restore(self) -> None:
+        """Resume the saved session after a daemon restart."""
+        queue = self.state.get("queue") or []
+        if not queue:
+            return
+        index = max(0, min(len(queue) - 1, int(self.state.get("queueIndex", 0))))
+        urls = [self.navidrome.stream_url(str(item.get("id", ""))) for item in queue]
+        was_playing = self.state.get("status") == "playing"
+        await self.mpv.load_queue(urls, index, resume=was_playing)
+        track = queue[index]
+        self.mpv.expect("playlist-pos", index)
+        self.bump(
+            queueIndex=index,
+            track=track,
+            duration=float(track.get("duration") or 0),
+            favorite=bool(track.get("starred")),
+        )
+        await self.mpv.set_property(
+            "volume", max(0.0, min(1.0, float(self.state.get("volume", 1)))) * 100
+        )
+        repeat = int(self.state.get("repeat", 0))
+        await self.mpv.set_property("loop-file", "inf" if repeat == 2 else "no")
+        await self.mpv.set_property("loop-playlist", "inf" if repeat == 1 else "no")
+        await self.mpv.set_property("mute", bool(self.state.get("mute")))
+        position = float(self.state.get("position", 0))
+        self.mpv.expect("time-pos", position)
+        if position > 0:
+            try:
+                await self.mpv.seek(position)
+            except RuntimeError as exc:
+                log(f"restore seek skipped: {str(exc)[:120]}", "warn")
+        log("restored saved session")
+
+    def has_local_session(self) -> bool:
+        """Return whether a coordinator-owned mpv session is loaded."""
+        return bool(self.state.get("queue") and self.state.get("track"))
+
+    async def start_mpris(self) -> None:
+        if not DBUS_AVAILABLE:
+            log("MPRIS unavailable: dbus-fast missing", "warn")
+            return
+        try:
+            bus = await MessageBus().connect()
+            root = MprisRoot()
+            player = MprisPlayer(self)
+            bus.export("/org/mpris/MediaPlayer2", root)
+            bus.export("/org/mpris/MediaPlayer2", player)
+            await bus.request_name("org.mpris.MediaPlayer2.orpheus")
+            self.mpris = MprisBridge(bus, root, player)
+            log("MPRIS ready")
+        except Exception as exc:  # noqa: BLE001 - audio must not depend on D-Bus
+            log(f"MPRIS unavailable: {type(exc).__name__}", "warn")
+
+    # ---- mpv events ----------------------------------------------------
+    async def on_mpv_event(self, message: dict[str, Any]) -> None:
+        event = message.get("event")
+        if event == "property-change":
+            name = message.get("name")
+            value = message.get("data")
+            if name in (
+                "volume", "pause", "shuffle", "loop-file", "loop-playlist",
+                "playlist-pos", "time-pos", "duration",
+            ):
+                if self.mpv.stale(name, value):
+                    return
+            changes: dict[str, Any] = {}
+            if name == "time-pos":
+                # mpv emits this many times per second; keep it in memory and
+                # let the 1 Hz tick persist/broadcast it.
+                self.state["position"] = float(value or 0)
+                return
+            elif name == "duration":
+                changes["duration"] = float(value or 0)
+            elif name == "pause":
+                # With --idle=yes mpv reports pause=false before any file is
+                # loaded. Do not turn that into a false "playing" state.
+                has_track = bool(self.state.get("track")) or int(self.state.get("queueIndex", -1)) >= 0
+                if has_track:
+                    changes["status"] = "paused" if value else "playing"
+            elif name == "volume":
+                # mpv reports 0..100; the public state uses 0..1.
+                changes["volume"] = max(
+                    0.0, min(1.0, float(100 if value is None else value) / 100.0)
+                )
+            elif name == "mute":
+                changes["mute"] = bool(value)
+            elif name == "paused-for-cache":
+                changes["buffering"] = bool(value)
+            elif name == "shuffle":
+                changes["shuffle"] = bool(value)
+            elif name == "loop-file":
+                if value in ("inf", True) or (isinstance(value, (int, float)) and value > 0):
+                    changes["repeat"] = 2
+            elif name == "loop-playlist":
+                if value in ("inf", True) or (isinstance(value, (int, float)) and value > 0):
+                    if self.state.get("repeat") != 2:
+                        changes["repeat"] = 1
+            elif name == "playlist-pos":
+                index = int(value) if value is not None else -1
+                changes["queueIndex"] = index
+                queue = self.state.get("queue") or []
+                if 0 <= index < len(queue):
+                    changes["track"] = queue[index]
+            if changes:
+                self.bump(**changes)
+        elif event in ("file-loaded", "playlist-replace"):
+            index = self.state.get("queueIndex", -1)
+            queue = self.state.get("queue") or []
+            if 0 <= index < len(queue):
+                self.bump(track=queue[index])
+                self.scrobbled.clear()
+        elif event == "end-file" and not self.eof_handling:
+            reason = str(message.get("reason") or "")
+            if reason == "eof":
+                # Never await an mpv command from inside the mpv read loop:
+                # the reply needs that same loop to be read. Handle EOF in a
+                # separate task so seek/set_property can complete normally.
+                self.eof_handling = True
+                asyncio.create_task(self._handle_eof())
+
+    async def _handle_eof(self) -> None:
+        reason = "eof"
+        track = self.state.get("track")
+        index = int(self.state.get("queueIndex", -1))
+        try:
+            if isinstance(track, dict) and track:
+                await self.scrobble_track(
+                    track, index, float(self.state.get("position", 0)),
+                    completed=True,
+                )
+            await self.advance_after_eof()
+        except Exception as exc:  # noqa: BLE001 - never strand playback
+            log(f"end-file advance: {type(exc).__name__}", "warn")
+        finally:
+            self.eof_handling = False
+
+    async def advance_after_eof(self) -> None:
+        queue = self.state.get("queue") or []
+        if not queue:
+            return
+        current = int(self.state.get("queueIndex", -1))
+        if int(self.state.get("repeat", 0)) == 2:
+            self.mpv.expect("time-pos", 0.0)
+            try:
+                await self.mpv.seek(0)
+            except RuntimeError:
+                pass
+            self.bump(position=0.0)
+            return
+        if self.state.get("shuffle") and len(queue) > 1:
+            choices = [i for i in range(len(queue)) if i != current]
+            target = secrets.choice(choices) if choices else current
+        else:
+            target = current + 1
+        if target >= len(queue):
+            if int(self.state.get("repeat", 0)) != 1:
+                await self.stop_playback()
+                return
+            target = 0
+        await self.select_queue_index(target)
+
+    # ---- background loops ---------------------------------------------
+    async def tick(self) -> None:
+        while True:
+            await asyncio.sleep(1)
+            try:
+                proc = self.mpv.proc
+                if proc is not None and proc.returncode is not None:
+                    # mpv is the only audio engine. If it dies, bring it back
+                    # before doing anything else so playback cannot go silent.
+                    log(f"mpv exited ({proc.returncode}); restarting", "warn")
+                    for future in list(self.mpv.pending.values()):
+                        if not future.done():
+                            future.set_exception(ConnectionError("mpv restarted"))
+                    self.mpv.pending.clear()
+                    if self.mpv.writer is not None:
+                        self.mpv.writer.close()
+                    self.mpv.reader = None
+                    self.mpv.writer = None
+                    self.mpv.available = False
+                    await self.mpv.start()
+                    if self.state.get("queue"):
+                        await self.restore()
+                    self.bump(lastError="")
+                now = time.monotonic()
+                if self.state.get("status") == "playing":
+                    try:
+                        result = await self.mpv.send(["get_property", "time-pos"])
+                        value = result.get("data")
+                        if value is not None:
+                            self.state["position"] = max(0.0, float(value))
+                    except RuntimeError:
+                        pass
+                    self.bump(position=float(self.state.get("position", 0)))
+                    track = self.state.get("track")
+                    duration = float(self.state.get("duration") or 0)
+                    position = float(self.state.get("position", 0))
+                    if track and duration > 0 and position >= duration - 0.5:
+                        await self.scrobble_track(
+                            track, int(self.state.get("queueIndex", -1)),
+                            position, completed=True,
+                        )
+                    if track and (now - self.last_report > 5 or self.last_report_state != "playing"):
+                        try:
+                            await self.navidrome.report(
+                                str(track["id"]), int(position * 1000), "playing"
+                            )
+                            self.last_report = now
+                            self.last_report_state = "playing"
+                        except Exception as exc:  # noqa: BLE001
+                            log(f"report failed: {type(exc).__name__}", "warn")
+                if now - self.last_connect_check > 30:
+                    self.last_connect_check = now
+                    try:
+                        await self.navidrome.api("ping")
+                    except Exception as exc:  # noqa: BLE001
+                        log(f"connectivity check: {type(exc).__name__}", "warn")
+            except asyncio.CancelledError:
+                raise
+            except Exception as exc:  # noqa: BLE001
+                log(f"tick error: {type(exc).__name__}", "warn")
+
+    async def play_tracks(self, tracks: list[dict[str, Any]], index: int = 0) -> None:
+        if not tracks:
+            return
+        index = max(0, min(len(tracks) - 1, int(index)))
+        for attempt in range(3):
+            try:
+                await self.reload_queue(tracks, index, resume=True, position=0.0)
+                break
+            except RuntimeError:
+                if attempt == 2:
+                    raise
+                log(f"load_queue retry {attempt + 1}", "warn")
+                await asyncio.sleep(0.3)
+        track = tracks[index]
+        self.scrobbled.clear()
+        for report_state in ("starting", "playing"):
+            try:
+                await self.navidrome.report(str(track["id"]), 0, report_state)
+            except Exception as exc:  # noqa: BLE001
+                log(f"report {report_state}: {type(exc).__name__}", "warn")
+                break
+
+    async def select_queue_index(self, index: int) -> None:
+        """Publish an mpv-driven queue move without trusting stale echoes."""
+        queue = self.state.get("queue") or []
+        if not 0 <= index < len(queue):
+            return
+        previous = int(self.state.get("queueIndex", -1))
+        if 0 <= previous < len(queue) and previous != index:
+            history = list(self.state.get("history") or [])
+            if not history or history[-1] != previous:
+                history.append(previous)
+            self.state["history"] = history[-50:]
+        track = queue[index]
+        duration = float(track.get("duration") or 0)
+        # Pin the new values before touching the playlist: mpv emits a final
+        # old time-pos while switching files, which used to leak into state
+        # and made the next Previous restart instead of following history.
+        self.mpv.expect("time-pos", 0.0)
+        self.mpv.expect("playlist-pos", index)
+        self.mpv.expect("duration", duration)
+        self.bump(
+            queueIndex=index,
+            track=track,
+            duration=duration,
+            position=0.0,
+            favorite=bool(track.get("starred")),
+        )
+        await self.mpv.set_property("playlist-pos", index)
+        try:
+            await self.navidrome.report(str(track["id"]), 0, "starting")
+            await self.navidrome.report(str(track["id"]), 0, "playing")
+            track_id = str(track["id"])
+            await self.navidrome.api(
+                "savePlayQueue",
+                current=track_id,
+                **{"id": [str(item["id"]) for item in queue]},
+            )
+        except Exception as exc:  # noqa: BLE001
+            log(f"queue move sync: {type(exc).__name__}", "warn")
+
+    async def dispatch(
+        self, method: str, params: dict[str, Any] | None = None
+    ) -> Any:
+        params = params if isinstance(params, dict) else {}
+        state = self.state
+
+        if method == "ping":
+            result: dict[str, Any] = {
+                "version": VERSION,
+                "backend": "mpv",
+                "connectionStatus": state.get("connectionStatus", "connecting"),
+                "connectionText": state.get("connectionText", ""),
+            }
+            try:
+                await self.navidrome.api("ping")
+                result["server"] = "ok"
+            except Exception as exc:  # noqa: BLE001 - ping must always answer
+                result["server"] = "unavailable"
+                result["error"] = type(exc).__name__
+            return result
+        if method == "getState":
+            return self.snapshot()
+
+        # ---- library reads: all media data comes from the daemon ---------
+        if method == "search":
+            query = str(params.get("query") or "")[:256]
+            data = await self.navidrome.api(
+                "search3",
+                query=query,
+                artistCount=clamp_int(params.get("artistCount"), 0, 500, 20),
+                albumCount=clamp_int(params.get("albumCount"), 0, 500, 20),
+                songCount=clamp_int(params.get("songCount"), 0, 500, 30),
+                artistOffset=clamp_int(params.get("artistOffset"), 0, 100000, 0),
+                albumOffset=clamp_int(params.get("albumOffset"), 0, 100000, 0),
+                songOffset=clamp_int(params.get("songOffset"), 0, 100000, 0),
+            )
+            return data.get("searchResult3", data)
+        if method == "getArtists":
+            artist_id = str(params.get("id") or "")
+            data = await self.navidrome.api(
+                "getArtists", **({"id": artist_id} if artist_id else {})
+            )
+            return data.get("artists", data)
+        if method == "getAlbumList2":
+            allowed_types = {
+                "alphabeticalByName", "alphabeticalByArtist", "byGenre",
+                "byYear", "frequent", "highest", "newest", "random",
+                "recent", "starred",
+            }
+            list_type = str(params.get("type") or "newest")
+            if list_type not in allowed_types:
+                raise RuntimeError(f"unsupported album list type: {list_type}")
+            extra: dict[str, Any] = {}
+            for key in ("genre", "year", "fromYear", "toYear"):
+                if params.get(key) is not None:
+                    extra[key] = str(params[key])
+            data = await self.navidrome.api(
+                "getAlbumList2",
+                type=list_type,
+                size=clamp_int(params.get("size"), 1, 500, 40),
+                offset=clamp_int(params.get("offset"), 0, 100000, 0),
+                **extra,
+            )
+            return data.get("albumList2", data)
+        if method == "getGenres":
+            data = await self.navidrome.api("getGenres")
+            return data.get("genres", data)
+        if method == "getSongsByGenre":
+            data = await self.navidrome.api(
+                "getSongsByGenre",
+                genre=str(params.get("genre") or "").strip()[:200],
+                count=clamp_int(params.get("count"), 1, 500, 50),
+                offset=clamp_int(params.get("offset"), 0, 100000, 0),
+            )
+            return data.get("songsByGenre", data)
+        if method == "getStarred2":
+            data = await self.navidrome.api(
+                "getStarred2",
+                artistCount=clamp_int(params.get("artistCount"), 0, 500, 50),
+                albumCount=clamp_int(params.get("albumCount"), 0, 500, 50),
+                songCount=clamp_int(params.get("songCount"), 0, 500, 100),
+            )
+            return data.get("starred2", data)
+        if method == "getAlbum":
+            data = await self.navidrome.api("getAlbum", id=str(params.get("id") or ""))
+            return data.get("album")
+        if method == "getArtist":
+            data = await self.navidrome.api("getArtist", id=str(params.get("id") or ""))
+            return data.get("artist")
+        if method == "getSong":
+            data = await self.navidrome.api("getSong", id=str(params.get("id") or ""))
+            return data.get("song")
+        if method == "getRandom":
+            data = await self.navidrome.api(
+                "getRandomSongs", size=clamp_int(params.get("count"), 1, 200, 12)
+            )
+            return data.get("randomSongs", data)
+        if method == "getScanStatus":
+            data = await self.navidrome.api("getScanStatus")
+            return data.get("scanStatus", data)
+        if method == "getLyrics":
+            return await self.navidrome.lyrics(
+                song_id=str(params.get("id") or ""),
+                title=str(params.get("title") or "")[:256],
+                artist=str(params.get("artist") or "")[:256],
+            )
+        if method == "getCoverArt":
+            cover_id = str(params.get("id") or "")
+            if not cover_id:
+                raise RuntimeError("getCoverArt requires id")
+            path = await self.navidrome.cover_art(
+                cover_id, clamp_int(params.get("size"), 32, 1000, 300)
+            )
+            return {"id": cover_id, "path": path}
+
+        # ---- playlists ---------------------------------------------------
+        if method == "getPlaylists":
+            data = await self.navidrome.api("getPlaylists")
+            return data.get("playlists", data)
+        if method == "getPlaylist":
+            data = await self.navidrome.api(
+                "getPlaylist", id=str(params.get("id") or "")
+            )
+            return normalize_playlist(data.get("playlist"))
+        if method == "createPlaylist":
+            name = str(params.get("name") or "").strip()[:200]
+            if not name:
+                raise RuntimeError("createPlaylist requires name")
+            data = await self.navidrome.api("createPlaylist", name=name)
+            return normalize_playlist(data.get("playlist", data))
+        if method == "updatePlaylist":
+            playlist_id = str(params.get("id") or "")
+            if not playlist_id:
+                raise RuntimeError("updatePlaylist requires id")
+            body: dict[str, Any] = {"playlistId": playlist_id}
+            for key in ("name", "comment"):
+                if params.get(key) is not None:
+                    body[key] = str(params[key])[:500]
+            if params.get("public") is not None:
+                body["public"] = "true" if params["public"] else "false"
+            additions = id_list(params.get("songIdsToAdd"), 200)
+            if additions:
+                body["songIdToAdd"] = additions
+            if params.get("songIndexToRemove") is not None:
+                body["songIndexToRemove"] = clamp_int(
+                    params.get("songIndexToRemove"), 0, 100000, 0
+                )
+            data = await self.navidrome.api("updatePlaylist", **body)
+            return normalize_playlist(data.get("playlist", {"ok": True}))
+        if method == "deletePlaylist":
+            await self.navidrome.api("deletePlaylist", id=str(params.get("id") or ""))
+            return {"ok": True}
+
+        # ---- library writes ---------------------------------------------
+        if method == "setFavorite":
+            song_id = str(params.get("id") or "")
+            if not song_id:
+                raise RuntimeError("setFavorite requires id")
+            value = bool(params.get("value", True))
+            await self.navidrome.api("star" if value else "unstar", id=song_id)
+            if str((state.get("track") or {}).get("id") or "") == song_id:
+                self.bump(favorite=value)
+            return {"ok": True, "id": song_id, "favorite": value}
+        if method == "setRating":
+            song_id = str(params.get("id") or "")
+            if not song_id:
+                raise RuntimeError("setRating requires id")
+            rating = clamp_int(params.get("rating"), 0, 5, 0)
+            await self.navidrome.api("setRating", id=song_id, rating=rating)
+            return {"ok": True, "id": song_id, "rating": rating}
+        if method == "quickScan":
+            await self.navidrome.api("startScan")
+            return {"ok": True}
+
+        # ---- playback ----------------------------------------------------
+        async def fetch_songs(ids: list[str]) -> list[dict[str, Any]]:
+            songs: list[dict[str, Any]] = []
+            for song_id in ids[:500]:
+                song = await self.navidrome.song(song_id)
+                if song:
+                    songs.append(song)
+            return songs
+
+        if method == "playTrack":
+            songs = await fetch_songs(id_list(params.get("id") or params.get("ids")))
+            if songs:
+                await self.play_tracks(songs, 0)
+            return self.snapshot()
+        if method == "playQueue":
+            songs = await fetch_songs(id_list(params.get("ids")))
+            if songs:
+                await self.play_tracks(songs, clamp_int(params.get("index"), 0, len(songs) - 1, 0))
+            return self.snapshot()
+        if method == "playAlbum":
+            data = await self.navidrome.api("getAlbum", id=str(params.get("id") or ""))
+            album = data.get("album") or {}
+            songs = list(album.get("song") or [])
+            if songs:
+                await self.play_tracks(songs, 0)
+            return self.snapshot()
+        if method == "playPlaylist":
+            data = await self.navidrome.api("getPlaylist", id=str(params.get("id") or ""))
+            playlist = normalize_playlist(data.get("playlist") or {})
+            songs = list(playlist.get("song") or [])
+            if songs:
+                await self.play_tracks(songs, 0)
+            return self.snapshot()
+
+        if method == "queueAdd":
+            songs = await fetch_songs(id_list(params.get("ids") or params.get("id")))
+            queue = list(state.get("queue") or [])
+            if not songs:
+                return self.snapshot()
+            if not queue:
+                await self.play_tracks(songs, 0)
+                return self.snapshot()
+            index = clamp_int(state.get("queueIndex"), 0, len(queue) - 1, 0)
+            insert_at = index + 1 if params.get("next") else len(queue)
+            queue[insert_at:insert_at] = songs
+            await self.reload_queue(
+                queue, index, resume=state.get("status") == "playing",
+                position=float(state.get("position", 0)),
+            )
+            return self.snapshot()
+        if method == "playNext":
+            params = dict(params)
+            params["next"] = True
+            return await self.dispatch("queueAdd", params)
+        if method == "queueRemove":
+            queue = list(state.get("queue") or [])
+            if not queue:
+                return self.snapshot()
+            remove_id = str(params.get("id") or "")
+            if params.get("index") is not None:
+                index = clamp_int(params.get("index"), 0, len(queue) - 1, -1)
+            elif remove_id:
+                matches = [i for i, item in enumerate(queue) if str(item.get("id") or "") == remove_id]
+                index = matches[0] if matches else -1
+            else:
+                index = -1
+            if index < 0:
+                return self.snapshot()
+            current = int(state.get("queueIndex", -1))
+            was_current = index == current
+            queue.pop(index)
+            if not queue:
+                await self.stop_playback()
+                return self.snapshot()
+            if index < current:
+                current -= 1
+            elif was_current:
+                current = min(index, len(queue) - 1)
+            await self.reload_queue(
+                queue, current, resume=state.get("status") == "playing",
+                position=0.0 if was_current else float(state.get("position", 0)),
+            )
+            return self.snapshot()
+        if method == "queueMove":
+            queue = list(state.get("queue") or [])
+            if not queue:
+                return self.snapshot()
+            source = clamp_int(params.get("from"), 0, len(queue) - 1, -1)
+            target = clamp_int(params.get("to"), 0, len(queue) - 1, -1)
+            if source < 0 or target < 0 or source == target:
+                return self.snapshot()
+            item = queue.pop(source)
+            queue.insert(target, item)
+            current = int(state.get("queueIndex", -1))
+            if current == source:
+                current = target
+            elif source < current <= target:
+                current -= 1
+            elif target <= current < source:
+                current += 1
+            await self.reload_queue(
+                queue, current, resume=state.get("status") == "playing",
+                position=float(state.get("position", 0)) if current == int(state.get("queueIndex", -1)) else 0.0,
+            )
+            return self.snapshot()
+        if method == "queueClear":
+            await self.stop_playback()
+            return self.snapshot()
+        if method == "queueShuffle":
+            queue = list(state.get("queue") or [])
+            if len(queue) < 2:
+                return self.snapshot()
+            current = clamp_int(state.get("queueIndex"), 0, len(queue) - 1, 0)
+            head = [queue[current]]
+            tail = [item for index, item in enumerate(queue) if index != current]
+            random.shuffle(tail)
+            await self.reload_queue(
+                head + tail, 0, resume=state.get("status") == "playing",
+                position=float(state.get("position", 0)),
+            )
+            return self.snapshot()
+
+        if method in ("play", "pause", "togglePlay"):
+            if not self.has_local_session():
+                return self.snapshot()
+            should_play = method == "play" or (
+                method == "togglePlay" and state.get("status") != "playing"
+            )
+            if should_play:
+                await self.mpv.set_property("pause", False)
+                self.bump(status="playing")
+            else:
+                await self.mpv.set_property("pause", True)
+                self.bump(status="paused")
+                track = state.get("track")
+                if track:
+                    await self.scrobble_track(
+                        track, int(state.get("queueIndex", -1)),
+                        float(state.get("position", 0)), completed=False,
+                    )
+                    try:
+                        await self.navidrome.report(
+                            str(track["id"]), int(state.get("position", 0) * 1000), "stopped"
+                        )
+                    except Exception as exc:  # noqa: BLE001
+                        log(f"report stopped: {type(exc).__name__}", "warn")
+            return self.snapshot()
+        if method == "stop":
+            await self.stop_playback()
+            return self.snapshot()
+        if method == "next":
+            if not self.has_local_session():
+                return self.snapshot()
+            queue = state.get("queue") or []
+            if not queue:
+                return self.snapshot()
+            current = int(state.get("queueIndex", -1))
+            if state.get("shuffle") and len(queue) > 1:
+                choices = [i for i in range(len(queue)) if i != current]
+                target = secrets.choice(choices)
+            else:
+                target = current + 1
+                if target >= len(queue):
+                    if int(state.get("repeat", 0)) != 1:
+                        await self.stop_playback()
+                        return self.snapshot()
+                    target = 0
+            await self.select_queue_index(target)
+            return self.snapshot()
+        if method == "previous":
+            if not self.has_local_session():
+                return self.snapshot()
+            if float(state.get("position", 0)) > 4:
+                self.mpv.expect("time-pos", 0.0)
+                await self.mpv.seek(0)
+                self.bump(position=0.0)
+                if self.mpris:
+                    self.mpris.seeked(0.0)
+                return self.snapshot()
+            queue = state.get("queue") or []
+            if not queue:
+                return self.snapshot()
+            current = int(state.get("queueIndex", -1))
+            history = [i for i in (state.get("history") or []) if 0 <= i < len(queue)]
+            if history:
+                target = history[-1]
+                state["history"] = history[:-1]
+            elif state.get("shuffle") and len(queue) > 1:
+                choices = [i for i in range(len(queue)) if i != current]
+                target = secrets.choice(choices)
+            else:
+                target = current - 1
+                if target < 0:
+                    if int(state.get("repeat", 0)) != 1:
+                        return self.snapshot()
+                    target = len(queue) - 1
+            await self.select_queue_index(target)
+            return self.snapshot()
+        if method == "seek":
+            if not self.has_local_session():
+                return self.snapshot()
+            delta = float(params.get("seconds", 0))
+            target = max(0.0, float(state.get("position", 0)) + delta)
+            duration = float(state.get("duration") or 0)
+            if duration > 0:
+                target = min(target, duration)
+            self.mpv.expect("time-pos", target)
+            await self.mpv.seek(delta, relative=True)
+            self.bump(position=target)
+            if self.mpris:
+                self.mpris.seeked(target)
+            return self.snapshot()
+        if method == "seekAbsolute":
+            if not self.has_local_session():
+                return self.snapshot()
+            seconds = max(0.0, float(params.get("seconds", 0)))
+            self.mpv.expect("time-pos", seconds)
+            await self.mpv.seek(seconds)
+            self.bump(position=seconds)
+            if self.mpris:
+                self.mpris.seeked(seconds)
+            return self.snapshot()
+        if method == "setShuffle":
+            if not self.has_local_session():
+                return self.snapshot()
+            value = bool(params.get("value"))
+            # Shuffle order is owned by the coordinator; mpv keeps playlist
+            # order so queue indices stay meaningful across MPRIS Next/Previous.
+            self.bump(shuffle=value)
+            return self.snapshot()
+        if method == "setRepeat":
+            if not self.has_local_session():
+                return self.snapshot()
+            value = int(params.get("value", 0)) % 3
+            await self.mpv.set_property("loop-file", "inf" if value == 2 else "no")
+            await self.mpv.set_property("loop-playlist", "inf" if value == 1 else "no")
+            self.bump(repeat=value)
+            return self.snapshot()
+        if method == "setVolume":
+            value = max(0.0, min(1.0, float(params.get("value", 1))))
+            await self.mpv.set_property("volume", value * 100)
+            if value > 0 and state.get("mute"):
+                await self.mpv.set_property("mute", False)
+                self.bump(mute=False)
+            self.bump(volume=value)
+            return self.snapshot()
+        if method == "setMute":
+            value = bool(params.get("value", not state.get("mute")))
+            await self.mpv.set_property("mute", value)
+            self.bump(mute=value)
+            return self.snapshot()
+        if method == "toggleFavorite":
+            track = state.get("track")
+            if not track:
+                return self.snapshot()
+            return await self.dispatch(
+                "setFavorite",
+                {"id": str(track["id"]), "value": not bool(state.get("favorite"))},
+            )
+
+        raise RuntimeError(f"unknown method: {method}")
+
+    # ---- IPC server ----------------------------------------------------
+    async def handle_client(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
+        sock = writer.get_extra_info("socket")
+        try:
+            creds = sock.getsockopt(socket.SOL_SOCKET, socket.SO_PEERCRED, struct.calcsize("3i"))
+            _pid, uid, _gid = struct.unpack("3i", creds)
+        except (OSError, AttributeError):
+            _pid, uid, _gid = -1, -1, -1
+        if uid not in (os.getuid(), 0):
+            writer.close()
+            return
+        self.clients.add(writer)
+        try:
+            while True:
+                raw = await reader.readline()
+                if not raw:
+                    break
+                if len(raw) > 131072:
+                    continue
+                try:
+                    request = json.loads(raw)
+                except ValueError:
+                    continue
+                if not isinstance(request, dict):
+                    continue
+                method = str(request.get("method") or "")
+                if method in ("play", "pause", "togglePlay", "next", "previous", "stop"):
+                    log(f"transport {method} from pid={_pid}")
+                try:
+                    params = validate_request(method, request.get("params") or {})
+                    result = await self.dispatch(method, params)
+                    response = {"id": request.get("id"), "ok": True, "result": result}
+                except Exception as exc:  # noqa: BLE001
+                    response = {
+                        "id": request.get("id"),
+                        "ok": False,
+                        "error": {"code": "error", "message": str(exc)[:300]},
+                    }
+                    log(f"command {method}: {type(exc).__name__}: {str(exc)[:200]}", "warn")
+                writer.write((json.dumps(response, ensure_ascii=False) + "\n").encode())
+                await writer.drain()
+        except (OSError, ConnectionError, asyncio.IncompleteReadError):
+            pass
+        finally:
+            self.clients.discard(writer)
+            writer.close()
+
+    async def serve(self) -> None:
+        SOCKET_DIR.mkdir(parents=True, exist_ok=True, mode=0o700)
+        try:
+            SOCKET_PATH.unlink()
+        except FileNotFoundError:
+            pass
+        server = await asyncio.start_unix_server(self.handle_client, str(SOCKET_PATH))
+        os.chmod(SOCKET_PATH, 0o600)
+        log(f"IPC listening")
+        async with server:
+            await server.serve_forever()
+
+    async def run(self) -> None:
+        await self.mpv.start()
+        try:
+            await self.restore()
+        except Exception as exc:  # noqa: BLE001 - a bad saved queue must not stop startup
+            log(f"restore skipped: {type(exc).__name__}", "warn")
+        self.tasks = [
+            asyncio.create_task(self.serve(), name="ipc"),
+            asyncio.create_task(self.tick(), name="tick"),
+            asyncio.create_task(self.navidrome.events(), name="sse"),
+            asyncio.create_task(self.start_mpris(), name="mpris"),
+        ]
+        loop = asyncio.get_running_loop()
+        for sig in (signal.SIGINT, signal.SIGTERM):
+            loop.add_signal_handler(sig, lambda: asyncio.create_task(self.shutdown()))
+        try:
+            await asyncio.gather(*self.tasks, return_exceptions=True)
+        except asyncio.CancelledError:
+            pass
+
+    async def shutdown(self) -> None:
+        log("shutting down")
+        track = self.state.get("track")
+        if track and self.state.get("status") == "playing":
+            try:
+                await self.navidrome.report(
+                    str(track["id"]), int(self.state.get("position", 0) * 1000), "stopped"
+                )
+            except Exception:  # noqa: BLE001
+                pass
+        for task in self.tasks:
+            task.cancel()
+        if self.mpv.proc and self.mpv.proc.returncode is None:
+            self.mpv.proc.terminate()
+
+
+def main() -> int:
+    if len(sys.argv) > 1 and sys.argv[1] == "--version":
+        print(VERSION)
+        return 0
+    try:
+        asyncio.run(Daemon().run())
+    except KeyboardInterrupt:
+        return 0
+    except Exception as exc:  # noqa: BLE001
+        log(f"fatal: {type(exc).__name__}: {exc}", "error")
+        return 1
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

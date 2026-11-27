@@ -63,12 +63,15 @@ in
         EDITOR = "nvim";
         VISUAL = "nvim";
         YAZI_CONFIG_HOME = "${config.home.homeDirectory}/.config/yazi";
+
+        # --- FZF / search integration ---
         FZF_DEFAULT_OPTS = ''
           --color=bg+:${c.bgAlt},bg:${c.bg},spinner:${c.primary},hl:${c.seaGreen}
           --color=fg:${c.fg},header:${c.seaGreen},info:${c.primary},pointer:${c.seaGreen}
           --color=marker:${c.primary},fg+:${c.fg},prompt:${c.seaGreen},hl+:${c.primary}
-          --layout=reverse --border --height=40%
+          --layout=reverse --border --height=40% --info=inline --cycle
         '';
+        _ZO_FZF_OPTS = "$FZF_DEFAULT_OPTS --preview 'lsd --tree --depth=2 --color=always {2..} | head -200'";
       };
 
       # История
@@ -99,10 +102,28 @@ in
           flakeDir = "${config.home.homeDirectory}/nixos-config";
         in
         {
-          ll = "ls -la --color=auto";
-          la = "ls -A";
-          l = "ls -CF";
+          # --- Modern CLI replacements ---
+          ls = "lsd";
+          ll = "lsd -lah --group-dirs=first";
+          la = "lsd -A --group-dirs=first";
+          l = "lsd -F --group-dirs=first";
+          lt = "lsd --tree --depth=2 --group-dirs=first";
+          lta = "lsd --tree --depth=2 -A --group-dirs=first";
+          cat = "bat --paging=never";
+          batp = "bat"; # bat with pager
+          grep = "rg";
+          find = "fd";
+
+          # --- Navigation / zoxide ---
+          # `cd` is replaced by zoxide via `programs.zoxide.options = [ "--cmd" "cd" ]`.
+          ".." = "cd ..";
+          "..." = "cd ../..";
+          "...." = "cd ../../..";
+          cdi = "cdi"; # zoxide interactive picker (provided by zoxide init --cmd cd)
+
+          # --- Editors / Git ---
           vi = "nvim";
+          v = "nvim";
           g = "lazygit";
           lg = "lazygit";
           d = "delta";
@@ -110,21 +131,27 @@ in
           ga = "git add .";
           gc = "git commit -m";
           gp = "git push";
+          rgg = "rg --hidden --glob '!.git'";
+
+          # --- System / monitoring ---
           top = "btop";
           bt = "btop";
           htop = "btop";
+          disk = "dysk -u binary --bar-width 10";
           neofetch = "fastfetch";
+
+          # --- Utilities ---
           jj = "jq";
           h = "http";
-          docker = "podman";
-          docker-compose = "podman-compose";
-          rgg = "rg --hidden --glob \"!.git\"";
           cle = "clear";
-          ".." = "cd ..";
-          "..." = "cd ../..";
           aln = "cd ~/Documents/ALN && nvim";
           nn = "new-note";
 
+          # --- Containers ---
+          docker = "podman";
+          docker-compose = "podman-compose";
+
+          # --- NixOS / flake management ---
           rbs = "sudo nixos-rebuild switch --impure --flake ${flakeDir}";
           rbb = "sudo nixos-rebuild boot --impure --flake ${flakeDir}";
           upg = "sudo nixos-rebuild switch --impure --upgrade --flake ${flakeDir}";
@@ -133,7 +160,7 @@ in
           pkgs = "nvim ${flakeDir}/system/packages.nix";
           t = "timer";
 
-          # ── Automation Layer ──
+          # --- Automation Layer ---
           ex = "extract";
           ar = "archive";
           finfo = "fileinfo";
