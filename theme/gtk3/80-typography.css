@@ -1,0 +1,34 @@
+/* 80-typography.css — JetBrainsMono Nerd Font из theme/fonts.nix */
+.thunar,
+.thunar window,
+.thunar entry,
+.thunar button,
+.thunar .view,
+.thunar treeview.view,
+.thunar iconview.view,
+.thunar .path-bar,
+.thunar .sidebar,
+.thunar .shortcuts-pane {
+  font-family: "__UI_FONT__", monospace;
+  font-size: __UI_FONT_SIZE__pt;
+}
+
+.thunar headerbar,
+.thunar .path-bar-button:last-child,
+.thunar .location-button:last-child {
+  font-weight: 600;
+}
+
+.thunar statusbar,
+.thunar .statusbar,
+.thunar label:disabled {
+  color: @v_muted;
+  font-size: 11pt;
+}
+
+.thunar .menuitem,
+.thunar menuitem,
+.thunar popover {
+  font-family: "__UI_FONT__", monospace;
+  font-size: 12pt;
+}

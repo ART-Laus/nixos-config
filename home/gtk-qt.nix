@@ -5,6 +5,12 @@ let
   # Единый источник токенов — theme/colors.nix (theme.verdant).
   lt = theme.colors.verdant;
 
+  verdantGtk = theme.gtk3Verdant {
+    inherit pkgs;
+    colors = lt;
+    fonts = theme.fonts;
+  };
+
   # Палитра Qt/KDE: плотные слои Verdant, зелёный — только акцент.
   v = {
     canvas = lt.main;      # фон окна и view
@@ -167,8 +173,8 @@ let
     + "link.visited.color=${v.lavender}\n"
     + "progress.indicator.text.color=${v.canvas}";
 
-  # translucency/blur и прозрачный view сохранены; respect_darkness отключён,
-  # иначе активное окно Dolphin красит текст в серый.
+  # translucency/blur сохранены; respect_darkness отключён,
+  # иначе активные Qt-окна красят текст в серый.
   # Радиусы: frame.expansion 10 (radiusControl) и 14 (radiusCard/панели),
   # тени текста — в deep surface вместо чёрного.
   kvantumTheme = builtins.replaceStrings
@@ -178,7 +184,6 @@ let
       "tooltip_shadow_depth=6"
       "layout_spacing=3\n"
       "respect_darkness=true"
-      "transparent_dolphin_view=false"
       "transparent_menutitle=false"
       "translucent_windows=false\nblurring=false"
       "text.shadow.color=#000000"
@@ -193,7 +198,6 @@ let
       "tooltip_shadow_depth=3"
       "layout_spacing=8\nlayout_margin=10\n"
       "respect_darkness=false"
-      "transparent_dolphin_view=true"
       "transparent_menutitle=true"
       "translucent_windows=true\nblurring=true"
       "text.shadow.color=${lt.deep}"
@@ -359,8 +363,8 @@ in
   gtk = {
     enable = true;
     theme = {
-      name = "adw-gtk3-dark";
-      package = pkgs.adw-gtk3;
+      name = "Verdant";
+      package = verdantGtk;
     };
     iconTheme = {
       name = "Papirus-Green";
@@ -401,7 +405,11 @@ in
     qt6Packages.qtstyleplugin-kvantum
   ];
 
-  xdg.configFile."Kvantum/ArtlausNeon/ArtlausNeon.kvconfig".text = kvantumTheme;
+  # Файл уже существовал до перехода на HM: разрешаем декларативную перезапись.
+  xdg.configFile."Kvantum/ArtlausNeon/ArtlausNeon.kvconfig" = {
+    text = kvantumTheme;
+    force = true;
+  };
   xdg.configFile."Kvantum/ArtlausNeon/ArtlausNeon.svg".source = greenSvg;
   xdg.configFile."qt6ct/colors/ArtlausNeon.conf".text = qt6ctPalette;
 

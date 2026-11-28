@@ -2,9 +2,8 @@
 { config, pkgs, ... }:
 {
   home.packages = with pkgs; [
-    # ── Файловый менеджер: Dolphin (Thunar/Xfce удалён полностью) ──
+    # ── Файловый менеджер: Thunar ставится системным модулем programs.thunar ──
     # ranger удалён — заменён на yazi (home/features/cli/yazi.nix)
-    kdePackages.dolphin
     catfish
     file-roller
     ffmpegthumbnailer
@@ -27,11 +26,4 @@
     discord
     ayugram-desktop
   ];
-
-  # Каталог открывается в Dolphin везде (xdg-open, файл-пикеры, рабочий стол)
-  xdg.mimeApps.enable = true;
-  xdg.mimeApps.defaultApplications = {
-    "inode/directory" = "org.kde.dolphin.desktop";
-    "x-directory/normal" = "org.kde.dolphin.desktop";
-  };
 }

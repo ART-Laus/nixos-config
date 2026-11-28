@@ -1,0 +1,57 @@
+/* 70-interactions.css — мягкие переходы и focus-состояния */
+button,
+.toggle,
+.location-button,
+.path-bar-button,
+menuitem,
+treeview.view row,
+iconview.view,
+.sidebar treeview.view row,
+.shortcuts-pane treeview.view row,
+notebook tab,
+headerbar button {
+  transition: background-color 120ms ease-out;
+  transition: border-color 120ms ease-out;
+  transition: color 120ms ease-out;
+}
+
+button:focus,
+entry:focus,
+location-button:focus,
+.path-bar-button:focus,
+menuitem:focus,
+treeview.view:focus,
+iconview.view:focus {
+  outline: 2px solid @v_mint;
+  outline-offset: -2px;
+}
+
+button:active,
+.location-button:active,
+.path-bar-button:active,
+menuitem:active {
+  background-color: @v_selection;
+}
+
+notebook,
+notebook header,
+notebook tab {
+  background-color: @v_elevated;
+  border-color: @v_border;
+}
+
+notebook tab:checked {
+  background-color: @v_main;
+  color: @v_mint;
+  border-color: @v_mint;
+}
+
+checkbutton,
+radiobutton {
+  color: @v_text;
+}
+
+checkbutton:checked,
+radiobutton:checked {
+  color: @v_mint;
+}

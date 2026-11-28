@@ -95,8 +95,8 @@ in
           disable_splash_rendering = true
       }
 
-      # Dolphin: без наложения прозрачности Hyprland — проверяем, уберёт ли серый текст
-      windowrule = opacity 1 1, match:class ^(dolphin|org\.kde\.dolphin)$
+      # Thunar: CSS отвечает за поверхность, без дополнительного opacity от Hyprland
+      windowrule = opacity 1 1, match:class ^(thunar|Thunar)$
       # Firefox - прозрачность как в системе (active 0.9 / inactive 0.8)
       windowrule = opacity 0.9 0.8, match:class ^(firefox)$
 
@@ -119,7 +119,7 @@ in
       bind = $mainMod, Return, exec, alacritty
       bind = $mainMod, code:56, exec, firefox
       bind = $mainMod, code:28, exec, AyuGram
-      bind = $mainMod, code:26, exec, dolphin
+      bind = $mainMod, code:26, exec, thunar
       bind = $mainMod, W, exec, wallpaper
       bind = $mainMod, code:32, exec, obsidian
       bind = $mainMod, code:40, exec, show-desktop

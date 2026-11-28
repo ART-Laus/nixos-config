@@ -1,0 +1,115 @@
+/* 60-dialogs.css — диалоги, file chooser, поля ввода */
+dialog,
+.dialog,
+dialog.background,
+filechooser,
+.file-chooser,
+gtkdialog {
+  background-color: @v_main;
+  color: @v_text;
+  border: 1px solid @v_border;
+  border-radius: 12px;
+  box-shadow: 0 10px 28px 0 @v_shadow;
+}
+
+dialog headerbar,
+dialog > headerbar,
+.dialog headerbar {
+  background-color: @v_elevated;
+  border-bottom: 1px solid @v_border;
+}
+
+dialog .view,
+dialog treeview.view,
+dialog iconview.view,
+filechooser .view {
+  background-color: @v_main;
+  color: @v_text;
+}
+
+dialog .view:selected,
+dialog treeview.view:selected,
+filechooser .view:selected {
+  background-color: @v_selection;
+  color: @v_text;
+}
+
+entry,
+.search-entry,
+gtkentry,
+GtkEntry {
+  background-color: @v_elevated;
+  color: @v_text;
+  border: 1px solid @v_border;
+  border-radius: 8px;
+  padding: 5px 8px;
+  box-shadow: none;
+}
+
+entry:focus,
+entry:focus-within,
+.search-entry:focus {
+  border-color: @v_mint;
+  box-shadow: inset 0 0 0 1px @v_focus;
+}
+
+entry:disabled {
+  color: @v_muted;
+  border-color: @v_border;
+}
+
+button,
+.button,
+togglebutton,
+menubutton {
+  background-color: @v_elevated;
+  color: @v_text;
+  border: 1px solid @v_border;
+  border-radius: 8px;
+  padding: 5px 12px;
+  box-shadow: none;
+}
+
+button:hover,
+.button:hover,
+togglebutton:hover {
+  background-color: @v_hover;
+  color: @v_text;
+  border-color: @v_emerald;
+}
+
+button:active,
+button:checked,
+.button:checked,
+togglebutton:checked {
+  background-color: @v_selection;
+  color: @v_mint;
+  border-color: @v_mint;
+}
+
+button:disabled {
+  background-color: @v_elevated;
+  color: @v_muted;
+  border-color: @v_border;
+}
+
+progressbar,
+progressbar trough {
+  background-color: @v_elevated;
+  border: 1px solid @v_border;
+  border-radius: 6px;
+}
+
+progressbar progress {
+  background-color: @v_emerald;
+  border-radius: 5px;
+}
+
+tooltip,
+tooltip.background {
+  background-color: @v_elevated;
+  color: @v_text;
+  border: 1px solid @v_border;
+  border-radius: 8px;
+  box-shadow: 0 6px 18px 0 @v_shadow;
+}

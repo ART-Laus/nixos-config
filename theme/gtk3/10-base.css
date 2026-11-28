@@ -1,0 +1,68 @@
+/* 10-base.css — общие поверхности Verdant и сетка Layout */
+window.background,
+window.background.csd,
+.thunar {
+  background-color: @v_main;
+  color: @v_text;
+}
+
+.thunar,
+.thunar .standard-view,
+.thunar .view,
+.thunar .shortcuts-pane,
+.thunar treeview.view,
+.thunar iconview.view {
+  background-color: @v_main;
+  color: @v_text;
+}
+
+.frame,
+.frame > border,
+separator,
+GtkSeparator {
+  border-color: @v_border;
+  background-color: @v_border;
+}
+
+separator {
+  min-width: 1px;
+  min-height: 1px;
+}
+
+paned > separator {
+  background-color: @v_border;
+  min-width: 1px;
+  min-height: 1px;
+}
+
+scrollbar,
+scrollbar trough,
+scrollbar.vertical,
+scrollbar.horizontal {
+  background-color: @v_main;
+  border: 0;
+}
+
+scrollbar slider {
+  background-color: @v_border;
+  border: 0;
+  border-radius: 6px;
+  min-width: 8px;
+  min-height: 8px;
+}
+
+scrollbar slider:hover {
+  background-color: @v_hover;
+}
+
+scrollbar slider:active {
+  background-color: @v_mint;
+}
+
+undershoot.top,
+undershoot.bottom,
+undershoot.left,
+undershoot.right {
+  background-image: none;
+  box-shadow: none;
+}

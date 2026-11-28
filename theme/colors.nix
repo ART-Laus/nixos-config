@@ -74,8 +74,8 @@
   successTransparent = "rgba(102, 255, 153, 0.6)";
   successTransparentHigh = "rgba(102, 255, 153, 0.7)";
 
-  # Verdant / Living Terminal — канонические токены для Qt/KDE и Quickshell.
-  # Единый источник: home/gtk-qt.nix и Dolphin-тема потребивают отсюда.
+  # Verdant / Living Terminal — канонические токены для Qt/KDE, GTK и Quickshell.
+  # Единый источник: home/gtk-qt.nix и theme/gtk3-verdant.nix потребивают отсюда.
   verdant = {
     deep = "#07110D";       # внешний canvas, тени текста
     forest = "#001a0d";     # Deep Forest — фон встроенного терминала

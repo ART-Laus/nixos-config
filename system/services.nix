@@ -27,8 +27,14 @@
 
   services.upower.enable = true;
 
-  # GVFS + Tumbler — общие сервисы для тумбнейлов и виртуальных ФС
-  # (Dolphin ставится в home/features/desktop/apps.nix, Xfce-часть удалена)
+  # GVFS + Tumbler — общие сервисы для тумбнейлов и виртуальных ФС.
+  # Thunar ставится здесь как системный файловый менеджер; Home Manager
+  # владеет его конфигурацией в home/features/desktop/file-manager/.
+  programs.thunar = {
+    enable = true;
+    plugins = with pkgs; [ thunar-archive-plugin ];
+  };
+
   services.udisks2.enable = true;
   environment.etc."udisks2/mount_options.conf".text = ''
     [defaults]

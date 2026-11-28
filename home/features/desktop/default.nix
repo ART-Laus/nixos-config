@@ -11,7 +11,7 @@
     ./browsers.nix
     ./firefox/default.nix
     ./apps.nix
-    ./dolphin.nix
+    ./file-manager
     ./orpheus/default.nix
   ];
 }

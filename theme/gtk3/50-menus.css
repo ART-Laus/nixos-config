@@ -1,0 +1,60 @@
+/* 50-menus.css — контекстные меню, выпадающие списки, меню действий */
+menu,
+.menu,
+.context-menu,
+popover,
+.popover {
+  background-color: @v_elevated;
+  color: @v_text;
+  border: 1px solid @v_border;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px 0 @v_shadow;
+  padding: 4px;
+}
+
+menuitem,
+.menuitem,
+menu menuitem,
+popover menuitem {
+  background-color: transparent;
+  color: @v_text;
+  border: 0;
+  border-radius: 7px;
+  padding: 6px 10px;
+  min-height: 26px;
+}
+
+menuitem:hover,
+menuitem:selected,
+.menuitem:hover,
+popover menuitem:hover {
+  background-color: @v_selection;
+  color: @v_mint;
+}
+
+menuitem:disabled,
+.menuitem:disabled {
+  color: @v_muted;
+}
+
+menuitem separator,
+.menu separator,
+menu separator {
+  background-color: @v_border;
+  min-height: 1px;
+  margin: 4px 2px;
+}
+
+menuitem checkbutton,
+menuitem radiobutton {
+  color: @v_emerald;
+}
+
+comboBox,
+combobox,
+.combo {
+  background-color: @v_elevated;
+  color: @v_text;
+  border: 1px solid @v_border;
+  border-radius: 8px;
+}
