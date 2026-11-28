@@ -32,7 +32,6 @@ in
       # Autostart
       # -----------------------------------------------------
       exec-once = nm-applet --indicator
-      exec-once = wl-paste --watch cliphist store
 
       # -----------------------------------------------------
       # Environment
@@ -131,7 +130,7 @@ in
       bind = $mainMod, minus, movetoworkspacesilent, special:minimized
       bind = $mainMod, equal, togglespecialworkspace, minimized
       bind = $mainMod, code:27, exec, rofi-scripts
-      bind = $mainMod, V, exec, cliphist list | rofi -dmenu | cliphist decode | wl-copy
+      bind = $mainMod, V, exec, quickshell ipc -c bar call clipboard toggle
       bind = $mainMod, code:57, exec, io.github.alainm23.planify
       bind = $mainMod, code:53, exec, qalculate-gtk
       bind = $mainMod, code:29, exec, alacritty -e yazi

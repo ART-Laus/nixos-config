@@ -1,0 +1,4 @@
+module qs.clipboard.core
+singleton ClipboardState 1.0 ClipboardState.qml
+singleton ClipboardService 1.0 ClipboardService.qml
+singleton ClipboardTheme 1.0 ClipboardTheme.qml

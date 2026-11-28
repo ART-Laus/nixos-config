@@ -75,9 +75,8 @@ in
     file
     hashid
 
-    # Clipboard
+    # Clipboard — history is provided by the Verdant Clipboard backend module.
     wl-clipboard
-    cliphist
 
 
     # Media CLI

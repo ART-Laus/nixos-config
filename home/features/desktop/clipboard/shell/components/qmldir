@@ -1,0 +1,7 @@
+module qs.clipboard.components
+SearchField 1.0 SearchField.qml
+CategoryTab 1.0 CategoryTab.qml
+ClipboardCard 1.0 ClipboardCard.qml
+SectionHeader 1.0 SectionHeader.qml
+ConfirmDialog 1.0 ConfirmDialog.qml
+DetailView 1.0 DetailView.qml

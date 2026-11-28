@@ -4,6 +4,7 @@
     ./compositor/hyprland.nix
     ./compositor/hyprpaper.nix
     ./bar/default.nix
+    ./clipboard/default.nix
     ./carpheus/default.nix
     ./launcher/rofi.nix
     # Quickshell owns org.freedesktop.Notifications; dunst must not run too.

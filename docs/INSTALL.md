@@ -1641,7 +1641,7 @@ systemctl --failed                                  # упавшие серви�
 | `Home Manager activation failed` | не может записать в `~/` | [10.4](#104-если-home-manager-упал-на-активации) |
 | Нет звука | PipeWire не поднялся | `wpctl status`, `systemctl --user status wireplumber pipewire` |
 | Скриншот (`Print`) не работает | **в конфиге нет `grim`, `slurp`, `swappy`** | см. [Приложение D](#приложение-d-известные-мелочи-и-поломки) |
-| Буфер обмена (`SUPER+V`) не работает | **нет `cliphist`** | там же |
+| Буфер обмена (`SUPER+V`) не работает | сервис `verdant-clipboard` не запущен | `systemctl --user status verdant-clipboard`; IPC: `quickshell ipc -c bar call clipboard state` |
 | Обои одноцветные | каталог обоев пуст (в git его нет) | [8.4](#84-убрать-артефакты-старой-машины-важно) |
 | «Music: not playing» в панели | не заполнены ключи Last.fm | [9.10](#910-lastfm-в-панели) |
 | Медленная первая сборка | 10 локальных `cargo install` | [10.1](#101-сколько-это-займёт) |
@@ -1691,7 +1691,7 @@ Leader — **Super** (Meta/Windows). Источник: `home/features/desktop/co
 
 | Клавиши | Действие |
 |---|---|
-| `SUPER + V` | история буфера обмена ⚠️ не работает — нет `cliphist` |
+| `SUPER + V` | Verdant Clipboard — поиск, категории, закреплённые, картинки |
 | `SUPER + R` | скрипты (rofi-scripts) |
 | `SUPER + ,` | меню автоматизации (17 утилит) |
 | `Print` | скриншот области ⚠️ не работает — нет `grim`/`slurp`/`swappy` |
@@ -1807,7 +1807,7 @@ docs/                           этот гайд, архитектура, де�
 | Что | Где используется | Последствие |
 |---|---|---|
 | `grim`, `slurp`, `swappy` | `hyprland.nix:113-114` (`Print` и `SHIFT+Print`) | скриншоты не работают. Лечится добавлением в `home/features/cli/tools.nix` |
-| `cliphist` | `hyprland.nix:27` (`exec-once`) и `:107` (`SUPER+V`) | буфер обмена не работает; в логе Hyprland будет ошибка при старте |
+| — | старый `cliphist`-интеграция удалена | история теперь ведёт `verdant-clipboard.service`; Rofi остался для лаунчера |
 
 ### Не подключено
 

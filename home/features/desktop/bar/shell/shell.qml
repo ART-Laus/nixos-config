@@ -3,6 +3,7 @@ import QtQuick.Window
 import Quickshell
 import Quickshell.Wayland
 import qs.appcenter
+import qs.clipboard
 import qs.components
 import qs.config
 import qs.music
@@ -274,4 +275,5 @@ ShellRoot {
     }
 
     AppCenter {}
+    Clipboard {}
 }

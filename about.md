@@ -140,7 +140,7 @@ flake.nix
 
 ## 2.7 Launcher / Notifications
 
-- **Launcher:** rofi. Установлен, есть keybind Super+Space, `rofi -show drun`. Конфига/темы **нет** — дефолтный внешний вид (белый, без вашей темы). `wl-clipboard`, `cliphist` (Super+V) — хорошо.
+- **Launcher:** rofi. Установлен, есть keybind Super+Space, `rofi -show drun`. Конфига/темы **нет** — дефолтный внешний вид (белый, без вашей темы). Буфер обмена — Verdant Clipboard (`wl-clipboard` + собственный демон и Quickshell UI, Super+V); `cliphist`/Rofi-меню больше не используются.
 - **Notifications:** собственный Notification Center в Quickshell. `NotificationServer` владеет `org.freedesktop.Notifications`, dunst отключён; слева компактная пилюля с unread-count, рядом панель с Personal/System и полным текстом карточек. История хранится в `~/.local/share/quickshell/notifications/{history,state,rules}.json`, статусы `unread/read/archived/dismissed` раздельны, автоматического удаления нет. Зелёный.
   - Модуль: `home/features/desktop/bar/shell/notifications/` (`NotificationStore.qml`, `NotificationModel.js`, `NotificationText.js`, `NotificationCard.qml`, `NotificationGroup.qml`, `NotificationCenterPopup.qml`, `NotificationPill.qml`).
   - IPC: `quickshell ipc -c bar call notificationCenter <count|list|all|groups|open|close|toggle|setView|markRead|archive|dismiss|remove|archiveInbox|clearHistory|toggleGroup|setCategory> [args]`.

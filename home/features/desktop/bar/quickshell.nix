@@ -29,6 +29,10 @@ let
   '';
   appCenterUsagePath = "${config.xdg.dataHome}/quickshell/app-center/usage.json";
 
+  # Verdant Clipboard lives inside this Quickshell config — no second instance.
+  clipboardShell = import ./../clipboard/frontend.nix { inherit pkgs; };
+  clipboardCtl = "${import ./../clipboard/backend.nix { inherit pkgs; }}/bin/verdant-clipboard-ctl";
+
   scriptHubCommands = [
     "rofi-scripts"
     "wallpaper"
@@ -159,6 +163,9 @@ let
         readonly property string notificationStatePath: notificationDataRoot + "/state.json"
         readonly property string notificationRulesPath: notificationDataRoot + "/rules.json"
         readonly property string notificationMkdir: "${pkgs.coreutils}/bin/mkdir"
+
+        readonly property string clipboardCtl: "${clipboardCtl}"
+        readonly property string clipboardDataRoot: "${config.xdg.dataHome}/verdant-clipboard"
     }
   '';
 
@@ -166,6 +173,7 @@ let
     mkdir -p $out $out/appcenter
     cp -r ${./shell}/. $out/
     cp -r ${./../app-center/shell}/. $out/appcenter/
+    cp -r ${clipboardShell}/. $out/clipboard/
     chmod -R u+w $out
     cp ${themeQml} $out/config/Theme.qml
     cp ${./../app-center/shell/config}/AppSettings.qml $out/config/AppSettings.qml
